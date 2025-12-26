@@ -6,13 +6,13 @@ terraform {
     }
   }
 
-  required_version = ">= 1.2"
+  required_version = ">= 1.10"
 
   backend "s3" {
-    bucket         = "macconnachie-terraform-state"
-    key            = "email/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "terraform-state-lock"
+    bucket       = "macconnachie-terraform-state"
+    key          = "email/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }
