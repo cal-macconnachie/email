@@ -1,0 +1,10 @@
+{
+  "name": "Email",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Cal MacConnachie <cal.macconnachie@gmail.com>",
+  "scripts": {
+    "lint": "terraform fmt",
+    "release": "chmod +x ./scripts/release.zsh && ./scripts/release.zsh"
+  }
+}

@@ -1,0 +1,8 @@
+.env.local
+.terraform/
+.claude/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+.DS_Store
+node_modules/
