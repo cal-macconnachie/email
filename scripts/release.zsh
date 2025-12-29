@@ -8,6 +8,12 @@ set +a
 echo "Running linter..."
 yarn lint
 
+# if tree is dirty after linting, abort
+if [[ -n $(git status --porcelain) ]]; then
+  echo "Linting changes detected. Please review and commit the changes before releasing."
+  exit 1
+fi
+
 # run terraform validate to validate terraform files
 echo "Validating terraform files..."
 terraform validate
