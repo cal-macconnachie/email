@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/cal-macconnachie/email/compare/v0.0.2...v0.0.3) (2025-12-29)
+
+
+### Bug Fixes
+
+* abort if lint changes files ([c344832](https://github.com/cal-macconnachie/email/commit/c344832834b0034ca34e0365507240ddbddc90ef))
+* tag structure ([8ed3cb8](https://github.com/cal-macconnachie/email/commit/8ed3cb8c37c1a42bcb99a4ca70cf20784d8f538e))
+
 ### [0.0.2](https://github.com/cal-macconnachie/email/compare/v0.0.1...v0.0.2) (2025-12-29)
 
 
