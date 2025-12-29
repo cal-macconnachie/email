@@ -1,10 +1,17 @@
 {
-  "name": "Email",
+  "name": "email",
   "version": "0.0.1",
   "private": true,
   "author": "Cal MacConnachie <cal.macconnachie@gmail.com>",
   "scripts": {
     "lint": "terraform fmt",
-    "release": "chmod +x ./scripts/release.zsh && ./scripts/release.zsh"
+    "release": "chmod +x ./scripts/release.zsh && ./scripts/release.zsh",
+    "build:lambdas": "tsc -p tsconfig.lambda.json",
+    "watch:lambdas": "tsc -p tsconfig.lambda.json --watch"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2"
   }
 }
