@@ -29,7 +29,7 @@ locals {
 
 # IAM Role for Lambda execution
 resource "aws_iam_role" "lambda_execution" {
-  name               = "${var.domain_name}-lambda-execution-role"
+  name = "${var.domain_name}-lambda-execution-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
