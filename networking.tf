@@ -145,6 +145,10 @@ resource "aws_route53_record" "cloudfront" {
   }
 }
 
+resource "aws_ses_configuration_set" "main" {
+  name = "${local.sanitized_domain}-config-set"
+}
+
 resource "aws_ses_domain_identity" "main" {
   domain = var.domain_name
 }
