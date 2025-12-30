@@ -307,7 +307,7 @@ resource "aws_lambda_permission" "ses_lambda_permission" {
 
 # SES Receipt Rule to store raw email in S3 and process via Lambda
 resource "aws_ses_receipt_rule" "store_in_s3_rule" {
-  name          = "ProcessWithLambda"
+  name          = "ProcessWithLambda-v2"
   rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
   enabled       = true
   recipients    = [var.domain_name]
