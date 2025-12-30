@@ -147,7 +147,7 @@ resource "aws_route53_record" "cloudfront" {
 resource "aws_ses_domain_identity" "main" {
   domain = var.domain_name
 }
-  
+
 resource "aws_route53_record" "main_amazonses_verification_record" {
   zone_id = data.aws_route53_zone.main.zone_id
   name    = "_amazonses.${aws_ses_domain_identity.main.domain}"
