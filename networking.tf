@@ -1,7 +1,7 @@
 # Local variables
 locals {
-  domain_names        = [var.domain_name, "www.${var.domain_name}"]
-  sanitized_domain    = replace(var.domain_name, ".", "-")
+  domain_names     = [var.domain_name, "www.${var.domain_name}"]
+  sanitized_domain = replace(var.domain_name, ".", "-")
 }
 
 # Route53 Hosted Zone
