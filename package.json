@@ -8,14 +8,14 @@
     "lint:ts": "eslint .",
     "lint:tf": "terraform fmt",
     "lint:fix": "eslint . --fix",
-    "release": "chmod +x ./scripts/release.zsh && ./scripts/release.zsh",
-    "build:lambdas": "tsc -p tsconfig.lambda.json",
-    "watch:lambdas": "tsc -p tsconfig.lambda.json --watch"
+    "build": "node scripts/build-lambdas.mjs",
+    "release": "chmod +x ./scripts/release.zsh && ./scripts/release.zsh"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/aws-lambda": "^8.10.145",
     "@types/node": "^22.10.5",
+    "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^9.1.0",
     "typescript": "^5.7.2",

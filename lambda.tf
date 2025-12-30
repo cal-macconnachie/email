@@ -3,15 +3,15 @@
 
 locals {
   # Define Lambda functions here - add new functions to this map
-  # Note: Run 'npm run build:lambdas' before deploying to compile TypeScript
+  # Note: Run 'yarn build' before deploying to bundle Lambda functions with esbuild
   lambda_functions = {
     receive_ses_email = {
       description = "Process incoming SES emails and store in S3 with structured paths"
-      handler     = "receive-ses-email.handler"
+      handler     = "index.handler"
       runtime     = "nodejs22.x"
       timeout     = 60
       memory_size = 256
-      source_dir  = "${path.module}/dist/lambdas/"
+      source_dir  = "${path.module}/dist/lambdas/receive-ses-email"
       environment_vars = {
         S3_BUCKET_NAME      = "${var.domain_name}-ses-emails"
         DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
@@ -19,22 +19,22 @@ locals {
     }
     get_attachment_upload_presign = {
       description = "Generate presigned URL for uploading email attachments"
-      handler     = "get-attachment-upload-presign.handler"
+      handler     = "index.handler"
       runtime     = "nodejs22.x"
       timeout     = 30
       memory_size = 256
-      source_dir  = "${path.module}/dist/lambdas/"
+      source_dir  = "${path.module}/dist/lambdas/get-attachment-upload-presign"
       environment_vars = {
         S3_BUCKET_NAME = "${var.domain_name}-ses-emails"
       }
     }
     send_email = {
       description = "Send email via SES and store in S3/DynamoDB"
-      handler     = "send-email.handler"
+      handler     = "index.handler"
       runtime     = "nodejs22.x"
       timeout     = 60
       memory_size = 512
-      source_dir  = "${path.module}/dist/lambdas/"
+      source_dir  = "${path.module}/dist/lambdas/send-email"
       environment_vars = {
         S3_BUCKET_NAME      = "${var.domain_name}-ses-emails"
         DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
@@ -42,33 +42,33 @@ locals {
     }
     get_full_email = {
       description = "Retrieve full email content from S3"
-      handler     = "get-full-email.handler"
+      handler     = "index.handler"
       runtime     = "nodejs22.x"
       timeout     = 30
       memory_size = 256
-      source_dir  = "${path.module}/dist/lambdas/"
+      source_dir  = "${path.module}/dist/lambdas/get-full-email"
       environment_vars = {
         S3_BUCKET_NAME = "${var.domain_name}-ses-emails"
       }
     }
     list_emails = {
       description = "List and filter emails from DynamoDB"
-      handler     = "list-emails.handler"
+      handler     = "index.handler"
       runtime     = "nodejs22.x"
       timeout     = 30
       memory_size = 256
-      source_dir  = "${path.module}/dist/lambdas/"
+      source_dir  = "${path.module}/dist/lambdas/list-emails"
       environment_vars = {
         DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
       }
     }
     update_email = {
       description = "Update email read/archived status"
-      handler     = "update-email.handler"
+      handler     = "index.handler"
       runtime     = "nodejs22.x"
       timeout     = 30
       memory_size = 256
-      source_dir  = "${path.module}/dist/lambdas/"
+      source_dir  = "${path.module}/dist/lambdas/update-email"
       environment_vars = {
         S3_BUCKET_NAME      = "${var.domain_name}-ses-emails"
         DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
