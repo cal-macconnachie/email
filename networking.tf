@@ -197,6 +197,15 @@ resource "aws_route53_record" "main_mail_from_spf" {
   records = ["v=spf1 include:amazonses.com -all"]
 }
 
+# MX Records for receiving emails via SES
+resource "aws_route53_record" "main_mx" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "MX"
+  ttl     = "600"
+  records = ["10 inbound-smtp.${var.aws_region}.amazonses.com"]
+}
+
 # Receiving SES Emails
 
 # Bucket to store received emails
