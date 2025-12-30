@@ -60,7 +60,7 @@ export function createTransaction<T>(params: {
       {
         Put: {
           TableName: params.tableName,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+           
           Item: marshall(params.record, { removeUndefinedValues: true })
         }
       }

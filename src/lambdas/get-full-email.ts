@@ -24,7 +24,7 @@ export const handler = async (
     if (event.queryStringParameters?.s3_key) {
       s3Key = event.queryStringParameters.s3_key
     } else if (event.body) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const body: GetEmailRequest = JSON.parse(event.body)
       s3Key = body.s3Key
     }

@@ -92,11 +92,6 @@ export interface Email {
     archived: boolean
 }
 
-function isUuid(value: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    return uuidRegex.test(value)
-}
-
 export function parseEmail(emailString: string): {
     emails: Email[];
     attachments?: Array<{ filename: string; contentType: string; rawContent: Buffer }>;
@@ -145,7 +140,7 @@ export function parseEmail(emailString: string): {
             reply_to: headers['reply-to'] ? headers['reply-to'].split(',').map((email) => email.trim()).map((em) => formatEmailAddress(em)) : [],
             subject,
             body,
-            s3_key: ``,
+            s3_key: '',
             timestamp: `${new Date().toISOString()}#${id}`,
             created_at: new Date().toISOString(),
             id,

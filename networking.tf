@@ -177,8 +177,8 @@ resource "aws_route53_record" "main_amazonses_dkim_records" {
 
 # SES Mail From Domain
 resource "aws_ses_mail_from" "main_mail_from" {
-  domain                = aws_ses_domain_identity.main.domain
-  mail_from_domain      = "mail.${var.domain_name}"
+  domain                 = aws_ses_domain_identity.main.domain
+  mail_from_domain       = "mail.${var.domain_name}"
   behavior_on_mx_failure = "UseDefaultValue"
 }
 resource "aws_route53_record" "main_mail_from_mx" {
@@ -263,7 +263,7 @@ resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
         Principal = {
           Service = "ses.amazonaws.com"
         }
-        Action = "s3:PutObject"
+        Action   = "s3:PutObject"
         Resource = "${aws_s3_bucket.ses_received_emails.arn}/*"
       }
     ]
@@ -298,8 +298,8 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   }
 
   lambda_action {
-    position      = 2
-    function_arn  = aws_lambda_function.functions["receive_ses_email"].arn
+    position        = 2
+    function_arn    = aws_lambda_function.functions["receive_ses_email"].arn
     invocation_type = "Event"
   }
 

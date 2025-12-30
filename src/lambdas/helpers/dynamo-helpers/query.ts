@@ -63,7 +63,7 @@ interface QueryAllInput {
   tableName: string
   keyConditionExpression: string
   expressionAttributeNames?: Record<string, string>
-  expressionAttributeValues?: Record<string, any>
+  expressionAttributeValues?: Record<string, unknown>
   filterExpression?: string
   indexName?: string
   limit?: number
