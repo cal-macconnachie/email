@@ -43,8 +43,8 @@ export async function get<T>({
     throw new Error('Key cannot contain undefined values')
   }
   Object.keys(key).forEach((k) => {
-    if ((key as Record<string, unknown>)[k] === '') {
-      delete (key as Record<string, unknown>)[k]
+    if ((key)[k] === '') {
+      delete (key)[k]
     }
   })
   const command = new GetItemCommand({

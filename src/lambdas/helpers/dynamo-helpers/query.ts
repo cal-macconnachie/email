@@ -36,8 +36,8 @@ export async function query<T>({
   })
   if (exclusiveStartKey) {
     Object.keys(exclusiveStartKey).forEach((k) => {
-      if ((exclusiveStartKey as Record<string, unknown>)[k] === '') {
-        delete (exclusiveStartKey as Record<string, unknown>)[k]
+      if ((exclusiveStartKey)[k] === '') {
+        delete (exclusiveStartKey)[k]
       }
     })
   }

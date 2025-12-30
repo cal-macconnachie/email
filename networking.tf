@@ -230,7 +230,7 @@ resource "aws_iam_role" "ses_s3_role" {
 # IAM Policy for SES to write to S3
 resource "aws_iam_role_policy" "ses_s3_policy" {
   name = "${var.domain_name}-ses-s3-policy"
-  role = aws_iam_role.ses_s3_role.id 
+  role = aws_iam_role.ses_s3_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -250,6 +250,26 @@ resource "aws_iam_role_policy" "ses_s3_policy" {
   })
 }
 
+# S3 Bucket Policy to allow SES to write emails
+resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
+  bucket = aws_s3_bucket.ses_received_emails.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowSESPuts"
+        Effect = "Allow"
+        Principal = {
+          Service = "ses.amazonaws.com"
+        }
+        Action = "s3:PutObject"
+        Resource = "${aws_s3_bucket.ses_received_emails.arn}/*"
+      }
+    ]
+  })
+}
+
 # SES Receipt Rule Set
 resource "aws_ses_receipt_rule_set" "main_rule_set" {
   rule_set_name = "${var.domain_name}-rule-set"
@@ -263,7 +283,7 @@ resource "aws_lambda_permission" "ses_lambda_permission" {
   principal     = "ses.amazonaws.com"
 }
 
-# SES Receipt Rule to process emails via Lambda
+# SES Receipt Rule to store raw email in S3 and process via Lambda
 resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   name          = "ProcessWithLambda"
   rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
@@ -271,14 +291,21 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   recipients    = [var.domain_name, "www.${var.domain_name}"]
   scan_enabled  = true
 
+  s3_action {
+    position          = 1
+    bucket_name       = aws_s3_bucket.ses_received_emails.id
+    object_key_prefix = "incoming/"
+  }
+
   lambda_action {
-    position      = 1
+    position      = 2
     function_arn  = aws_lambda_function.functions["receive_ses_email"].arn
     invocation_type = "Event"
   }
 
   depends_on = [
     aws_lambda_permission.ses_lambda_permission,
-    aws_lambda_function.functions
+    aws_lambda_function.functions,
+    aws_s3_bucket_policy.ses_received_emails_policy
   ]
 }

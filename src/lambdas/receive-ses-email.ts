@@ -1,6 +1,7 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Context, SESEvent } from 'aws-lambda'
 import { create } from './helpers/dynamo-helpers/create'
+import { parseEmail } from './helpers/parse-email'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -24,71 +25,114 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
       const mail = sesRecord.mail
       const receipt = sesRecord.receipt
 
-      // Extract email details
+      // Get the S3 location where SES stored the raw email
+      const s3Action = receipt.action
+      if (!('bucketName' in s3Action) || !('objectKey' in s3Action)) {
+        throw new Error('S3 action not found in receipt. Ensure SES is configured to store emails in S3.')
+      }
+      const incomingBucket = s3Action.bucketName
+      const incomingKey = s3Action.objectKey
+
+      console.log(`Fetching raw email from s3://${incomingBucket}/${incomingKey}`)
+
+      // Fetch the raw email from S3
+      const getObjectResponse = await s3Client.send(new GetObjectCommand({
+        Bucket: incomingBucket,
+        Key: incomingKey,
+      }))
+
+      const rawEmailString = await getObjectResponse.Body?.transformToString()
+      if (!rawEmailString) {
+        throw new Error('Failed to fetch raw email content from S3')
+      }
+
+      // Parse the email
+      const { emails, attachments } = parseEmail(rawEmailString)
+
+      // Extract basic info
       const messageId = mail.messageId
       const timestamp = new Date(mail.timestamp)
       const date = timestamp.toISOString().split('T')[0] // YYYY-MM-DD format
-      const recipients = mail.commonHeaders.to || mail.destination
 
-      // Get the email content (SES provides this in the record)
-      const emailContent = JSON.stringify({
-        messageId: messageId,
-        timestamp: mail.timestamp,
-        source: mail.source,
-        subject: mail.commonHeaders.subject,
-        from: mail.commonHeaders.from,
-        to: mail.commonHeaders.to,
-        cc: mail.commonHeaders.cc,
-        bcc: mail.commonHeaders.bcc,
-        returnPath: mail.commonHeaders.returnPath,
-        headers: mail.headers,
-        receipt: receipt,
-      }, null, 2)
-
-      // Store email for each recipient
-      for (const recipient of recipients) {
+      // Process each parsed email (one per recipient)
+      for (const email of emails) {
+        const recipient = email.recipient
         const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
-        const key = `${sanitizedRecipient}/${date}/${messageId}.json`
 
-        console.log(`Storing email to: ${bucketName}/${key}`)
+        // Store attachments first and collect their S3 keys
+        const attachmentKeys: string[] = []
+        if (attachments && attachments.length > 0) {
+          for (const attachment of attachments) {
+            const attachmentKey = `${sanitizedRecipient}/${date}/${messageId}/${attachment.filename}`
+            console.log(`Storing attachment: ${bucketName}/${attachmentKey}`)
 
+            await s3Client.send(new PutObjectCommand({
+              Bucket: bucketName,
+              Key: attachmentKey,
+              Body: attachment.rawContent,
+              ContentType: attachment.contentType,
+              Metadata: {
+                'message-id': messageId,
+                'recipient': recipient,
+                'original-filename': attachment.filename,
+              },
+            }))
+
+            attachmentKeys.push(attachmentKey)
+          }
+        }
+
+        // Update the email object with S3 key and attachment keys
+        const emailKey = `${sanitizedRecipient}/${date}/${messageId}.json`
+        email.s3_key = emailKey
+        email.attachment_keys = attachmentKeys
+
+        // Store the parsed email JSON
+        console.log(`Storing parsed email to: ${bucketName}/${emailKey}`)
         await s3Client.send(new PutObjectCommand({
           Bucket: bucketName,
-          Key: key,
-          Body: emailContent,
+          Key: emailKey,
+          Body: JSON.stringify(email, null, 2),
           ContentType: 'application/json',
           Metadata: {
             'message-id': messageId,
             'recipient': recipient,
-            'source': mail.source,
-            'subject': mail.commonHeaders.subject || 'no-subject',
+            'sender': email.sender,
+            'subject': email.subject,
           },
         }))
 
         console.log(`Successfully stored email for ${recipient}`)
 
-        // Store metadata in DynamoDB for querying
-        const isoTimestamp = timestamp.toISOString()
+        // Store complete metadata in DynamoDB
         await create({
           tableName,
           key: {
-            recipient: recipient,
-            timestamp: `${isoTimestamp}#${messageId}`, // Append messageId for uniqueness
+            recipient: email.recipient,
+            timestamp: email.timestamp,
           },
           record: {
-            recipient_sender: `${recipient}#${mail.source}`, // For GSI queries
-            sender: mail.source,
-            subject: mail.commonHeaders.subject || '',
-            s3_bucket: bucketName,
-            s3_key: key,
-            date: date,
-            messageId: messageId,
-            receivedAt: isoTimestamp,
+            id: email.id,
+            recipient_sender: email.recipient_sender,
+            sender: email.sender,
+            subject: email.subject,
+            body: email.body,
+            cc: email.cc,
+            bcc: email.bcc,
+            reply_to: email.reply_to,
+            s3_key: emailKey,
+            attachment_keys: attachmentKeys,
+            created_at: email.created_at,
           },
         })
 
         console.log(`Successfully stored DynamoDB record for ${recipient}`)
       }
+
+      await s3Client.send(new DeleteObjectCommand({
+        Bucket: incomingBucket,
+        Key: incomingKey,
+      }))
     } catch (error) {
       console.error('Error processing SES record:', error)
       throw error

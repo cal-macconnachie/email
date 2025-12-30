@@ -41,8 +41,8 @@ export async function update<T>({
     }
   })
   Object.keys(key).forEach((k) => {
-    if ((key as Record<string, unknown>)[k] == null) {
-      delete (key as Record<string, unknown>)[k]
+    if ((key)[k] == null) {
+      delete (key)[k]
     }
   })
   const updateKeys = Object.keys(updates).filter((k) => !Object.keys(key).includes(k))

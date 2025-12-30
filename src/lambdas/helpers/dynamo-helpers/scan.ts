@@ -27,15 +27,15 @@ export async function scan<T>({
   // Remove empty string values from expressionAttributeValues and exclusiveStartKey
   if (expressionAttributeValues) {
     Object.keys(expressionAttributeValues).forEach((k) => {
-      if ((expressionAttributeValues as Record<string, unknown>)[k] === '') {
-        delete (expressionAttributeValues as Record<string, unknown>)[k]
+      if ((expressionAttributeValues)[k] === '') {
+        delete (expressionAttributeValues)[k]
       }
     })
   }
   if (exclusiveStartKey) {
     Object.keys(exclusiveStartKey).forEach((k) => {
-      if ((exclusiveStartKey as Record<string, unknown>)[k] === '') {
-        delete (exclusiveStartKey as Record<string, unknown>)[k]
+      if ((exclusiveStartKey)[k] === '') {
+        delete (exclusiveStartKey)[k]
       }
     })
   }

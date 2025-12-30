@@ -1,5 +1,5 @@
 import {
-  DynamoDBClient, PutItemCommand, 
+  DynamoDBClient, PutItemCommand,
   TransactWriteItem,
   TransactWriteItemsCommand
 } from '@aws-sdk/client-dynamodb'
@@ -60,6 +60,7 @@ export function createTransaction<T>(params: {
       {
         Put: {
           TableName: params.tableName,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           Item: marshall(params.record, { removeUndefinedValues: true })
         }
       }
