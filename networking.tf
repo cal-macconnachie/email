@@ -1,6 +1,7 @@
 # Local variables
 locals {
-  domain_names = [var.domain_name, "www.${var.domain_name}"]
+  domain_names        = [var.domain_name, "www.${var.domain_name}"]
+  sanitized_domain    = replace(var.domain_name, ".", "-")
 }
 
 # Route53 Hosted Zone
@@ -208,7 +209,7 @@ resource "aws_s3_bucket" "ses_received_emails" {
 }
 # IAM Role for SES to write to S3
 resource "aws_iam_role" "ses_s3_role" {
-  name = "${var.domain_name}-ses-s3-role"
+  name = "${local.sanitized_domain}-ses-s3-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -222,14 +223,14 @@ resource "aws_iam_role" "ses_s3_role" {
     ]
   })
   tags = {
-    Name        = "${var.domain_name}-ses-s3-role"
+    Name        = "${local.sanitized_domain}-ses-s3-role"
     Environment = var.environment
   }
 }
 
 # IAM Policy for SES to write to S3
 resource "aws_iam_role_policy" "ses_s3_policy" {
-  name = "${var.domain_name}-ses-s3-policy"
+  name = "${local.sanitized_domain}-ses-s3-policy"
   role = aws_iam_role.ses_s3_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -272,7 +273,7 @@ resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
 
 # SES Receipt Rule Set
 resource "aws_ses_receipt_rule_set" "main_rule_set" {
-  rule_set_name = "${var.domain_name}-rule-set"
+  rule_set_name = "${local.sanitized_domain}-rule-set"
 }
 
 # Lambda permission for SES to invoke the function

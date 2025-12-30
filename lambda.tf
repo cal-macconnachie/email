@@ -76,6 +76,9 @@ locals {
     }
   }
 
+  # Sanitized domain name for Lambda function names (replace dots with hyphens)
+  lambda_prefix = replace(var.domain_name, ".", "-")
+
   # Common tags for all Lambda resources
   lambda_common_tags = {
     Environment = var.environment
@@ -86,7 +89,7 @@ locals {
 
 # IAM Role for Lambda execution
 resource "aws_iam_role" "lambda_execution" {
-  name = "${var.domain_name}-lambda-execution-role"
+  name = "${local.lambda_prefix}-lambda-execution-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -103,7 +106,7 @@ resource "aws_iam_role" "lambda_execution" {
   tags = merge(
     local.lambda_common_tags,
     {
-      Name = "${var.domain_name}-lambda-execution-role"
+      Name = "${local.lambda_prefix}-lambda-execution-role"
     }
   )
 }
@@ -116,7 +119,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 # Custom IAM policy for Lambda functions (add permissions as needed)
 resource "aws_iam_role_policy" "lambda_custom_policy" {
-  name = "${var.domain_name}-lambda-custom-policy"
+  name = "${local.lambda_prefix}-lambda-custom-policy"
   role = aws_iam_role.lambda_execution.id
 
   policy = jsonencode({
@@ -177,13 +180,13 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   for_each = local.lambda_functions
 
-  name              = "/aws/lambda/${var.domain_name}-${each.key}"
+  name              = "/aws/lambda/${local.lambda_prefix}-${each.key}"
   retention_in_days = 14
 
   tags = merge(
     local.lambda_common_tags,
     {
-      Name     = "${var.domain_name}-${each.key}-logs"
+      Name     = "${local.lambda_prefix}-${each.key}-logs"
       Function = each.key
     }
   )
@@ -202,7 +205,7 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "functions" {
   for_each = local.lambda_functions
 
-  function_name = "${var.domain_name}-${each.key}"
+  function_name = "${local.lambda_prefix}-${each.key}"
   description   = each.value.description
   role          = aws_iam_role.lambda_execution.arn
   handler       = each.value.handler
@@ -231,7 +234,7 @@ resource "aws_lambda_function" "functions" {
   tags = merge(
     local.lambda_common_tags,
     {
-      Name     = "${var.domain_name}-${each.key}"
+      Name     = "${local.lambda_prefix}-${each.key}"
       Function = each.key
     }
   )
