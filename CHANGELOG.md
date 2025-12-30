@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/cal-macconnachie/email/compare/v0.0.11...v0.0.12) (2025-12-30)
+
+
+### Bug Fixes
+
+* attempt to allow acl ([d66ec2c](https://github.com/cal-macconnachie/email/commit/d66ec2c6b9327f62fbc5cd518e137ed9eaeb2452))
+
 ### [0.0.11](https://github.com/cal-macconnachie/email/compare/v0.0.10...v0.0.11) (2025-12-30)
 
 ### [0.0.10](https://github.com/cal-macconnachie/email/compare/v0.0.9...v0.0.10) (2025-12-30)
