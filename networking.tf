@@ -4,6 +4,9 @@ locals {
   sanitized_domain = replace(var.domain_name, ".", "-")
 }
 
+# Get current AWS account ID
+data "aws_caller_identity" "current" {}
+
 # Route53 Hosted Zone
 data "aws_route53_zone" "main" {
   zone_id = var.route53_zone_id
@@ -279,6 +282,11 @@ resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
         }
         Action   = "s3:PutObject"
         Resource = "${aws_s3_bucket.ses_received_emails.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
       }
     ]
   })
