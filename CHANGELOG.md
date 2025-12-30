@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/cal-macconnachie/email/compare/v0.0.5...v0.0.6) (2025-12-30)
+
+
+### Features
+
+* basic email storage ([bb4508d](https://github.com/cal-macconnachie/email/commit/bb4508d19197451440251163cea4f40bfbcdf835))
+* full email flow ([9e78fac](https://github.com/cal-macconnachie/email/commit/9e78facd9b4b0a5dc7f05c29a3147cdb4a1ff0a2))
+* incoming email storage ([490acd6](https://github.com/cal-macconnachie/email/commit/490acd66bedcfe2411fb95f884c73d32844933ca))
+
+
+### Bug Fixes
+
+* count instead of toset ([eeecaad](https://github.com/cal-macconnachie/email/commit/eeecaad57fe5cf18971b7c70c17d698c3ad7ad3e))
+* deploy stuff ([75689e9](https://github.com/cal-macconnachie/email/commit/75689e9f8f4e4fbe354ee629f80ddc645f0aa92f))
+* domain from ([6647605](https://github.com/cal-macconnachie/email/commit/664760514fd1c48671e66ce36af282e92deb959b))
+* domain mail from ([18e935c](https://github.com/cal-macconnachie/email/commit/18e935cbb483d9cdad131c9064460c30370b3034))
+* from and mx ([ce794fb](https://github.com/cal-macconnachie/email/commit/ce794fb4cf38a7c9012a5d846582b8f81770c604))
+* no periods in lambda names ([a1f3efe](https://github.com/cal-macconnachie/email/commit/a1f3efe7cef3a301f0f32ecd166adaba74ebb46c))
+* script updates ([b2ead09](https://github.com/cal-macconnachie/email/commit/b2ead098966e94e198cbc971222d21dde413e5ed))
+
 ### [0.0.5](https://github.com/cal-macconnachie/email/compare/v0.0.4...v0.0.5) (2025-12-30)
 
 
