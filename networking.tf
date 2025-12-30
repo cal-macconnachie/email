@@ -310,3 +310,8 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
     aws_s3_bucket_policy.ses_received_emails_policy
   ]
 }
+
+# set the rule set as active
+resource "aws_ses_active_receipt_rule_set" "active_rule_set" {
+  rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
+}
