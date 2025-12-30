@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/cal-macconnachie/email/compare/v0.0.4...v0.0.5) (2025-12-30)
+
+
+### Features
+
+* domain registration on ses ([f9f6712](https://github.com/cal-macconnachie/email/commit/f9f671203c5481a6029bcc0d84b2a634d606e346))
+
+
+### Bug Fixes
+
+* lint ([5288dd3](https://github.com/cal-macconnachie/email/commit/5288dd3d0fa676f7c088dad1a3ba10e50b9e1f88))
+
 ### [0.0.4](https://github.com/cal-macconnachie/email/compare/v0.0.3...v0.0.4) (2025-12-29)
 
 
