@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/cal-macconnachie/email/compare/v0.0.9...v0.0.10) (2025-12-30)
+
+
+### Bug Fixes
+
+* doubtful fix ([fc51650](https://github.com/cal-macconnachie/email/commit/fc51650e06cd4aa7a147e14ab49e4ceabc567316))
+
 ### [0.0.9](https://github.com/cal-macconnachie/email/compare/v0.0.8...v0.0.9) (2025-12-30)
 
 
