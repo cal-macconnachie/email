@@ -161,3 +161,37 @@ resource "aws_ses_domain_identity_verification" "main_verification" {
 
   depends_on = [aws_route53_record.main_amazonses_verification_record]
 }
+# DKIM for SES
+resource "aws_ses_domain_dkim" "main_dkim" {
+  domain = aws_ses_domain_identity.main.domain
+}
+resource "aws_route53_record" "main_amazonses_dkim_records" {
+  for_each = toset(aws_ses_domain_dkim.main_dkim.dkim_tokens)
+
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "${each.value}._domainkey.${aws_ses_domain_identity.main.domain}"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["${each.value}.dkim.amazonses.com"]
+}
+
+# SES Mail From Domain
+resource "aws_ses_mail_from" "main_mail_from" {
+  domain                = aws_ses_domain_identity.main.domain
+  mail_from_domain      = "mail.${var.domain_name}"
+  behavior_on_mx_failure = "UseDefaultValue"
+}
+resource "aws_route53_record" "main_mail_from_mx" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = aws_ses_mail_from.main_mail_from.mail_from_domain
+  type    = "MX"
+  ttl     = "600"
+  records = ["10 feedback-smtp.${var.aws_region}.amazonses.com"]
+}
+resource "aws_route53_record" "main_mail_from_spf" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = aws_ses_mail_from.main_mail_from.mail_from_domain
+  type    = "TXT"
+  ttl     = "600"
+  records = ["v=spf1 include:amazonses.com -all"]
+}

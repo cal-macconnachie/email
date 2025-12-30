@@ -34,6 +34,13 @@ output "domain_name" {
 }
 
 output "redirect_target" {
-  description = "The domain that traffic is redirected to"
+  description = "A domain that traffic is redirected to"
   value       = var.redirect_target
+}
+
+output "ses" {
+  description = "SES configuration for the domain"
+  value = {
+    domain_identity_arn = aws_ses_domain_identity.main.arn
+  }
 }
