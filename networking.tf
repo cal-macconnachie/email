@@ -210,7 +210,7 @@ resource "aws_route53_record" "main_mx" {
   name    = var.domain_name
   type    = "MX"
   ttl     = "600"
-  records = ["10 inbound-smtp.${var.aws_region}.amazonses.com."]
+  records = ["10 inbound-smtp.${var.aws_region}.amazonaws.com."]
 }
 
 # Receiving SES Emails
@@ -292,17 +292,6 @@ resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
   })
 }
 
-# SNS Topic for SES notifications
-resource "aws_sns_topic" "ses_notifications" {
-  name = "${local.sanitized_domain}-ses-notifications"
-}
-
-resource "aws_sns_topic_subscription" "ses_email_subscription" {
-  topic_arn = aws_sns_topic.ses_notifications.arn
-  protocol  = "email"
-  endpoint  = "cal.macconnachie@gmail.com"
-}
-
 # SES Receipt Rule Set
 resource "aws_ses_receipt_rule_set" "main_rule_set" {
   rule_set_name = "${local.sanitized_domain}-rule-set"
@@ -318,26 +307,20 @@ resource "aws_lambda_permission" "ses_lambda_permission" {
 
 # SES Receipt Rule to store raw email in S3 and process via Lambda
 resource "aws_ses_receipt_rule" "store_in_s3_rule" {
-  name          = "ProcessWithLambda-v2"
+  name          = "ProcessWithLambdaAndStoreInS3"
   rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
   enabled       = true
   recipients    = [var.domain_name]
   scan_enabled  = false
 
-  sns_action {
-    position  = 1
-    topic_arn = aws_sns_topic.ses_notifications.arn
-    encoding  = "UTF-8"
-  }
-
   s3_action {
-    position          = 2
+    position          = 1
     bucket_name       = aws_s3_bucket.ses_received_emails.id
     object_key_prefix = "incoming/"
   }
 
   lambda_action {
-    position        = 3
+    position        = 2
     function_arn    = aws_lambda_function.functions["receive_ses_email"].arn
     invocation_type = "Event"
   }
