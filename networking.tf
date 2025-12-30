@@ -311,10 +311,16 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
   enabled       = true
   recipients    = [var.domain_name]
-  scan_enabled  = true
+  scan_enabled  = false
+
+  s3_action {
+    position          = 1
+    bucket_name       = aws_s3_bucket.ses_received_emails.id
+    object_key_prefix = "incoming/"
+  }
 
   lambda_action {
-    position        = 1
+    position        = 2
     function_arn    = aws_lambda_function.functions["receive_ses_email"].arn
     invocation_type = "Event"
   }
