@@ -166,13 +166,13 @@ resource "aws_ses_domain_dkim" "main_dkim" {
   domain = aws_ses_domain_identity.main.domain
 }
 resource "aws_route53_record" "main_amazonses_dkim_records" {
-  for_each = toset(aws_ses_domain_dkim.main_dkim.dkim_tokens)
+  count = 3
 
   zone_id = data.aws_route53_zone.main.zone_id
-  name    = "${each.value}._domainkey.${aws_ses_domain_identity.main.domain}"
+  name    = "${aws_ses_domain_dkim.main_dkim.dkim_tokens[count.index]}._domainkey.${aws_ses_domain_identity.main.domain}"
   type    = "CNAME"
   ttl     = "600"
-  records = ["${each.value}.dkim.amazonses.com"]
+  records = ["${aws_ses_domain_dkim.main_dkim.dkim_tokens[count.index]}.dkim.amazonses.com"]
 }
 
 # SES Mail From Domain

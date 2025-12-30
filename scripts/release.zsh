@@ -19,6 +19,10 @@ if [[ -n $(git status --porcelain) ]]; then
   git commit -m "chore: lint terraform files"
 fi
 
+# build lambda files
+echo "Building lambda files..."
+yarn build
+
 # run terraform validate to validate terraform files
 echo "Validating terraform files..."
 terraform validate
