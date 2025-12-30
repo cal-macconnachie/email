@@ -210,7 +210,7 @@ resource "aws_route53_record" "main_mx" {
   name    = var.domain_name
   type    = "MX"
   ttl     = "600"
-  records = ["10 inbound-smtp.${var.aws_region}.amazonses.com"]
+  records = ["10 inbound-smtp.${var.aws_region}.amazonses.com."]
 }
 
 # Receiving SES Emails
