@@ -195,3 +195,90 @@ resource "aws_route53_record" "main_mail_from_spf" {
   ttl     = "600"
   records = ["v=spf1 include:amazonses.com -all"]
 }
+
+# Receiving SES Emails
+
+# Bucket to store received emails
+resource "aws_s3_bucket" "ses_received_emails" {
+  bucket = "${var.domain_name}-ses-emails"
+  tags = {
+    Name        = "${var.domain_name}-ses-emails"
+    Environment = var.environment
+  }
+}
+# IAM Role for SES to write to S3
+resource "aws_iam_role" "ses_s3_role" {
+  name = "${var.domain_name}-ses-s3-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ses.amazonaws.com"
+        }
+      }
+    ]
+  })
+  tags = {
+    Name        = "${var.domain_name}-ses-s3-role"
+    Environment = var.environment
+  }
+}
+
+# IAM Policy for SES to write to S3
+resource "aws_iam_role_policy" "ses_s3_policy" {
+  name = "${var.domain_name}-ses-s3-policy"
+  role = aws_iam_role.ses_s3_role.id 
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetBucketLocation",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.ses_received_emails.arn,
+          "${aws_s3_bucket.ses_received_emails.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# SES Receipt Rule Set
+resource "aws_ses_receipt_rule_set" "main_rule_set" {
+  rule_set_name = "${var.domain_name}-rule-set"
+}
+
+# Lambda permission for SES to invoke the function
+resource "aws_lambda_permission" "ses_lambda_permission" {
+  statement_id  = "AllowExecutionFromSES"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.functions["receive_ses_email"].function_name
+  principal     = "ses.amazonaws.com"
+}
+
+# SES Receipt Rule to process emails via Lambda
+resource "aws_ses_receipt_rule" "store_in_s3_rule" {
+  name          = "ProcessWithLambda"
+  rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
+  enabled       = true
+  recipients    = [var.domain_name, "www.${var.domain_name}"]
+  scan_enabled  = true
+
+  lambda_action {
+    position      = 1
+    function_arn  = aws_lambda_function.functions["receive_ses_email"].arn
+    invocation_type = "Event"
+  }
+
+  depends_on = [
+    aws_lambda_permission.ses_lambda_permission,
+    aws_lambda_function.functions
+  ]
+}

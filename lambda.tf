@@ -5,18 +5,18 @@ locals {
   # Define Lambda functions here - add new functions to this map
   # Note: Run 'npm run build:lambdas' before deploying to compile TypeScript
   lambda_functions = {
-    # Example function (uncomment and customize):
-    # example_function = {
-    #   description     = "Example Lambda function"
-    #   handler         = "example-function.handler"
-    #   runtime         = "nodejs22.x"
-    #   timeout         = 30
-    #   memory_size     = 256
-    #   source_dir      = "${path.module}/dist/lambdas/"
-    #   environment_vars = {
-    #     DOMAIN_NAME = var.domain_name
-    #   }
-    # }
+    receive_ses_email = {
+      description     = "Process incoming SES emails and store in S3 with structured paths"
+      handler         = "receive-ses-email.handler"
+      runtime         = "nodejs22.x"
+      timeout         = 60
+      memory_size     = 256
+      source_dir      = "${path.module}/dist/lambdas/"
+      environment_vars = {
+        S3_BUCKET_NAME       = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME  = "${var.domain_name}-emails"
+      }
+    }
   }
 
   # Common tags for all Lambda resources
@@ -74,8 +74,35 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
         ]
         Resource = "arn:aws:logs:${var.aws_region}:*:log-group:/aws/lambda/*"
       },
-      # Add additional permissions here as needed
-      # Example: S3 access, DynamoDB, SES, etc.
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl",
+          "s3:GetObject"
+        ]
+        Resource = "arn:aws:s3:::${var.domain_name}-ses-emails/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = "arn:aws:s3:::${var.domain_name}-ses-emails"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-emails",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-emails/index/*"
+        ]
+      }
     ]
   })
 }
