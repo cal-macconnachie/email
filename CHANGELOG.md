@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/cal-macconnachie/email/compare/v0.0.6...v0.0.7) (2025-12-30)
+
+
+### Features
+
+* activate rule set ([f2fdeaa](https://github.com/cal-macconnachie/email/commit/f2fdeaa18b7b660eb5689ef4d600d292c6ff40ce))
+
 ### [0.0.6](https://github.com/cal-macconnachie/email/compare/v0.0.5...v0.0.6) (2025-12-30)
 
 
