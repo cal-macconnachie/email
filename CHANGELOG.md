@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/cal-macconnachie/email/compare/v0.0.8...v0.0.9) (2025-12-30)
+
+
+### Bug Fixes
+
+* dont need www ([20ea881](https://github.com/cal-macconnachie/email/commit/20ea88179590c764078d9ee32b0e36a0785e0319))
+* useless bull ([93401db](https://github.com/cal-macconnachie/email/commit/93401dbc69511216283d51671ae7ca338a59a773))
+
 ### [0.0.8](https://github.com/cal-macconnachie/email/compare/v0.0.7...v0.0.8) (2025-12-30)
 
 
