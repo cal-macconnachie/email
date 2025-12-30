@@ -280,7 +280,7 @@ resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
         Principal = {
           Service = "ses.amazonaws.com"
         }
-        Action   = "s3:PutObject"
+        Action   = ["s3:PutObject", "s3:PutObjectAcl"]
         Resource = "${aws_s3_bucket.ses_received_emails.arn}/*"
         Condition = {
           StringEquals = {
@@ -310,7 +310,7 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   name          = "ProcessWithLambda"
   rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
   enabled       = true
-  recipients    = []
+  recipients    = [var.domain_name]
   scan_enabled  = true
 
   s3_action {
