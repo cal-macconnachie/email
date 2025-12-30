@@ -17,6 +17,63 @@ locals {
         DYNAMODB_TABLE_NAME  = "${var.domain_name}-emails"
       }
     }
+    get_attachment_upload_presign = {
+      description     = "Generate presigned URL for uploading email attachments"
+      handler         = "get-attachment-upload-presign.handler"
+      runtime         = "nodejs22.x"
+      timeout         = 30
+      memory_size     = 256
+      source_dir      = "${path.module}/dist/lambdas/"
+      environment_vars = {
+        S3_BUCKET_NAME = "${var.domain_name}-ses-emails"
+      }
+    }
+    send_email = {
+      description     = "Send email via SES and store in S3/DynamoDB"
+      handler         = "send-email.handler"
+      runtime         = "nodejs22.x"
+      timeout         = 60
+      memory_size     = 512
+      source_dir      = "${path.module}/dist/lambdas/"
+      environment_vars = {
+        S3_BUCKET_NAME       = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME  = "${var.domain_name}-emails"
+      }
+    }
+    get_full_email = {
+      description     = "Retrieve full email content from S3"
+      handler         = "get-full-email.handler"
+      runtime         = "nodejs22.x"
+      timeout         = 30
+      memory_size     = 256
+      source_dir      = "${path.module}/dist/lambdas/"
+      environment_vars = {
+        S3_BUCKET_NAME = "${var.domain_name}-ses-emails"
+      }
+    }
+    list_emails = {
+      description     = "List and filter emails from DynamoDB"
+      handler         = "list-emails.handler"
+      runtime         = "nodejs22.x"
+      timeout         = 30
+      memory_size     = 256
+      source_dir      = "${path.module}/dist/lambdas/"
+      environment_vars = {
+        DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
+      }
+    }
+    update_email = {
+      description     = "Update email read/archived status"
+      handler         = "update-email.handler"
+      runtime         = "nodejs22.x"
+      timeout         = 30
+      memory_size     = 256
+      source_dir      = "${path.module}/dist/lambdas/"
+      environment_vars = {
+        S3_BUCKET_NAME       = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME  = "${var.domain_name}-emails"
+      }
+    }
   }
 
   # Common tags for all Lambda resources
@@ -79,7 +136,8 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
         Action = [
           "s3:PutObject",
           "s3:PutObjectAcl",
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:DeleteObject"
         ]
         Resource = "arn:aws:s3:::${var.domain_name}-ses-emails/*"
       },
@@ -102,6 +160,14 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
           "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-emails",
           "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-emails/index/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
       }
     ]
   })

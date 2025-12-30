@@ -92,7 +92,7 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
         await s3Client.send(new PutObjectCommand({
           Bucket: bucketName,
           Key: emailKey,
-          Body: JSON.stringify(email, null, 2),
+          Body: JSON.stringify(email),
           ContentType: 'application/json',
           Metadata: {
             'message-id': messageId,
@@ -104,7 +104,7 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
 
         console.log(`Successfully stored email for ${recipient}`)
 
-        // Store complete metadata in DynamoDB
+        // Store metadata in DynamoDB (body is in S3 only)
         await create({
           tableName,
           key: {
@@ -116,13 +116,14 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
             recipient_sender: email.recipient_sender,
             sender: email.sender,
             subject: email.subject,
-            body: email.body,
             cc: email.cc,
             bcc: email.bcc,
             reply_to: email.reply_to,
             s3_key: emailKey,
             attachment_keys: attachmentKeys,
             created_at: email.created_at,
+            read: false,
+            archived: false,
           },
         })
 

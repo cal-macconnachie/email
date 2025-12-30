@@ -88,6 +88,8 @@ export interface Email {
     created_at: string
     id: string
     attachment_keys?: string[]
+    read: boolean
+    archived: boolean
 }
 
 function isUuid(value: string): boolean {
@@ -147,6 +149,8 @@ export function parseEmail(emailString: string): {
             timestamp: `${new Date().toISOString()}#${id}`,
             created_at: new Date().toISOString(),
             id,
+            read: false,
+            archived: false,
         })),
         attachments,
     }

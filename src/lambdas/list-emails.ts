@@ -1,0 +1,158 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { query } from './helpers/dynamo-helpers/query'
+
+interface ListEmailsRequest {
+  recipient: string
+  sender?: string
+  startDate?: string // ISO timestamp or partial like "2025-01"
+  endDate?: string // ISO timestamp or partial like "2025-12"
+  limit?: number
+  lastEvaluatedKey?: Record<string, unknown>
+  sortOrder?: 'ASC' | 'DESC'
+}
+
+interface EmailMetadata {
+  id: string
+  recipient: string
+  sender: string
+  recipient_sender: string
+  subject: string
+  cc?: string[]
+  bcc?: string[]
+  reply_to?: string[]
+  s3_key: string
+  attachment_keys?: string[]
+  timestamp: string
+  created_at: string
+  read: boolean
+  archived: boolean
+}
+
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  _context: Context
+): Promise<APIGatewayProxyResult> => {
+  try {
+    const tableName = process.env.DYNAMODB_TABLE_NAME
+    if (!tableName) {
+      throw new Error('DYNAMODB_TABLE_NAME environment variable is not set')
+    }
+
+    // Parse request - can come from query params or body
+    let request: ListEmailsRequest
+
+    if (event.queryStringParameters?.recipient) {
+      request = {
+        recipient: event.queryStringParameters.recipient,
+        sender: event.queryStringParameters.sender,
+        startDate: event.queryStringParameters.startDate,
+        endDate: event.queryStringParameters.endDate,
+        limit: event.queryStringParameters.limit ? parseInt(event.queryStringParameters.limit) : undefined,
+        sortOrder: event.queryStringParameters.sortOrder as 'ASC' | 'DESC' | undefined,
+      }
+    } else if (event.body) {
+      request = JSON.parse(event.body) as ListEmailsRequest
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'recipient is required' }),
+      }
+    }
+
+    const { recipient, sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder } = request
+
+    // Validate required fields
+    if (!recipient) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'recipient is required' }),
+      }
+    }
+
+    // Build query parameters
+    let keyConditionExpression: string
+    const expressionAttributeValues: Record<string, unknown> = {}
+    const expressionAttributeNames: Record<string, string> = {}
+    let indexName: string | undefined
+
+    // If sender is provided, use GSI
+    if (sender) {
+      indexName = 'RecipientSenderIndex'
+      const recipientSender = `${recipient}#${sender}`
+      keyConditionExpression = '#recipientSender = :recipientSender'
+      expressionAttributeNames['#recipientSender'] = 'recipient_sender'
+      expressionAttributeValues[':recipientSender'] = recipientSender
+
+      // Add timestamp range if provided
+      if (startDate && endDate) {
+        keyConditionExpression += ' AND #timestamp BETWEEN :startDate AND :endDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':startDate'] = startDate
+        expressionAttributeValues[':endDate'] = endDate
+      } else if (startDate) {
+        keyConditionExpression += ' AND #timestamp >= :startDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':startDate'] = startDate
+      } else if (endDate) {
+        keyConditionExpression += ' AND #timestamp <= :endDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':endDate'] = endDate
+      }
+    } else {
+      // Use primary key query
+      keyConditionExpression = '#recipient = :recipient'
+      expressionAttributeNames['#recipient'] = 'recipient'
+      expressionAttributeValues[':recipient'] = recipient
+
+      // Add timestamp range if provided
+      if (startDate && endDate) {
+        keyConditionExpression += ' AND #timestamp BETWEEN :startDate AND :endDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':startDate'] = startDate
+        expressionAttributeValues[':endDate'] = endDate
+      } else if (startDate) {
+        keyConditionExpression += ' AND #timestamp >= :startDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':startDate'] = startDate
+      } else if (endDate) {
+        keyConditionExpression += ' AND #timestamp <= :endDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':endDate'] = endDate
+      }
+    }
+
+    // Query DynamoDB
+    const result = await query<EmailMetadata>({
+      tableName,
+      keyConditionExpression,
+      expressionAttributeValues,
+      expressionAttributeNames,
+      indexName,
+      limit: limit || 50, // Default to 50 items per page
+      exclusiveStartKey: lastEvaluatedKey,
+      sortOrder: sortOrder || 'DESC', // Default to newest first
+    })
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({
+        emails: result.items,
+        lastEvaluatedKey: result.lastEvaluatedKey,
+        count: result.items.length,
+      }),
+    }
+  } catch (error) {
+    console.error('Error listing emails:', error)
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: 'Failed to list emails',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+    }
+  }
+}
