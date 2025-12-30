@@ -292,6 +292,17 @@ resource "aws_s3_bucket_policy" "ses_received_emails_policy" {
   })
 }
 
+# SNS Topic for SES notifications
+resource "aws_sns_topic" "ses_notifications" {
+  name = "${local.sanitized_domain}-ses-notifications"
+}
+
+resource "aws_sns_topic_subscription" "ses_email_subscription" {
+  topic_arn = aws_sns_topic.ses_notifications.arn
+  protocol  = "email"
+  endpoint  = "cal.macconnachie@gmail.com"
+}
+
 # SES Receipt Rule Set
 resource "aws_ses_receipt_rule_set" "main_rule_set" {
   rule_set_name = "${local.sanitized_domain}-rule-set"
@@ -313,14 +324,20 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   recipients    = [var.domain_name]
   scan_enabled  = false
 
+  sns_action {
+    position  = 1
+    topic_arn = aws_sns_topic.ses_notifications.arn
+    encoding  = "UTF-8"
+  }
+
   s3_action {
-    position          = 1
+    position          = 2
     bucket_name       = aws_s3_bucket.ses_received_emails.id
     object_key_prefix = "incoming/"
   }
 
   lambda_action {
-    position        = 2
+    position        = 3
     function_arn    = aws_lambda_function.functions["receive_ses_email"].arn
     invocation_type = "Event"
   }
