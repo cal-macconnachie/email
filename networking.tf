@@ -310,7 +310,7 @@ resource "aws_ses_receipt_rule" "store_in_s3_rule" {
   name          = "ProcessWithLambda"
   rule_set_name = aws_ses_receipt_rule_set.main_rule_set.rule_set_name
   enabled       = true
-  recipients    = [var.domain_name]
+  recipients    = []
   scan_enabled  = true
 
   s3_action {
