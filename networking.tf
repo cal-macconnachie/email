@@ -190,7 +190,7 @@ resource "aws_route53_record" "main_mail_from_mx" {
 }
 resource "aws_route53_record" "main_mail_from_spf" {
   zone_id = data.aws_route53_zone.main.zone_id
-  name    = aws_ses_mail_from.main_mail_from.mail_from_domain
+  name    = aws_ses_domain_mail_from.main_mail_from.mail_from_domain
   type    = "TXT"
   ttl     = "600"
   records = ["v=spf1 include:amazonses.com -all"]
