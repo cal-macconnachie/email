@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.19](https://github.com/cal-macconnachie/email/compare/v0.0.18...v0.0.19) (2025-12-30)
+
+
+### Bug Fixes
+
+* handle emails correctly ([3585852](https://github.com/cal-macconnachie/email/commit/3585852492764ea3a3d71843ce64376467ceb2ff))
+
 ### [0.0.18](https://github.com/cal-macconnachie/email/compare/v0.0.17...v0.0.18) (2025-12-30)
 
 
