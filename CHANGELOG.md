@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.18](https://github.com/cal-macconnachie/email/compare/v0.0.17...v0.0.18) (2025-12-30)
+
+
+### Bug Fixes
+
+* remove sns and amazonaws ([7ec877c](https://github.com/cal-macconnachie/email/commit/7ec877ce08e2b81558222fba4c9d9bcccc2a5243))
+
 ### [0.0.17](https://github.com/cal-macconnachie/email/compare/v0.0.16...v0.0.17) (2025-12-30)
 
 
