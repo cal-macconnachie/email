@@ -176,14 +176,14 @@ resource "aws_route53_record" "main_amazonses_dkim_records" {
 }
 
 # SES Mail From Domain
-resource "aws_ses_mail_from" "main_mail_from" {
+resource "aws_ses_domain_mail_from" "main_mail_from" {
   domain                 = aws_ses_domain_identity.main.domain
   mail_from_domain       = "mail.${var.domain_name}"
   behavior_on_mx_failure = "UseDefaultValue"
 }
 resource "aws_route53_record" "main_mail_from_mx" {
   zone_id = data.aws_route53_zone.main.zone_id
-  name    = aws_ses_mail_from.main_mail_from.mail_from_domain
+  name    = aws_ses_domain_mail_from.main_mail_from.mail_from_domain
   type    = "MX"
   ttl     = "600"
   records = ["10 feedback-smtp.${var.aws_region}.amazonses.com"]
