@@ -10,8 +10,13 @@ yarn lint
 
 # if tree is dirty after linting, abort
 if [[ -n $(git status --porcelain) ]]; then
-  echo "Linting changes detected. Please review and commit the changes before releasing."
-  exit 1
+  read "?Linting changes detected. Please review and input 'y' to continue, press any other key to abort: " response
+  if [[ "$response" != "y" ]]; then
+    echo "Release cancelled."
+    exit 1
+  fi
+  git add .
+  git commit -m "chore: lint terraform files"
 fi
 
 # run terraform validate to validate terraform files
@@ -47,4 +52,4 @@ echo "Creating release tag..."
 npx standard-version
 
 echo "\nRelease tag created successfully!"
-echo "Push the tag to trigger CI deployment: git push --follow-tags origin main"
+git push --follow-tags origin main
