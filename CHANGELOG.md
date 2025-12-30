@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/cal-macconnachie/email/compare/v0.0.7...v0.0.8) (2025-12-30)
+
+
+### Features
+
+* add mx ([caaa37e](https://github.com/cal-macconnachie/email/commit/caaa37e03c0c4cee4d561f2925eb37dc05fe3c55))
+* add versionrc ([581f8e9](https://github.com/cal-macconnachie/email/commit/581f8e9e729161414545c153c051cb34342733c5))
+
 ### [0.0.7](https://github.com/cal-macconnachie/email/compare/v0.0.6...v0.0.7) (2025-12-30)
 
 
