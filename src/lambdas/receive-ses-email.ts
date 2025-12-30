@@ -23,22 +23,17 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
     try {
       const sesRecord = record.ses
       const mail = sesRecord.mail
-      const receipt = sesRecord.receipt
-
       // Get the S3 location where SES stored the raw email
-      const s3Action = receipt.action
-      if (!('bucketName' in s3Action) || !('objectKey' in s3Action)) {
+      if (!process.env.S3_BUCKET_NAME) {
         throw new Error('S3 action not found in receipt. Ensure SES is configured to store emails in S3.')
       }
-      const incomingBucket = s3Action.bucketName
-      const incomingKey = s3Action.objectKey
 
-      console.log(`Fetching raw email from s3://${incomingBucket}/${incomingKey}`)
+      const key = `incoming/${mail.messageId}`
 
       // Fetch the raw email from S3
       const getObjectResponse = await s3Client.send(new GetObjectCommand({
-        Bucket: incomingBucket,
-        Key: incomingKey,
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: key,
       }))
 
       const rawEmailString = await getObjectResponse.Body?.transformToString()
@@ -131,8 +126,8 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
       }
 
       await s3Client.send(new DeleteObjectCommand({
-        Bucket: incomingBucket,
-        Key: incomingKey,
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: key,
       }))
     } catch (error) {
       console.error('Error processing SES record:', error)
