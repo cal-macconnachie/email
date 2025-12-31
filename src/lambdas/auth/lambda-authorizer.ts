@@ -1,13 +1,12 @@
+import { CognitoJwtVerifier } from 'aws-jwt-verify'
 import {
   APIGatewayAuthorizerResult,
   APIGatewayRequestAuthorizerEvent,
   Context,
 } from 'aws-lambda'
-import { CognitoJwtVerifier } from 'aws-jwt-verify'
 
 const userPoolId = process.env.COGNITO_USER_POOL_ID
 const clientId = process.env.COGNITO_CLIENT_ID
-const region = process.env.REGION || 'us-east-1'
 
 if (!userPoolId || !clientId) {
   throw new Error('Cognito configuration missing')
@@ -64,7 +63,7 @@ export const handler = async (
       {
         phone_number: payload.phone_number as string,
         sub: payload.sub,
-        username: payload.username as string,
+        username: payload.username,
       }
     )
 
