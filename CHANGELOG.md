@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.22](https://github.com/cal-macconnachie/email/compare/v0.0.21...v0.0.22) (2025-12-31)
+
+
+### Bug Fixes
+
+* only sync frontend ([baf21d1](https://github.com/cal-macconnachie/email/commit/baf21d14bbd0c1618cc5f54d8c3e55f67b04e224))
+
 ### [0.0.21](https://github.com/cal-macconnachie/email/compare/v0.0.20...v0.0.21) (2025-12-31)
 
 
