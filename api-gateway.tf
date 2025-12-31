@@ -45,7 +45,7 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
 resource "aws_apigatewayv2_integration" "request_otp" {
   api_id                 = aws_apigatewayv2_api.main.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.functions["request_otp"].invoke_arn
+  integration_uri        = aws_lambda_function.auth_api_functions["request_otp"].invoke_arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -53,7 +53,7 @@ resource "aws_apigatewayv2_integration" "request_otp" {
 resource "aws_apigatewayv2_integration" "verify_otp" {
   api_id                 = aws_apigatewayv2_api.main.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.functions["verify_otp"].invoke_arn
+  integration_uri        = aws_lambda_function.auth_api_functions["verify_otp"].invoke_arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -62,7 +62,7 @@ resource "aws_apigatewayv2_integration" "verify_otp" {
 resource "aws_apigatewayv2_integration" "logout" {
   api_id                 = aws_apigatewayv2_api.main.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.functions["logout"].invoke_arn
+  integration_uri        = aws_lambda_function.auth_api_functions["logout"].invoke_arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -189,7 +189,7 @@ resource "aws_apigatewayv2_route" "get_attachment_upload_presign" {
 resource "aws_lambda_permission" "api_gateway_request_otp" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.functions["request_otp"].function_name
+  function_name = aws_lambda_function.auth_api_functions["request_otp"].function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }
@@ -197,7 +197,7 @@ resource "aws_lambda_permission" "api_gateway_request_otp" {
 resource "aws_lambda_permission" "api_gateway_verify_otp" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.functions["verify_otp"].function_name
+  function_name = aws_lambda_function.auth_api_functions["verify_otp"].function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }
@@ -205,7 +205,7 @@ resource "aws_lambda_permission" "api_gateway_verify_otp" {
 resource "aws_lambda_permission" "api_gateway_logout" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.functions["logout"].function_name
+  function_name = aws_lambda_function.auth_api_functions["logout"].function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }

@@ -132,8 +132,7 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/auth/request-otp"
       environment_vars = {
-        COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
-        COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+        # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
       }
     }
     verify_otp = {
@@ -144,8 +143,7 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/auth/verify-otp"
       environment_vars = {
-        COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
-        COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+        # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
       }
     }
     logout = {
@@ -328,9 +326,12 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/.terraform/lambda_builds/${each.key}.zip"
 }
 
-# Lambda Functions
+# Lambda Functions (excluding auth API functions that need Cognito IDs)
 resource "aws_lambda_function" "functions" {
-  for_each = local.lambda_functions
+  for_each = {
+    for k, v in local.lambda_functions : k => v
+    if !contains(["request_otp", "verify_otp", "logout"], k)
+  }
 
   function_name = "${local.lambda_prefix}-${each.key}"
   description   = each.value.description
@@ -369,6 +370,58 @@ resource "aws_lambda_function" "functions" {
   depends_on = [
     aws_cloudwatch_log_group.lambda_logs,
     aws_iam_role_policy_attachment.lambda_basic_execution
+  ]
+}
+
+# Separate Lambda functions for auth API endpoints that need Cognito IDs
+# These are created after Cognito to avoid circular dependency
+resource "aws_lambda_function" "auth_api_functions" {
+  for_each = {
+    request_otp = local.lambda_functions["request_otp"]
+    verify_otp  = local.lambda_functions["verify_otp"]
+    logout      = local.lambda_functions["logout"]
+  }
+
+  function_name = "${local.lambda_prefix}-${each.key}"
+  description   = each.value.description
+  role          = aws_iam_role.lambda_execution.arn
+  handler       = each.value.handler
+  runtime       = coalesce(each.value.runtime, "nodejs22.x")
+  timeout       = coalesce(each.value.timeout, 30)
+  memory_size   = coalesce(each.value.memory_size, 256)
+
+  filename         = data.archive_file.lambda_zip[each.key].output_path
+  source_code_hash = data.archive_file.lambda_zip[each.key].output_base64sha256
+
+  environment {
+    variables = merge(
+      {
+        ENVIRONMENT          = var.environment
+        REGION               = var.aws_region
+        COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
+        COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+      },
+      lookup(each.value, "environment_vars", {})
+    )
+  }
+
+  tracing_config {
+    mode = "PassThrough"
+  }
+
+  tags = merge(
+    local.lambda_common_tags,
+    {
+      Name     = "${local.lambda_prefix}-${each.key}"
+      Function = each.key
+    }
+  )
+
+  depends_on = [
+    aws_cloudwatch_log_group.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_cognito_user_pool.main,
+    aws_cognito_user_pool_client.main
   ]
 }
 
