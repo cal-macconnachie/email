@@ -360,7 +360,7 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "functions" {
   for_each = {
     for k, v in local.lambda_functions : k => v
-    if !contains(["request_otp", "verify_otp", "logout"], k)
+    if !contains(["request_otp", "verify_otp", "logout", "refresh_token"], k)
   }
 
   function_name = "${local.lambda_prefix}-${each.key}"
