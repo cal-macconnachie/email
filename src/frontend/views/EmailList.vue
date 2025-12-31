@@ -1,65 +1,80 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow-sm">
-      <div class="container py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Inbox</h1>
-        <div class="flex gap-3">
-          <router-link to="/compose">
-            <base-button variant="primary">Compose</base-button>
-          </router-link>
+  <div class="email-list-container">
+    <base-button
+      variant="link-primary"
+      class="compose-button"
+      @click="navigateToCompose"
+    >
+      +
+    </base-button>
+
+    <header class="email-header">
+      <div class="header-content">
+        <h1 class="inbox-title">Inbox</h1>
+        <div class="header-actions">
           <base-button @click="handleLogout" variant="secondary">Logout</base-button>
         </div>
       </div>
     </header>
 
-    <main class="container py-6">
-      <div v-if="emailStore.isLoading" class="text-center py-12">
-        <p class="text-gray-600">Loading emails...</p>
+    <main class="email-main">
+      <div v-if="emailStore.isLoading" class="loading-state">
+        <p class="loading-text">Loading emails...</p>
       </div>
 
-      <base-card v-else-if="emailStore.error" class="bg-red-50 text-red-700">
+      <base-card v-else-if="emailStore.error" variant="elevated" padding="md" class="error-card">
         {{ emailStore.error }}
       </base-card>
 
-      <div v-else-if="emailStore.emails.length === 0" class="text-center py-12">
-        <p class="text-gray-600 mb-4">No emails yet</p>
+      <div v-else-if="emailStore.emails.length === 0" class="empty-state">
+        <p class="empty-text">No emails yet</p>
         <router-link to="/compose">
           <base-button variant="primary">Send your first email</base-button>
         </router-link>
       </div>
 
-      <div v-else class="space-y-2">
+      <div v-else class="email-list">
         <base-card
           v-for="email in emailStore.emails"
           :key="email.id"
-          class="email-item hover:shadow-md transition-shadow cursor-pointer"
-          :class="{ 'font-bold': !email.read }"
-          @click="handleEmailClick(email)"
+          variant="elevated"
+          padding="md"
           hoverable
+          @click="handleEmailClick(email)"
         >
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex-1">
-              <p class="text-sm text-gray-600">{{ email.sender }}</p>
-              <h3 class="text-lg">{{ email.subject || '(No subject)' }}</h3>
+          <div class="email-card-content">
+            <div class="email-info">
+              <div class="email-details">
+                <p class="email-sender">{{ email.sender }}</p>
+                <h3 class="email-subject">{{ email.subject || '(No subject)' }}</h3>
+              </div>
+              <div class="email-badges">
+                <span v-if="!email.read" class="badge unread-badge">Unread</span>
+                <span v-if="email.archived" class="badge archived-badge">Archived</span>
+                <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="12"
+                    width="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                  {{ email.attachment_keys.length }}
+                </span>
+              </div>
             </div>
-            <div class="text-sm text-gray-500">
+            <div class="email-date">
               {{ formatDate(email.created_at) }}
-            </div>
-          </div>
-
-          <div class="flex justify-between items-center">
-            <div class="flex gap-2">
-              <span v-if="!email.read" class="badge badge-primary">Unread</span>
-              <span v-if="email.archived" class="badge badge-secondary">Archived</span>
-              <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge badge-secondary">
-                📎 {{ email.attachment_keys.length }}
-              </span>
             </div>
           </div>
         </base-card>
       </div>
 
-      <div v-if="emailStore.unreadCount > 0" class="mt-6 text-center text-sm text-gray-600">
+      <div v-if="emailStore.unreadCount > 0" class="unread-count">
         {{ emailStore.unreadCount }} unread email{{ emailStore.unreadCount !== 1 ? 's' : '' }}
       </div>
     </main>
@@ -84,6 +99,10 @@ onMounted(async () => {
     console.error('Failed to fetch emails:', error)
   }
 })
+
+function navigateToCompose() {
+  router.push('/compose')
+}
 
 function handleEmailClick(email: Email) {
   router.push({ name: 'email-detail', params: { s3Key: encodeURIComponent(email.s3_key) } })
@@ -114,3 +133,153 @@ function formatDate(dateStr: string): string {
 }
 </script>
 
+<style scoped>
+.email-list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.compose-button {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: var(--z-fixed);
+}
+
+.email-header {
+  margin-bottom: var(--space-6);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inbox-title {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.email-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.loading-state {
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.loading-text {
+  margin: 0;
+  opacity: 0.7;
+}
+
+.error-card {
+  color: var(--color-error);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.empty-text {
+  margin: 0 0 var(--space-4) 0;
+  opacity: 0.7;
+}
+
+.email-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.email-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.email-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.email-details {
+  margin-bottom: var(--space-2);
+}
+
+.email-sender {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.8;
+}
+
+.email-subject {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-badges {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-base);
+  font-weight: var(--font-weight-medium);
+}
+
+.unread-badge {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.archived-badge {
+  background-color: var(--color-bg-muted);
+  color: var(--color-text-secondary);
+}
+
+.attachment-badge {
+  background-color: var(--color-metered-bg);
+  color: var(--color-metered);
+}
+
+.email-date {
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.unread-count {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+}
+</style>

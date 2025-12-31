@@ -1,11 +1,13 @@
 <template>
   <div class="login-container">
-  <base-card
-    padding="lg"
-  >
+    <base-card
+      variant="elevated"
+      padding="lg"
+      class="login-card"
+    >
       <div v-if="!authStore.otpRequested">
-        <form>
-          <div class="mb-6">
+        <form class="login-form">
+          <div class="form-field">
             <base-input
               id="phone"
               ref="phoneNumberInput"
@@ -24,12 +26,12 @@
       </div>
 
       <div v-else>
-        <div class="mb-6">
-          <p class="text-sm text-gray-600 mb-4">
+        <div class="otp-section">
+          <p class="otp-message">
             We've sent a 6-digit code to {{ phoneNumber }}
           </p>
-          <form>
-            <div class="mb-6">
+          <form class="otp-form">
+            <div class="form-field">
               <base-input
                 id="otp"
                 v-model="otpCode"
@@ -37,11 +39,11 @@
                 label="Verification Code"
                 placeholder="000000"
                 required
-                class="text-center text-2xl tracking-widest"
+                class="otp-input"
               />
             </div>
 
-            <base-button @click="handleVerifyOtp" variant="primary" full-width :disabled="authStore.isLoading" class="mb-3">
+            <base-button @click="handleVerifyOtp" variant="primary" full-width :disabled="authStore.isLoading" class="verify-button">
               {{ authStore.isLoading ? 'Verifying...' : 'Verify' }}
             </base-button>
 
@@ -55,7 +57,7 @@
       <div v-if="authStore.error" class="error-message">
         {{ authStore.error }}
       </div>
-  </base-card>
+    </base-card>
   </div>
 </template>
 
@@ -102,20 +104,65 @@ function sanitizePhoneNumber(input: string): string {
 }
 </script>
 <style scoped>
-  .mb-6 {
-    margin-bottom: 2rem;
-  }
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+  padding: var(--space-4);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-form,
+.otp-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  margin-bottom: var(--space-6);
+}
+
+.otp-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.otp-message {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.otp-input {
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  letter-spacing: 0.1em;
+}
+
+.verify-button {
+  margin-bottom: var(--space-3);
+}
+
+.error-message {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-error-border);
+}
+
+@media (max-width: 480px) {
   .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    padding: var(--space-2);
   }
-  .error-message {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background-color: var(--color-error-bg);
-    color: var(--color-error);
-    border-radius: var(--radius-md);
-  }
+}
 </style>

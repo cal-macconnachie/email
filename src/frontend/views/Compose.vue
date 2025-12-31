@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow-sm">
-      <div class="container py-4">
+  <div class="compose-container">
+    <header class="compose-header">
+      <div class="header-content">
         <base-button @click="handleCancel" variant="secondary">← Cancel</base-button>
       </div>
     </header>
 
-    <main class="container py-6">
-      <base-card class="max-w-4xl mx-auto">
-        <h1 class="text-2xl font-bold mb-6">Compose Email</h1>
+    <main class="compose-main">
+      <base-card variant="elevated" padding="lg" class="compose-card">
+        <h1 class="compose-title">Compose Email</h1>
 
-        <form>
-          <div class="mb-4">
+        <form class="compose-form">
+          <div class="form-field">
             <base-input
               id="to"
               v-model="formData.to"
@@ -23,7 +23,7 @@
             />
           </div>
 
-          <div class="mb-4">
+          <div class="form-field">
             <base-input
               id="cc"
               v-model="formData.cc"
@@ -33,7 +33,7 @@
             />
           </div>
 
-          <div class="mb-4">
+          <div class="form-field">
             <base-input
               id="bcc"
               v-model="formData.bcc"
@@ -43,7 +43,7 @@
             />
           </div>
 
-          <div class="mb-4">
+          <div class="form-field">
             <base-input
               id="subject"
               v-model="formData.subject"
@@ -54,7 +54,7 @@
             />
           </div>
 
-          <div class="mb-6">
+          <div class="form-field form-field-textarea">
             <base-textarea
               id="body"
               v-model="formData.body"
@@ -65,11 +65,11 @@
             />
           </div>
 
-          <div v-if="emailStore.error" class="mb-4 p-3 bg-red-50 text-red-700 rounded">
+          <div v-if="emailStore.error" class="error-message">
             {{ emailStore.error }}
           </div>
 
-          <div class="flex justify-between items-center">
+          <div class="form-actions">
             <base-button
               type="button"
               variant="secondary"
@@ -161,3 +161,77 @@ function handleCancel() {
 }
 </script>
 
+<style scoped>
+.compose-container {
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+}
+
+.compose-header {
+  background-color: var(--color-bg-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6);
+}
+
+.compose-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.compose-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.compose-title {
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.compose-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field-textarea {
+  margin-bottom: var(--space-2);
+}
+
+.error-message {
+  padding: var(--space-3);
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-error-border);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .compose-main {
+    padding: var(--space-4);
+  }
+
+  .header-content {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+</style>

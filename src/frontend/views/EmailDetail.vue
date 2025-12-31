@@ -1,20 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow-sm">
-      <div class="container py-4">
-        <base-button @click="router.back()" variant="secondary" class="mb-4">← Back</base-button>
+  <div class="email-detail-container">
+    <header class="email-detail-header">
+      <div class="header-content">
+        <base-button @click="router.back()" variant="secondary" class="back-button">← Back</base-button>
 
-        <div v-if="emailStore.currentEmail" class="flex justify-between items-start">
-          <div class="flex-1">
-            <h1 class="text-2xl font-bold mb-2">{{ emailStore.currentEmail.subject || '(No subject)' }}</h1>
-            <div class="flex gap-4 text-sm text-gray-600">
-              <p><strong>From:</strong> {{ emailStore.currentEmail.sender }}</p>
-              <p><strong>To:</strong> {{ emailStore.currentEmail.recipient }}</p>
-              <p><strong>Date:</strong> {{ formatFullDate(emailStore.currentEmail.created_at) }}</p>
+        <div v-if="emailStore.currentEmail" class="email-header-info">
+          <div class="email-header-main">
+            <h1 class="email-title">{{ emailStore.currentEmail.subject || '(No subject)' }}</h1>
+            <div class="email-meta">
+              <p class="meta-item"><strong>From:</strong> {{ emailStore.currentEmail.sender }}</p>
+              <p class="meta-item"><strong>To:</strong> {{ emailStore.currentEmail.recipient }}</p>
+              <p class="meta-item"><strong>Date:</strong> {{ formatFullDate(emailStore.currentEmail.created_at) }}</p>
             </div>
           </div>
 
-          <div class="flex gap-2">
+          <div class="email-header-actions">
             <base-button @click="handleToggleArchive" variant="secondary">
               {{ emailStore.currentEmail.archived ? 'Unarchive' : 'Archive' }}
             </base-button>
@@ -24,52 +24,63 @@
       </div>
     </header>
 
-    <main class="container py-6">
-      <div v-if="emailStore.isLoading" class="text-center py-12">
-        <p class="text-gray-600">Loading email...</p>
+    <main class="email-detail-main">
+      <div v-if="emailStore.isLoading" class="loading-state">
+        <p class="loading-text">Loading email...</p>
       </div>
 
-      <base-card v-else-if="emailStore.error" class="bg-red-50 text-red-700">
+      <base-card v-else-if="emailStore.error" variant="elevated" padding="md" class="error-card">
         {{ emailStore.error }}
       </base-card>
 
-      <base-card v-else-if="emailStore.currentEmail">
-        <div v-if="emailStore.currentEmail.cc" class="mb-4">
-          <p class="text-sm text-gray-600"><strong>CC:</strong> {{ emailStore.currentEmail.cc.join(', ') }}</p>
+      <base-card v-else-if="emailStore.currentEmail" variant="elevated" padding="lg">
+        <div v-if="emailStore.currentEmail.cc" class="cc-info">
+          <p class="cc-text"><strong>CC:</strong> {{ emailStore.currentEmail.cc.join(', ') }}</p>
         </div>
 
-        <div class="email-body prose max-w-none" v-html="emailStore.currentEmail.body"></div>
+        <div class="email-body" v-html="emailStore.currentEmail.body"></div>
 
-        <div v-if="emailStore.currentEmail.attachment_keys && emailStore.currentEmail.attachment_keys.length > 0" class="mt-6 pt-6 border-t">
-          <h3 class="text-lg font-semibold mb-3">Attachments ({{ emailStore.currentEmail.attachment_keys.length }})</h3>
-          <div class="space-y-2">
+        <div v-if="emailStore.currentEmail.attachment_keys && emailStore.currentEmail.attachment_keys.length > 0" class="attachments-section">
+          <h3 class="section-title">Attachments ({{ emailStore.currentEmail.attachment_keys.length }})</h3>
+          <div class="attachments-list">
             <div
               v-for="(key, index) in emailStore.currentEmail.attachment_keys"
               :key="key"
-              class="flex items-center gap-2 p-2 bg-gray-100 rounded"
+              class="attachment-item"
             >
-              <span>📎</span>
-              <span class="flex-1">{{ getFilename(key) }}</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="16"
+                width="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="attachment-icon"
+              >
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+              <span class="attachment-name">{{ getFilename(key) }}</span>
             </div>
           </div>
         </div>
 
-        <div v-if="emailStore.currentEmail.thread_id && threadEmails.length > 1" class="mt-6 pt-6 border-t">
-          <h3 class="text-lg font-semibold mb-3">Thread ({{ threadEmails.length }} messages)</h3>
-          <div class="space-y-2">
+        <div v-if="emailStore.currentEmail.thread_id && threadEmails.length > 1" class="thread-section">
+          <h3 class="section-title">Thread ({{ threadEmails.length }} messages)</h3>
+          <div class="thread-list">
             <div
               v-for="email in threadEmails"
               :key="email.id"
-              class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100"
-              :class="{ 'bg-blue-50': email.id === emailStore.currentEmail.id }"
+              class="thread-item"
+              :class="{ 'thread-item-active': email.id === emailStore.currentEmail.id }"
               @click="handleThreadEmailClick(email)"
             >
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="font-medium">{{ email.subject || '(No subject)' }}</p>
-                  <p class="text-sm text-gray-600">{{ email.sender }}</p>
+              <div class="thread-item-content">
+                <div class="thread-item-info">
+                  <p class="thread-subject">{{ email.subject || '(No subject)' }}</p>
+                  <p class="thread-sender">{{ email.sender }}</p>
                 </div>
-                <p class="text-sm text-gray-500">{{ formatDate(email.created_at) }}</p>
+                <p class="thread-date">{{ formatDate(email.created_at) }}</p>
               </div>
             </div>
           </div>
@@ -152,3 +163,213 @@ function getFilename(key: string): string {
 }
 </script>
 
+<style scoped>
+.email-detail-container {
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+}
+
+.email-detail-header {
+  background-color: var(--color-bg-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6);
+}
+
+.back-button {
+  margin-bottom: var(--space-4);
+}
+
+.email-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.email-header-main {
+  flex: 1;
+}
+
+.email-title {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.email-meta {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.email-header-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.email-detail-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.loading-state {
+  text-align: center;
+  padding: var(--space-12);
+}
+
+.loading-text {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.error-card {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.cc-info {
+  margin-bottom: var(--space-4);
+}
+
+.cc-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.email-body {
+  line-height: var(--line-height-relaxed);
+  max-width: 100%;
+}
+
+.attachments-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.section-title {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background-color: var(--color-bg-muted);
+  border-radius: var(--radius-md);
+}
+
+.attachment-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.attachment-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+}
+
+.thread-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.thread-item {
+  padding: var(--space-3);
+  background-color: var(--color-bg-muted);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.thread-item:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.thread-item-active {
+  background-color: var(--color-primary-light);
+}
+
+.thread-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.thread-item-info {
+  flex: 1;
+}
+
+.thread-subject {
+  margin: 0 0 var(--space-1) 0;
+  font-weight: var(--font-weight-medium);
+}
+
+.thread-sender {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.thread-date {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .email-detail-main {
+    padding: var(--space-4);
+  }
+
+  .header-content {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .email-header-info {
+    flex-direction: column;
+  }
+
+  .email-meta {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .email-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+</style>

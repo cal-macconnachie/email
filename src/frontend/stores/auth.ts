@@ -25,7 +25,8 @@ export const useAuthStore = defineStore('auth', () => {
       otpRequested.value = true
       phoneNumber.value = phone
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to request OTP'
+      const errMessage = err instanceof Error ? err.message : (err as { error?: string }).error
+      error.value = errMessage ?? 'Failed to request OTP'
       throw err
     } finally {
       isLoading.value = false
@@ -47,7 +48,8 @@ export const useAuthStore = defineStore('auth', () => {
       otpSession.value = null
       return true
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Invalid OTP code'
+      const errMessage = err instanceof Error ? err.message : (err as { error?: string }).error
+      error.value = errMessage ?? 'Invalid OTP code'
       return false
     } finally {
       isLoading.value = false
@@ -64,7 +66,8 @@ export const useAuthStore = defineStore('auth', () => {
       otpSession.value = null
       otpRequested.value = false
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Logout failed'
+      const errMessage = err instanceof Error ? err.message : (err as { error?: string }).error
+      error.value = errMessage ?? 'Logout failed'
     } finally {
       isLoading.value = false
     }
