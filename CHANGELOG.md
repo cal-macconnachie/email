@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.26](https://github.com/cal-macconnachie/email/compare/v0.0.25...v0.0.26) (2025-12-31)
+
+
+### Bug Fixes
+
+* only allow pre registered users ([308f50f](https://github.com/cal-macconnachie/email/commit/308f50fb5098495b67670399efab54ff0958990e))
+
 ### [0.0.25](https://github.com/cal-macconnachie/email/compare/v0.0.24...v0.0.25) (2025-12-31)
 
 
