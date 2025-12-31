@@ -4,6 +4,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { v4 } from 'uuid'
 import { create } from './helpers/dynamo-helpers/create'
 import { Email } from './helpers/parse-email'
+import { determineThreadId } from './helpers/thread-helpers/determine-thread-id'
+import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
 const sesClient = new SESv2Client({ region: process.env.REGION })
 const s3Client = new S3Client({ region: process.env.REGION })
@@ -17,6 +19,8 @@ interface SendEmailRequest {
   bcc?: string[]
   replyTo?: string[]
   attachmentKeys?: string[]
+  inReplyTo?: string
+  references?: string[]
 }
 
 export const handler = async (
@@ -24,6 +28,17 @@ export const handler = async (
   _context: Context
 ): Promise<APIGatewayProxyResult> => {
   try {
+    // Authenticate and get recipient from phone→email mapping
+    const authResult = await getAuthenticatedRecipient(event)
+    if (!authResult.success) {
+      return {
+        statusCode: authResult.statusCode,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: authResult.error }),
+      }
+    }
+    const authenticatedRecipient = authResult.recipient
+
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {
       throw new Error('S3_BUCKET_NAME environment variable is not set')
@@ -34,22 +49,35 @@ export const handler = async (
       throw new Error('DYNAMODB_TABLE_NAME environment variable is not set')
     }
 
+    const threadRelationsTableName = `${process.env.DYNAMODB_TABLE_NAME?.replace('-emails', '')}-thread-relations`
+
     // Parse request body
     if (!event.body) {
       return {
         statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Request body is required' }),
       }
     }
 
     const emailRequest = JSON.parse(event.body) as SendEmailRequest
-    const { to, from, subject, body, cc, bcc, replyTo, attachmentKeys } = emailRequest
+    const { to, from, subject, body, cc, bcc, replyTo, attachmentKeys, inReplyTo, references } = emailRequest
 
     // Validate inputs
     if (!to || to.length === 0 || !from || !subject || !body) {
       return {
         statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'to (non-empty array), from, subject, and body are required' }),
+      }
+    }
+
+    // Validate that from address matches authenticated user's email
+    if (from !== authenticatedRecipient) {
+      return {
+        statusCode: 403,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: `Forbidden - You can only send from your own email address: ${authenticatedRecipient}` }),
       }
     }
 
@@ -59,6 +87,7 @@ export const handler = async (
     if (!from.endsWith('@macconnachie.com')) {
       return {
         statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'from address must be a verified identity in SES' }),
       }
     }
@@ -89,6 +118,10 @@ export const handler = async (
       }
     }
 
+    // Generate Message-ID for outgoing email (RFC 5322 format)
+    const domain = from.split('@')[1] // Extract domain from from address
+    const generatedMessageId = `<${v4()}@${domain}>`
+
     // Construct raw MIME email
     const boundary = 'NextPartBoundary'
     let rawEmail = `From: ${from}\n`
@@ -100,6 +133,13 @@ export const handler = async (
       rawEmail += `Bcc: ${bcc.join(', ')}\n`
     }
     rawEmail += `Subject: ${subject}\n`
+    rawEmail += `Message-ID: ${generatedMessageId}\n`
+    if (inReplyTo) {
+      rawEmail += `In-Reply-To: ${inReplyTo}\n`
+    }
+    if (references && references.length > 0) {
+      rawEmail += `References: ${references.join(' ')}\n`
+    }
     rawEmail += 'MIME-Version: 1.0\n'
     rawEmail += `Content-Type: multipart/mixed; boundary="${boundary}"\n\n`
 
@@ -155,6 +195,15 @@ export const handler = async (
     for (const recipient of to) {
       const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
 
+      // Determine thread_id for this email
+      const { thread_id } = await determineThreadId(
+        generatedMessageId,
+        inReplyTo,
+        references,
+        recipient,
+        threadRelationsTableName
+      )
+
       // Move attachments from pending to final location and collect keys
       const finalAttachmentKeys: string[] = []
       if (attachmentKeys && attachmentKeys.length > 0) {
@@ -200,6 +249,10 @@ export const handler = async (
         attachment_keys: finalAttachmentKeys,
         read: false,
         archived: false,
+        thread_id,
+        message_id: generatedMessageId,
+        in_reply_to: inReplyTo,
+        references,
       }
 
       // Store email JSON in S3
@@ -217,6 +270,20 @@ export const handler = async (
           },
         })
       )
+
+      // Store thread relationship in thread_relations table
+      await create({
+        tableName: threadRelationsTableName,
+        key: {
+          thread_id,
+          timestamp: email.timestamp,
+        },
+        record: {
+          message_id: generatedMessageId,
+          recipient,
+          subject,
+        },
+      })
 
       // Store metadata in DynamoDB
       await create({
@@ -238,6 +305,10 @@ export const handler = async (
           created_at: isoTimestamp,
           read: false,
           archived: false,
+          thread_id,
+          message_id: generatedMessageId,
+          in_reply_to: inReplyTo,
+          references,
         },
       })
 
@@ -248,7 +319,6 @@ export const handler = async (
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         message: 'Email sent successfully',
@@ -260,6 +330,7 @@ export const handler = async (
     console.error('Error sending email:', error)
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         error: 'Failed to send email',
         message: error instanceof Error ? error.message : 'Unknown error',

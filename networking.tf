@@ -25,9 +25,12 @@ resource "aws_s3_bucket" "website" {
 resource "aws_s3_bucket_website_configuration" "website" {
   bucket = aws_s3_bucket.website.id
 
-  redirect_all_requests_to {
-    host_name = var.redirect_target
-    protocol  = "https"
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
   }
 }
 
@@ -107,6 +110,36 @@ resource "aws_cloudfront_distribution" "main" {
       origin_read_timeout      = 30
       origin_keepalive_timeout = 5
     }
+  }
+
+  # API Gateway origin
+  origin {
+    domain_name = replace(aws_apigatewayv2_api.main.api_endpoint, "https://", "")
+    origin_id   = "API-Gateway"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  # API routes - no caching, forward all headers/cookies
+  ordered_cache_behavior {
+    path_pattern     = "/api/*"
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id = "API-Gateway"
+
+    viewer_protocol_policy = "https-only"
+    compress               = false
+
+    # Use managed cache policy for no caching
+    cache_policy_id = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingDisabled
+
+    # Forward all headers, query strings, and cookies
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # AllViewerExceptHostHeader
   }
 
   default_cache_behavior {

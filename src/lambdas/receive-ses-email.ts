@@ -2,6 +2,7 @@ import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } fro
 import { Context, SESEvent } from 'aws-lambda'
 import { create } from './helpers/dynamo-helpers/create'
 import { parseEmail } from './helpers/parse-email'
+import { determineThreadId } from './helpers/thread-helpers/determine-thread-id'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -17,6 +18,8 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
   if (!tableName) {
     throw new Error('DYNAMODB_TABLE_NAME environment variable is not set')
   }
+
+  const threadRelationsTableName = `${process.env.DYNAMODB_TABLE_NAME?.replace('-emails', '')}-thread-relations`
 
   // Process each SES record
   for (const record of event.Records) {
@@ -53,6 +56,16 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
       for (const email of emails) {
         const recipient = email.recipient
         const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
+
+        // Determine thread_id for this email
+        const { thread_id } = await determineThreadId(
+          email.message_id,
+          email.in_reply_to,
+          email.references,
+          recipient,
+          threadRelationsTableName
+        )
+        email.thread_id = thread_id
 
         // Store attachments first and collect their S3 keys
         const attachmentKeys: string[] = []
@@ -99,6 +112,22 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
 
         console.log(`Successfully stored email for ${recipient}`)
 
+        // Store thread relationship in thread_relations table
+        await create({
+          tableName: threadRelationsTableName,
+          key: {
+            thread_id: email.thread_id,
+            timestamp: email.timestamp,
+          },
+          record: {
+            message_id: email.message_id,
+            recipient: email.recipient,
+            subject: email.subject,
+          },
+        })
+
+        console.log(`Successfully stored thread relationship for ${recipient}`)
+
         // Store metadata in DynamoDB (body is in S3 only)
         await create({
           tableName,
@@ -119,6 +148,10 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
             created_at: email.created_at,
             read: false,
             archived: false,
+            thread_id: email.thread_id,
+            message_id: email.message_id,
+            in_reply_to: email.in_reply_to,
+            references: email.references,
           },
         })
 

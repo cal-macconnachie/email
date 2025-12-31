@@ -90,6 +90,10 @@ export interface Email {
     attachment_keys?: string[]
     read: boolean
     archived: boolean
+    thread_id: string
+    message_id: string
+    in_reply_to?: string
+    references?: string[]
 }
 
 export function parseEmail(emailString: string): {
@@ -121,6 +125,9 @@ export function parseEmail(emailString: string): {
     const to = headers['to']
     const from = headers['from']
     const subject = headers['subject'] ?? ''
+    const messageId = headers['message-id'] ?? ''
+    const inReplyTo = headers['in-reply-to']
+    const referencesHeader = headers['references']
 
     if (!to || !from) {
         throw new Error('Missing required email fields: to, from, or subject')
@@ -129,6 +136,11 @@ export function parseEmail(emailString: string): {
     const toAddress = to.split(',').map(addr => addr.trim()) // Handle multiple recipients, use the first one
 
     const id = v4()
+
+    // Parse references header (space-separated list of Message-IDs)
+    const references = referencesHeader
+        ? referencesHeader.split(/\s+/).filter(ref => ref.trim().length > 0)
+        : undefined
 
     return {
         emails: toAddress.map((to) => ({
@@ -146,6 +158,10 @@ export function parseEmail(emailString: string): {
             id,
             read: false,
             archived: false,
+            thread_id: '', // Will be set by determineThreadId helper
+            message_id: messageId,
+            in_reply_to: inReplyTo,
+            references,
         })),
         attachments,
     }

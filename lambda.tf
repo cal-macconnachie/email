@@ -13,8 +13,9 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/receive-ses-email"
       environment_vars = {
-        S3_BUCKET_NAME      = "${var.domain_name}-ses-emails"
-        DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
+        S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
+        THREAD_RELATIONS_TABLE_NAME = "${var.domain_name}-thread-relations"
       }
     }
     get_attachment_upload_presign = {
@@ -25,7 +26,8 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/get-attachment-upload-presign"
       environment_vars = {
-        S3_BUCKET_NAME = "${var.domain_name}-ses-emails"
+        S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
       }
     }
     send_email = {
@@ -36,8 +38,10 @@ locals {
       memory_size = 512
       source_dir  = "${path.module}/dist/lambdas/send-email"
       environment_vars = {
-        S3_BUCKET_NAME      = "${var.domain_name}-ses-emails"
-        DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
+        S3_BUCKET_NAME                = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME           = "${var.domain_name}-emails"
+        THREAD_RELATIONS_TABLE_NAME   = "${var.domain_name}-thread-relations"
+        PHONE_EMAIL_RELATIONS_TABLE   = "${var.domain_name}-phone-email-relations"
       }
     }
     get_full_email = {
@@ -48,7 +52,8 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/get-full-email"
       environment_vars = {
-        S3_BUCKET_NAME = "${var.domain_name}-ses-emails"
+        S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
       }
     }
     list_emails = {
@@ -59,7 +64,8 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/list-emails"
       environment_vars = {
-        DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
+        DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
       }
     }
     update_email = {
@@ -70,9 +76,86 @@ locals {
       memory_size = 256
       source_dir  = "${path.module}/dist/lambdas/update-email"
       environment_vars = {
-        S3_BUCKET_NAME      = "${var.domain_name}-ses-emails"
-        DYNAMODB_TABLE_NAME = "${var.domain_name}-emails"
+        S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
       }
+    }
+    get_thread_emails = {
+      description = "Retrieve all emails in a thread for a specific recipient"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/get-thread-emails"
+      environment_vars = {
+        S3_BUCKET_NAME                = "${var.domain_name}-ses-emails"
+        DYNAMODB_TABLE_NAME           = "${var.domain_name}-emails"
+        THREAD_RELATIONS_TABLE_NAME   = "${var.domain_name}-thread-relations"
+        PHONE_EMAIL_RELATIONS_TABLE   = "${var.domain_name}-phone-email-relations"
+      }
+    }
+    # Auth Lambda Functions - Cognito Triggers
+    define_auth_challenge = {
+      description = "Cognito trigger: Define custom authentication challenge flow"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 10
+      memory_size = 128
+      source_dir  = "${path.module}/dist/lambdas/auth/define-auth-challenge"
+      environment_vars = {}
+    }
+    create_auth_challenge = {
+      description = "Cognito trigger: Generate OTP and send via SNS"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/auth/create-auth-challenge"
+      environment_vars = {}
+    }
+    verify_auth_challenge_response = {
+      description = "Cognito trigger: Verify OTP code"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 10
+      memory_size = 128
+      source_dir  = "${path.module}/dist/lambdas/auth/verify-auth-challenge-response"
+      environment_vars = {}
+    }
+    # Auth Lambda Functions - API Endpoints
+    request_otp = {
+      description = "Initiate SMS OTP authentication flow"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/auth/request-otp"
+      environment_vars = {
+        COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
+        COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+      }
+    }
+    verify_otp = {
+      description = "Verify OTP code and set HTTP-only cookies"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/auth/verify-otp"
+      environment_vars = {
+        COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
+        COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+      }
+    }
+    logout = {
+      description = "Clear session cookies to log user out"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 10
+      memory_size = 128
+      source_dir  = "${path.module}/dist/lambdas/auth/logout"
+      environment_vars = {}
     }
   }
 
@@ -167,10 +250,54 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
       {
         Effect = "Allow"
         Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-thread-relations",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-thread-relations/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "ses:SendEmail",
           "ses:SendRawEmail"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:AdminRespondToAuthChallenge",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminSetUserPassword"
+        ]
+        Resource = "arn:aws:cognito-idp:${var.aws_region}:*:userpool/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations/index/*"
+        ]
       }
     ]
   })

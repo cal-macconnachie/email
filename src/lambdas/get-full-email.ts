@@ -1,6 +1,7 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { Email } from './helpers/parse-email'
+import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -13,6 +14,17 @@ export const handler = async (
   _context: Context
 ): Promise<APIGatewayProxyResult> => {
   try {
+    // Authenticate and get recipient from phone→email mapping
+    const authResult = await getAuthenticatedRecipient(event)
+    if (!authResult.success) {
+      return {
+        statusCode: authResult.statusCode,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: authResult.error }),
+      }
+    }
+    const recipient = authResult.recipient
+
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {
       throw new Error('S3_BUCKET_NAME environment variable is not set')
@@ -24,7 +36,7 @@ export const handler = async (
     if (event.queryStringParameters?.s3_key) {
       s3Key = event.queryStringParameters.s3_key
     } else if (event.body) {
-       
+
       const body: GetEmailRequest = JSON.parse(event.body)
       s3Key = body.s3Key
     }
@@ -32,7 +44,18 @@ export const handler = async (
     if (!s3Key) {
       return {
         statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 's3_key is required (as query param or in body)' }),
+      }
+    }
+
+    // Validate that s3_key belongs to the authenticated user
+    const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
+    if (!s3Key.startsWith(`${sanitizedRecipient}/`)) {
+      return {
+        statusCode: 403,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Forbidden - You can only access your own emails' }),
       }
     }
 
@@ -61,7 +84,6 @@ export const handler = async (
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify(email),
     }
@@ -73,12 +95,14 @@ export const handler = async (
       if (error.name === 'NoSuchKey') {
         return {
           statusCode: 404,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ error: 'Email not found' }),
         }
       }
       if (error.name === 'AccessDenied') {
         return {
           statusCode: 403,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ error: 'Access denied' }),
         }
       }
@@ -86,6 +110,7 @@ export const handler = async (
 
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Failed to fetch email' }),
     }
   }

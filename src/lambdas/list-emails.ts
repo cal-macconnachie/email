@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { query } from './helpers/dynamo-helpers/query'
+import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
 interface ListEmailsRequest {
-  recipient: string
   sender?: string
   startDate?: string // ISO timestamp or partial like "2025-01"
   endDate?: string // ISO timestamp or partial like "2025-12"
@@ -33,6 +33,17 @@ export const handler = async (
   _context: Context
 ): Promise<APIGatewayProxyResult> => {
   try {
+    // Authenticate and get recipient from phone→email mapping
+    const authResult = await getAuthenticatedRecipient(event)
+    if (!authResult.success) {
+      return {
+        statusCode: authResult.statusCode,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: authResult.error }),
+      }
+    }
+    const recipient = authResult.recipient
+
     const tableName = process.env.DYNAMODB_TABLE_NAME
     if (!tableName) {
       throw new Error('DYNAMODB_TABLE_NAME environment variable is not set')
@@ -41,9 +52,8 @@ export const handler = async (
     // Parse request - can come from query params or body
     let request: ListEmailsRequest
 
-    if (event.queryStringParameters?.recipient) {
+    if (event.queryStringParameters) {
       request = {
-        recipient: event.queryStringParameters.recipient,
         sender: event.queryStringParameters.sender,
         startDate: event.queryStringParameters.startDate,
         endDate: event.queryStringParameters.endDate,
@@ -53,21 +63,10 @@ export const handler = async (
     } else if (event.body) {
       request = JSON.parse(event.body) as ListEmailsRequest
     } else {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'recipient is required' }),
-      }
+      request = {}
     }
 
-    const { recipient, sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder } = request
-
-    // Validate required fields
-    if (!recipient) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'recipient is required' }),
-      }
-    }
+    const { sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder } = request
 
     // Build query parameters
     let keyConditionExpression: string
@@ -137,7 +136,6 @@ export const handler = async (
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         emails: result.items,
@@ -149,6 +147,7 @@ export const handler = async (
     console.error('Error listing emails:', error)
     return {
       statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         error: 'Failed to list emails',
         message: error instanceof Error ? error.message : 'Unknown error',
