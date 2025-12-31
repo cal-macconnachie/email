@@ -118,20 +118,20 @@ resource "aws_apigatewayv2_integration" "get_attachment_upload_presign" {
 # Routes - Public (No Auth)
 resource "aws_apigatewayv2_route" "request_otp" {
   api_id    = aws_apigatewayv2_api.main.id
-  route_key = "POST /auth/request-otp"
+  route_key = "POST /api/auth/request-otp"
   target    = "integrations/${aws_apigatewayv2_integration.request_otp.id}"
 }
 
 resource "aws_apigatewayv2_route" "verify_otp" {
   api_id    = aws_apigatewayv2_api.main.id
-  route_key = "POST /auth/verify-otp"
+  route_key = "POST /api/auth/verify-otp"
   target    = "integrations/${aws_apigatewayv2_integration.verify_otp.id}"
 }
 
 # Routes - Protected (Require Cognito JWT)
 resource "aws_apigatewayv2_route" "logout" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "POST /auth/logout"
+  route_key          = "POST /api/auth/logout"
   target             = "integrations/${aws_apigatewayv2_integration.logout.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
@@ -139,7 +139,7 @@ resource "aws_apigatewayv2_route" "logout" {
 
 resource "aws_apigatewayv2_route" "send_email" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "POST /emails/send"
+  route_key          = "POST /api/emails/send"
   target             = "integrations/${aws_apigatewayv2_integration.send_email.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
@@ -147,7 +147,7 @@ resource "aws_apigatewayv2_route" "send_email" {
 
 resource "aws_apigatewayv2_route" "list_emails" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "GET /emails/list"
+  route_key          = "GET /api/emails/list"
   target             = "integrations/${aws_apigatewayv2_integration.list_emails.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
@@ -155,7 +155,7 @@ resource "aws_apigatewayv2_route" "list_emails" {
 
 resource "aws_apigatewayv2_route" "get_full_email" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "GET /emails/detail"
+  route_key          = "GET /api/emails/detail"
   target             = "integrations/${aws_apigatewayv2_integration.get_full_email.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
@@ -163,7 +163,7 @@ resource "aws_apigatewayv2_route" "get_full_email" {
 
 resource "aws_apigatewayv2_route" "update_email" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "POST /emails/update"
+  route_key          = "POST /api/emails/update"
   target             = "integrations/${aws_apigatewayv2_integration.update_email.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
@@ -171,7 +171,7 @@ resource "aws_apigatewayv2_route" "update_email" {
 
 resource "aws_apigatewayv2_route" "get_thread_emails" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "GET /emails/thread"
+  route_key          = "GET /api/emails/thread"
   target             = "integrations/${aws_apigatewayv2_integration.get_thread_emails.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
@@ -179,7 +179,7 @@ resource "aws_apigatewayv2_route" "get_thread_emails" {
 
 resource "aws_apigatewayv2_route" "get_attachment_upload_presign" {
   api_id             = aws_apigatewayv2_api.main.id
-  route_key          = "POST /attachments/upload-url"
+  route_key          = "POST /api/attachments/upload-url"
   target             = "integrations/${aws_apigatewayv2_integration.get_attachment_upload_presign.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
