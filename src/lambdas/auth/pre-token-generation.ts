@@ -15,22 +15,43 @@ export const handler = async (
   console.log('Pre-token generation event:', JSON.stringify(event, null, 2))
 
   try {
-    // Add phone_number to access token claims
-    if (event.request.userAttributes.phone_number) {
+    const phoneNumber = event.request.userAttributes.phone_number
+
+    if (!phoneNumber) {
+      console.warn('No phone_number attribute found for user')
+      return event
+    }
+
+    console.log('Trigger version:', event.version)
+    console.log('Phone number:', phoneNumber)
+
+    // V2 trigger: Add claims to both access token and ID token
+    if (event.version === '2') {
       event.response = {
-        claimsOverrideDetails: {
-          claimsToAddOrOverride: {
-            phone_number: event.request.userAttributes.phone_number,
+        claimsAndScopeOverrideDetails: {
+          accessTokenGeneration: {
+            claimsToAddOrOverride: {
+              phone_number: phoneNumber,
+            },
+          },
+          idTokenGeneration: {
+            claimsToAddOrOverride: {
+              phone_number: phoneNumber,
+            },
           },
         },
       }
-
-      console.log(
-        'Added phone_number to token:',
-        event.request.userAttributes.phone_number
-      )
+      console.log('Added phone_number to V2 tokens:', phoneNumber)
     } else {
-      console.warn('No phone_number attribute found for user')
+      // V1 trigger: Only adds to ID token (legacy behavior)
+      event.response = {
+        claimsOverrideDetails: {
+          claimsToAddOrOverride: {
+            phone_number: phoneNumber,
+          },
+        },
+      }
+      console.log('Added phone_number to V1 ID token only:', phoneNumber)
     }
 
     return event

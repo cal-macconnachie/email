@@ -48,7 +48,12 @@ resource "aws_cognito_user_pool" "main" {
     define_auth_challenge          = aws_lambda_function.functions["define_auth_challenge"].arn
     create_auth_challenge          = aws_lambda_function.functions["create_auth_challenge"].arn
     verify_auth_challenge_response = aws_lambda_function.functions["verify_auth_challenge_response"].arn
-    pre_token_generation           = aws_lambda_function.functions["pre_token_generation"].arn
+
+    # Use V2 trigger to enable adding claims to access tokens
+    pre_token_generation_config {
+      lambda_arn     = aws_lambda_function.functions["pre_token_generation"].arn
+      lambda_version = "V2_0"
+    }
   }
 
   tags = {
