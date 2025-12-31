@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.30](https://github.com/cal-macconnachie/email/compare/v0.0.29...v0.0.30) (2025-12-31)
+
+
+### Bug Fixes
+
+* delete dist ([f11075e](https://github.com/cal-macconnachie/email/commit/f11075ed7209d834217c6a25233c6c29bf268235))
+* logging and username extraction ([a9dda2d](https://github.com/cal-macconnachie/email/commit/a9dda2dc65ac1bf7d9e16c9c83210f0450512471))
+
 ### [0.0.29](https://github.com/cal-macconnachie/email/compare/v0.0.28...v0.0.29) (2025-12-31)
 
 
