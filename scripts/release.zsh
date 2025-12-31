@@ -57,3 +57,10 @@ npx standard-version
 
 echo "\nRelease tag created successfully!"
 git push --follow-tags origin main
+
+# remove dist folder
+echo "Cleaning up build artifacts..."
+rm -rf dist
+
+# done
+echo "Release process completed."
