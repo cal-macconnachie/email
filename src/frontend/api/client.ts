@@ -46,8 +46,9 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone_number: phoneNumber }),
       })
-      if (!response.ok) throw new Error('Failed to request OTP')
-      return response.json()
+      const json = await response.json()
+      if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Failed to request OTP')
+      return json
     },
 
     async verifyOtp(phoneNumber: string, otpCode: string, session: string): Promise<VerifyOtpResponse> {
@@ -61,8 +62,9 @@ export const api = {
           session,
         }),
       })
-      if (!response.ok) throw new Error('Invalid OTP code')
-      return response.json()
+      const json = await response.json()
+      if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Invalid OTP code')
+      return json
     },
 
     async logout(): Promise<void> {
@@ -70,7 +72,8 @@ export const api = {
         method: 'POST',
         credentials: 'include',
       })
-      if (!response.ok) throw new Error('Logout failed')
+      const json = await response.json()
+      if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Logout failed')
     },
   },
 
