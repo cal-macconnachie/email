@@ -121,13 +121,15 @@ function formatDate(dateStr: string): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  // date is utc, convert to local time for display
+  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
 
   if (diffHours < 24) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return localDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   } else if (diffHours < 24 * 7) {
-    return date.toLocaleDateString([], { weekday: 'short' })
+    return localDate.toLocaleDateString([], { weekday: 'short' })
   } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+    return localDate.toLocaleDateString([], { month: 'short', day: 'numeric' })
   }
 }
 </script>
@@ -201,7 +203,6 @@ function formatDate(dateStr: string): string {
 .email-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
 }
 
 .email-card-content {
