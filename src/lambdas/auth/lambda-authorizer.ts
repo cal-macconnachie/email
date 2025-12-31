@@ -1,7 +1,7 @@
 import { CognitoJwtVerifier } from 'aws-jwt-verify'
 import {
   APIGatewayAuthorizerResult,
-  APIGatewayRequestAuthorizerEvent,
+  APIGatewayRequestAuthorizerEventV2,
   Context,
 } from 'aws-lambda'
 
@@ -20,13 +20,13 @@ const verifier = CognitoJwtVerifier.create({
 })
 
 /**
- * Lambda Authorizer for API Gateway
+ * Lambda Authorizer for API Gateway HTTP API (v2)
  *
  * Extracts AccessToken from cookies, validates it against Cognito,
  * and returns an IAM policy allowing/denying access.
  */
 export const handler = async (
-  event: APIGatewayRequestAuthorizerEvent,
+  event: APIGatewayRequestAuthorizerEventV2,
   _context: Context
 ): Promise<APIGatewayAuthorizerResult> => {
   try {
@@ -55,11 +55,11 @@ export const handler = async (
 
     console.log('Token verified successfully:', payload.sub)
 
-    // Generate IAM policy
+    // Generate IAM policy - use routeArn for HTTP API v2
     const policy = generatePolicy(
       payload.sub, // Use subject as principalId
       'Allow',
-      event.methodArn,
+      event.routeArn,
       {
         phone_number: payload.phone_number as string,
         sub: payload.sub,
