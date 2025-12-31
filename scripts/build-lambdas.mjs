@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { build } from 'esbuild'
 import { mkdirSync, readdirSync, statSync } from 'fs'
-import { dirname, join, parse } from 'path'
+import { dirname, join, parse, relative } from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -10,18 +10,41 @@ const __dirname = dirname(__filename)
 const lambdasDir = join(__dirname, '../src/lambdas')
 const outDir = join(__dirname, '../dist/lambdas')
 
-// Get all Lambda entry points (top-level .ts files in src/lambdas, excluding helpers)
-const lambdaFiles = readdirSync(lambdasDir)
-  .filter(file => {
-    const fullPath = join(lambdasDir, file)
-    return statSync(fullPath).isFile() && file.endsWith('.ts')
-  })
+// Recursively find all Lambda entry points (excluding helpers and middleware)
+function findLambdaFiles(dir, baseDir = dir) {
+  const entries = readdirSync(dir)
+  const lambdaFiles = []
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry)
+    const stat = statSync(fullPath)
+
+    if (stat.isDirectory()) {
+      // Skip helper and middleware directories
+      if (entry === 'helpers' || entry === 'middleware') {
+        continue
+      }
+      // Recursively search subdirectories
+      lambdaFiles.push(...findLambdaFiles(fullPath, baseDir))
+    } else if (stat.isFile() && entry.endsWith('.ts')) {
+      // Get relative path from base lambdas directory
+      const relativePath = relative(baseDir, fullPath)
+      lambdaFiles.push(relativePath)
+    }
+  }
+
+  return lambdaFiles
+}
+
+const lambdaFiles = findLambdaFiles(lambdasDir)
 
 // Build each Lambda function
 const buildPromises = lambdaFiles.map(async (file) => {
-  const { name } = parse(file)
+  const { name, dir } = parse(file)
   const entryPoint = join(lambdasDir, file)
-  const lambdaOutDir = join(outDir, name)
+
+  // Preserve subdirectory structure in output (e.g., auth/verify-otp)
+  const lambdaOutDir = join(outDir, dir, name)
 
   // Create directory for this lambda
   mkdirSync(lambdaOutDir, { recursive: true })
