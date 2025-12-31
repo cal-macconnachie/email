@@ -72,14 +72,14 @@
           <div class="form-actions">
             <base-button
               type="button"
-              variant="secondary"
+              variant="ghost-secondary"
               @click="handleCancel"
             >
               Cancel
             </base-button>
 
             <base-button
-              variant="primary"
+              variant="ghost-primary"
               :disabled="emailStore.isLoading"
               @click="handleSend"
             >
@@ -176,6 +176,7 @@ function handleCancel() {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-4) var(--space-6);
+  padding-right: var(--space-12);
 }
 
 .compose-main {
@@ -232,6 +233,7 @@ function handleCancel() {
 
   .header-content {
     padding: var(--space-3) var(--space-4);
+    padding-right: var(--space-12);
   }
 }
 </style>

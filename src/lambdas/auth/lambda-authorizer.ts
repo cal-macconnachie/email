@@ -54,16 +54,24 @@ export const handler = async (
     const payload = await verifier.verify(token)
 
     console.log('Token verified successfully:', payload.sub)
-    console.log('Username (phone number):', payload.username)
+
+    // Phone number is added to token by pre-token-generation trigger
+    const phoneNumber = payload.phone_number as string | undefined
+
+    if (!phoneNumber) {
+      console.error('No phone_number claim in token for user:', payload.sub)
+      throw new Error('Unauthorized - No phone number in token')
+    }
+
+    console.log('Phone number from token:', phoneNumber)
 
     // Generate IAM policy - use routeArn for HTTP API v2
-    // Note: username IS the phone number in our Cognito setup
     const policy = generatePolicy(
       payload.sub, // Use subject as principalId
       'Allow',
       event.routeArn,
       {
-        phone_number: payload.username, // username is the phone number
+        phone_number: phoneNumber,
         sub: payload.sub,
         username: payload.username,
       }

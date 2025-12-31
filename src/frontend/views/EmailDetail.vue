@@ -2,7 +2,7 @@
   <div class="email-detail-container">
     <header class="email-detail-header">
       <div class="header-content">
-        <base-button @click="router.back()" variant="secondary" class="back-button">← Back</base-button>
+        <base-button @click="router.back()" variant="ghost-secondary" class="back-button">←</base-button>
 
         <div v-if="emailStore.currentEmail" class="email-header-info">
           <div class="email-header-main">
@@ -15,10 +15,10 @@
           </div>
 
           <div class="email-header-actions">
-            <base-button @click="handleToggleArchive" variant="secondary">
+            <base-button @click="handleToggleArchive" variant="ghost-secondary">
               {{ emailStore.currentEmail.archived ? 'Unarchive' : 'Archive' }}
             </base-button>
-            <base-button @click="handleReply" variant="primary">Reply</base-button>
+            <base-button @click="handleReply" variant="ghost-primary">Reply</base-button>
           </div>
         </div>
       </div>
@@ -178,6 +178,7 @@ function getFilename(key: string): string {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-4) var(--space-6);
+  padding-right: var(--space-12);
 }
 
 .back-button {
@@ -356,6 +357,7 @@ function getFilename(key: string): string {
 
   .header-content {
     padding: var(--space-3) var(--space-4);
+    padding-right: var(--space-12);
   }
 
   .email-header-info {

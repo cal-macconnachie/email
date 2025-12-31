@@ -11,7 +11,7 @@
     <header class="email-header">
       <div class="header-content">
         <div class="header-actions">
-          <base-button @click="handleLogout" variant="secondary">Logout</base-button>
+          <base-button @click="handleLogout" variant="ghost-secondary">Logout</base-button>
         </div>
       </div>
     </header>
@@ -28,7 +28,7 @@
       <div v-else-if="emailStore.emails.length === 0" class="empty-state">
         <p class="empty-text">No emails yet</p>
         <router-link to="/compose">
-          <base-button variant="primary">Send your first email</base-button>
+          <base-button variant="ghost-primary">Send your first email</base-button>
         </router-link>
       </div>
 
@@ -137,6 +137,7 @@ function formatDate(dateStr: string): string {
   display: flex;
   flex-direction: column;
   padding: var(--space-6);
+  padding-top: var(--space-12);
 }
 
 .compose-button {
@@ -153,6 +154,7 @@ function formatDate(dateStr: string): string {
 .header-content {
   display: flex;
   justify-content: space-between;
+  padding-right: var(--space-12);
 }
 
 .inbox-title {

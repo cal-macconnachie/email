@@ -123,6 +123,15 @@ locals {
       source_dir       = "${path.module}/dist/lambdas/auth/verify-auth-challenge-response"
       environment_vars = {}
     }
+    pre_token_generation = {
+      description      = "Cognito trigger: Add custom claims to tokens"
+      handler          = "index.handler"
+      runtime          = "nodejs22.x"
+      timeout          = 10
+      memory_size      = 128
+      source_dir       = "${path.module}/dist/lambdas/auth/pre-token-generation"
+      environment_vars = {}
+    }
     # Auth Lambda Functions - API Endpoints
     request_otp = {
       description = "Initiate SMS OTP authentication flow"

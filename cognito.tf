@@ -48,6 +48,7 @@ resource "aws_cognito_user_pool" "main" {
     define_auth_challenge          = aws_lambda_function.functions["define_auth_challenge"].arn
     create_auth_challenge          = aws_lambda_function.functions["create_auth_challenge"].arn
     verify_auth_challenge_response = aws_lambda_function.functions["verify_auth_challenge_response"].arn
+    pre_token_generation           = aws_lambda_function.functions["pre_token_generation"].arn
   }
 
   tags = {
@@ -160,6 +161,14 @@ resource "aws_lambda_permission" "cognito_verify_auth_challenge" {
   statement_id  = "AllowCognitoInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions["verify_auth_challenge_response"].function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
+}
+
+resource "aws_lambda_permission" "cognito_pre_token_generation" {
+  statement_id  = "AllowCognitoInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.functions["pre_token_generation"].function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }

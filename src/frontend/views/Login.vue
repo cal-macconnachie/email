@@ -19,7 +19,7 @@
             />
           </div>
 
-          <base-button @click="handleRequestOtp" variant="primary" full-width :disabled="authStore.isLoading">
+          <base-button @click="handleRequestOtp" variant="ghost-primary" full-width :disabled="authStore.isLoading">
             {{ authStore.isLoading ? 'Sending...' : 'Login' }}
           </base-button>
         </form>
@@ -43,11 +43,11 @@
               />
             </div>
 
-            <base-button @click="handleVerifyOtp" variant="primary" full-width :disabled="authStore.isLoading" class="verify-button">
+            <base-button @click="handleVerifyOtp" variant="ghost-primary" full-width :disabled="authStore.isLoading" class="verify-button">
               {{ authStore.isLoading ? 'Verifying...' : 'Verify' }}
             </base-button>
 
-            <base-button type="button" variant="secondary" full-width @click="handleReset">
+            <base-button type="button" variant="ghost-secondary" full-width @click="handleReset">
               Use different number
             </base-button>
           </form>
