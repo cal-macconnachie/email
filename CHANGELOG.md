@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.34](https://github.com/cal-macconnachie/email/compare/v0.0.33...v0.0.34) (2025-12-31)
+
+
+### Features
+
+* one month refresh ([f7575c5](https://github.com/cal-macconnachie/email/commit/f7575c5069a41b96777d497e83d7f9e80dcba5b1))
+
 ### [0.0.33](https://github.com/cal-macconnachie/email/compare/v0.0.32...v0.0.33) (2025-12-31)
 
 
