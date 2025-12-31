@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.31](https://github.com/cal-macconnachie/email/compare/v0.0.30...v0.0.31) (2025-12-31)
+
+
+### Features
+
+* attempt version ([65850c2](https://github.com/cal-macconnachie/email/commit/65850c2d07a8ae648be817083a70143666be1264))
+* attempt version ([3a9adba](https://github.com/cal-macconnachie/email/commit/3a9adba9139fc31a4fd9acc7e67badc51c117fe1))
+* changes ([792cea5](https://github.com/cal-macconnachie/email/commit/792cea56df18120c49ad56ff0c056ab681561361))
+
 ### [0.0.30](https://github.com/cal-macconnachie/email/compare/v0.0.29...v0.0.30) (2025-12-31)
 
 
