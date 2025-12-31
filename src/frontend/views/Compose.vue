@@ -10,12 +10,11 @@
       <base-card class="max-w-4xl mx-auto">
         <h1 class="text-2xl font-bold mb-6">Compose Email</h1>
 
-        <form @submit.prevent="handleSend">
+        <form>
           <div class="mb-4">
             <base-input
               id="to"
-              :value="formData.to"
-              @change="(e: Event) => formData.to = (e.target as HTMLInputElement).value"
+              v-model="formData.to"
               type="email"
               label="To"
               placeholder="recipient@example.com"
@@ -27,8 +26,7 @@
           <div class="mb-4">
             <base-input
               id="cc"
-              :value="formData.cc"
-              @change="(e: Event) => formData.cc = (e.target as HTMLInputElement).value"
+              v-model="formData.cc"
               type="text"
               label="CC (optional)"
               placeholder="cc@example.com"
@@ -38,8 +36,7 @@
           <div class="mb-4">
             <base-input
               id="bcc"
-              :value="formData.bcc"
-              @change="(e: Event) => formData.bcc = (e.target as HTMLInputElement).value"
+              v-model="formData.bcc"
               type="text"
               label="BCC (optional)"
               placeholder="bcc@example.com"
@@ -49,8 +46,7 @@
           <div class="mb-4">
             <base-input
               id="subject"
-              :value="formData.subject"
-              @change="(e: Event) => formData.subject = (e.target as HTMLInputElement).value"
+              v-model="formData.subject"
               type="text"
               label="Subject"
               placeholder="Email subject"
@@ -61,8 +57,7 @@
           <div class="mb-6">
             <base-textarea
               id="body"
-              :value="formData.body"
-              @change="(e: Event) => formData.body = (e.target as HTMLTextAreaElement).value"
+              v-model="formData.body"
               label="Message"
               :rows="12"
               placeholder="Write your message..."
@@ -84,9 +79,9 @@
             </base-button>
 
             <base-button
-              type="submit"
               variant="primary"
               :disabled="emailStore.isLoading"
+              @click="handleSend"
             >
               {{ emailStore.isLoading ? 'Sending...' : 'Send' }}
             </base-button>

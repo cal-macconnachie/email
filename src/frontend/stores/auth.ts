@@ -16,6 +16,10 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     error.value = null
     try {
+      if (phone.trim() === '') {
+        error.value = 'Phone number is required'
+        return
+      }
       const response = await api.auth.requestOtp(phone)
       otpSession.value = response.session
       otpRequested.value = true

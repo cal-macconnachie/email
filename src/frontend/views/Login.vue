@@ -4,12 +4,12 @@
     padding="lg"
   >
       <div v-if="!authStore.otpRequested">
-        <form @submit.prevent="handleRequestOtp">
+        <form>
           <div class="mb-6">
             <base-input
               id="phone"
-              :value="sanitizePhoneNumber(phoneNumber)"
-              @change="(e: Event) => phoneNumber = sanitizePhoneNumber((e.target as HTMLInputElement).value)"
+              ref="phoneNumberInput"
+              v-model="phoneNumber"
               type="tel"
               label="Phone Number"
               placeholder="+15551234567"
@@ -17,7 +17,7 @@
             />
           </div>
 
-          <base-button type="submit" variant="primary" full-width :disabled="authStore.isLoading">
+          <base-button @click="handleRequestOtp" variant="primary" full-width :disabled="authStore.isLoading">
             {{ authStore.isLoading ? 'Sending...' : 'Login' }}
           </base-button>
         </form>
@@ -28,12 +28,11 @@
           <p class="text-sm text-gray-600 mb-4">
             We've sent a 6-digit code to {{ phoneNumber }}
           </p>
-          <form @submit.prevent="handleVerifyOtp">
+          <form>
             <div class="mb-6">
               <base-input
                 id="otp"
-                :value="otpCode"
-                @change="(e: Event) => otpCode = (e.target as HTMLInputElement).value"
+                v-model="otpCode"
                 type="text"
                 label="Verification Code"
                 placeholder="000000"
@@ -42,7 +41,7 @@
               />
             </div>
 
-            <base-button type="submit" variant="primary" full-width :disabled="authStore.isLoading" class="mb-3">
+            <base-button @click="handleVerifyOtp" variant="primary" full-width :disabled="authStore.isLoading" class="mb-3">
               {{ authStore.isLoading ? 'Verifying...' : 'Verify' }}
             </base-button>
 
@@ -53,7 +52,7 @@
         </div>
       </div>
 
-      <div v-if="authStore.error" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+      <div v-if="authStore.error" class="error-message">
         {{ authStore.error }}
       </div>
   </base-card>
@@ -61,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import { BaseInput } from '@cal.macconnachie/web-components'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
@@ -110,5 +110,12 @@ function sanitizePhoneNumber(input: string): string {
     justify-content: center;
     align-items: center;
     height: 100vh;
+  }
+  .error-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
+    border-radius: var(--radius-md);
   }
 </style>
