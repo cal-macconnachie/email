@@ -165,6 +165,17 @@ locals {
       source_dir       = "${path.module}/dist/lambdas/auth/logout"
       environment_vars = {}
     }
+    refresh_token = {
+      description = "Refresh access token using refresh token"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/auth/refresh-token"
+      environment_vars = {
+        # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
+      }
+    }
     lambda_authorizer = {
       description      = "Lambda authorizer to validate JWT from cookies"
       handler          = "index.handler"
@@ -396,9 +407,10 @@ resource "aws_lambda_function" "functions" {
 # These are created after Cognito to avoid circular dependency
 resource "aws_lambda_function" "auth_api_functions" {
   for_each = {
-    request_otp = local.lambda_functions["request_otp"]
-    verify_otp  = local.lambda_functions["verify_otp"]
-    logout      = local.lambda_functions["logout"]
+    request_otp   = local.lambda_functions["request_otp"]
+    verify_otp    = local.lambda_functions["verify_otp"]
+    logout        = local.lambda_functions["logout"]
+    refresh_token = local.lambda_functions["refresh_token"]
   }
 
   function_name = "${local.lambda_prefix}-${each.key}"

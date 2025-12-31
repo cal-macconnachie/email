@@ -66,6 +66,14 @@ resource "aws_apigatewayv2_integration" "verify_otp" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "refresh_token" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.auth_api_functions["refresh_token"].invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
 # Protected Routes (require Cognito JWT)
 resource "aws_apigatewayv2_integration" "logout" {
   api_id                 = aws_apigatewayv2_api.main.id
@@ -134,6 +142,12 @@ resource "aws_apigatewayv2_route" "verify_otp" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "POST /api/auth/verify-otp"
   target    = "integrations/${aws_apigatewayv2_integration.verify_otp.id}"
+}
+
+resource "aws_apigatewayv2_route" "refresh_token" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "POST /api/auth/refresh"
+  target    = "integrations/${aws_apigatewayv2_integration.refresh_token.id}"
 }
 
 # Routes - Protected (Require Lambda Authorization)
@@ -206,6 +220,14 @@ resource "aws_lambda_permission" "api_gateway_verify_otp" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.auth_api_functions["verify_otp"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_refresh_token" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.auth_api_functions["refresh_token"].function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }

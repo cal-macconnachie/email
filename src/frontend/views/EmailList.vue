@@ -11,13 +11,16 @@
     <header class="email-header">
       <div class="header-content">
         <div class="header-actions">
+          <div v-if="emailStore.isRefreshing" class="refresh-indicator">
+            <span class="refresh-text">Refreshing...</span>
+          </div>
           <base-button @click="handleLogout" variant="ghost-secondary">Logout</base-button>
         </div>
       </div>
     </header>
 
     <main class="email-main">
-      <div v-if="emailStore.isLoading" class="loading-state">
+      <div v-if="emailStore.isLoading && emailStore.emails.length === 0" class="loading-state">
         <p class="loading-text">Loading emails...</p>
       </div>
 
@@ -168,6 +171,28 @@ function formatDate(dateStr: string): string {
 .header-actions {
   display: flex;
   gap: var(--space-2);
+  align-items: center;
+}
+
+.refresh-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.refresh-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .email-main {

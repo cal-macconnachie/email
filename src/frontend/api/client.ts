@@ -75,6 +75,16 @@ export const api = {
       const json = await response.json()
       if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Logout failed')
     },
+
+    async refresh(): Promise<{ message: string }> {
+      const response = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const json = await response.json()
+      if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Token refresh failed')
+      return json
+    },
   },
 
   emails: {

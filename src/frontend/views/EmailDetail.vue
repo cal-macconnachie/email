@@ -34,11 +34,11 @@
       </base-card>
 
       <base-card v-else-if="emailStore.currentEmail" variant="elevated" padding="lg">
-        <div v-if="emailStore.currentEmail.cc" class="cc-info">
+        <div v-if="emailStore.currentEmail.cc && emailStore.currentEmail.cc.length > 0" class="cc-info">
           <p class="cc-text"><strong>CC:</strong> {{ emailStore.currentEmail.cc.join(', ') }}</p>
         </div>
 
-        <div class="email-body" v-html="emailStore.currentEmail.body"></div>
+        <div class="email-body" v-html="parsedBody.content"></div>
 
         <div v-if="emailStore.currentEmail.attachment_keys && emailStore.currentEmail.attachment_keys.length > 0" class="attachments-section">
           <h3 class="section-title">Attachments ({{ emailStore.currentEmail.attachment_keys.length }})</h3>
@@ -104,18 +104,36 @@ const router = useRouter()
 const route = useRoute()
 const emailStore = useEmailStore()
 const threadEmails = ref<Email[]>([])
+const parsedBody = ref<{ isHtml: boolean; content: string }>({ isHtml: false, content: '' })
 
 onMounted(async () => {
   try {
     const decodedKey = decodeURIComponent(props.s3Key)
-    await emailStore.fetchEmailDetail(decodedKey)
 
-    if (emailStore.currentEmail && !emailStore.currentEmail.read) {
-      await emailStore.markAsRead(emailStore.currentEmail.timestamp)
+    // Check if we already have this email cached with body
+    const cachedEmail = emailStore.currentEmail?.s3_key === decodedKey && emailStore.currentEmail?.body
+      ? emailStore.currentEmail
+      : emailStore.emails.find(e => e.s3_key === decodedKey && e.body)
+
+    if (cachedEmail) {
+      // Use cached email
+      emailStore.currentEmail = cachedEmail
+    } else {
+      // Fetch from API if not cached
+      await emailStore.fetchEmailDetail(decodedKey)
     }
 
-    if (emailStore.currentEmail?.thread_id) {
-      threadEmails.value = await emailStore.fetchThread(emailStore.currentEmail.thread_id, false)
+    if (emailStore.currentEmail) {
+      // Parse the email body
+      parsedBody.value = parseEmailBody(emailStore.currentEmail.body)
+
+      if (!emailStore.currentEmail.read) {
+        await emailStore.markAsRead(emailStore.currentEmail.timestamp)
+      }
+
+      if (emailStore.currentEmail.thread_id) {
+        threadEmails.value = await emailStore.fetchThread(emailStore.currentEmail.thread_id, false)
+      }
     }
   } catch (error) {
     console.error('Failed to fetch email:', error)
@@ -161,17 +179,74 @@ function formatDate(dateStr: string): string {
 function getFilename(key: string): string {
   return key.split('/').pop() || key
 }
+
+function parseEmailBody(rawBody: string): { isHtml: boolean; content: string } {
+  if (!rawBody) return { isHtml: false, content: '' }
+
+  // Check if the body contains MIME headers
+  const headerEndIndex = rawBody.search(/\r?\n\r?\n/)
+
+  if (headerEndIndex === -1) {
+    // No headers found, treat as plain text or HTML based on content
+    const isHtml = /<[a-z][\s\S]*>/i.test(rawBody)
+    return {
+      isHtml,
+      content: isHtml ? rawBody : rawBody.replace(/\r?\n/g, '<br>')
+    }
+  }
+
+  // Extract headers and body
+  const headerSection = rawBody.substring(0, headerEndIndex)
+  let bodyContent = rawBody.substring(headerEndIndex).trim()
+
+  // Parse headers
+  const headers: Record<string, string> = {}
+  const headerLines = headerSection.split(/\r?\n/)
+
+  for (const line of headerLines) {
+    const colonIndex = line.indexOf(':')
+    if (colonIndex > 0) {
+      const key = line.substring(0, colonIndex).trim().toLowerCase()
+      const value = line.substring(colonIndex + 1).trim()
+      headers[key] = value
+    }
+  }
+
+  // Get content type and encoding
+  const contentType = headers['content-type'] || ''
+  const transferEncoding = headers['content-transfer-encoding'] || ''
+  const isHtml = contentType.toLowerCase().includes('text/html')
+
+  // Decode based on Content-Transfer-Encoding
+  if (transferEncoding.toLowerCase() === 'quoted-printable') {
+    bodyContent = decodeQuotedPrintable(bodyContent)
+  } else if (transferEncoding.toLowerCase() === 'base64') {
+    try {
+      bodyContent = atob(bodyContent.replace(/\s/g, ''))
+    } catch (e) {
+      console.error('Failed to decode base64:', e)
+    }
+  }
+
+  // If it's plain text, convert newlines to <br>
+  if (!isHtml) {
+    bodyContent = bodyContent.replace(/\r?\n/g, '<br>')
+  }
+
+  return { isHtml, content: bodyContent }
+}
+
+function decodeQuotedPrintable(text: string): string {
+  return text
+    .replace(/=\r?\n/g, '') // Remove soft line breaks
+    .replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+}
 </script>
 
 <style scoped>
 .email-detail-container {
   min-height: 100vh;
   background-color: var(--color-bg-secondary);
-}
-
-.email-detail-header {
-  background-color: var(--color-bg-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .header-content {
@@ -254,6 +329,8 @@ function getFilename(key: string): string {
 .email-body {
   line-height: var(--line-height-relaxed);
   max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .attachments-section {

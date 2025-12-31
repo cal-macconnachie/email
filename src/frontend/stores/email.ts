@@ -6,6 +6,7 @@ export const useEmailStore = defineStore('email', () => {
   const emails = ref<Email[]>([])
   const currentEmail = ref<Email | null>(null)
   const isLoading = ref(false)
+  const isRefreshing = ref(false)
   const error = ref<string | null>(null)
   const lastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
 
@@ -22,8 +23,17 @@ export const useEmailStore = defineStore('email', () => {
   })
 
   async function fetchEmails(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number }) {
-    isLoading.value = true
+    // Determine if this is initial load or background refresh
+    const hasExistingEmails = emails.value.length > 0
+
+    if (hasExistingEmails) {
+      isRefreshing.value = true
+    } else {
+      isLoading.value = true
+    }
+
     error.value = null
+
     try {
       const response = await api.emails.list(params)
       emails.value = response.emails
@@ -33,6 +43,7 @@ export const useEmailStore = defineStore('email', () => {
       throw err
     } finally {
       isLoading.value = false
+      isRefreshing.value = false
     }
   }
 
@@ -140,6 +151,7 @@ export const useEmailStore = defineStore('email', () => {
     emails,
     currentEmail,
     isLoading,
+    isRefreshing,
     error,
     unreadCount,
     threads,

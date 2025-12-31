@@ -42,10 +42,19 @@ const router = createRouter({
 })
 
 // Navigation guard to check authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth !== false
 
+  // Check if we have an access token
+  authStore.checkAuth()
+
+  // If not authenticated, try to refresh the token
+  if (!authStore.isAuthenticated) {
+    await authStore.refreshToken()
+  }
+
+  // Now check if authentication is required
   if (requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if (to.name === 'login' && authStore.isAuthenticated) {

@@ -79,6 +79,25 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated.value = document.cookie.includes('AccessToken')
   }
 
+  async function refreshToken() {
+    // Only attempt refresh if we have a refresh token but no access token
+    if (!document.cookie.includes('RefreshToken')) {
+      isAuthenticated.value = false
+      return false
+    }
+
+    try {
+      await api.auth.refresh()
+      isAuthenticated.value = true
+      return true
+    } catch (err) {
+      // Refresh token is invalid or expired
+      console.log('Token refresh failed:', err)
+      isAuthenticated.value = false
+      return false
+    }
+  }
+
   function resetOtpFlow() {
     otpRequested.value = false
     otpSession.value = null
@@ -95,6 +114,7 @@ export const useAuthStore = defineStore('auth', () => {
     verifyOtp,
     logout,
     checkAuth,
+    refreshToken,
     resetOtpFlow,
   }
 })

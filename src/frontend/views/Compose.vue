@@ -2,7 +2,7 @@
   <div class="compose-container">
     <header class="compose-header">
       <div class="header-content">
-        <base-button @click="handleCancel" variant="secondary">← Cancel</base-button>
+        <base-button @click="handleCancel" variant="secondary">←</base-button>
       </div>
     </header>
 
@@ -155,9 +155,7 @@ async function handleSend() {
 }
 
 function handleCancel() {
-  if (confirm('Discard this email?')) {
-    router.back()
-  }
+  router.back()
 }
 </script>
 
@@ -168,8 +166,6 @@ function handleCancel() {
 }
 
 .compose-header {
-  background-color: var(--color-bg-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .header-content {
