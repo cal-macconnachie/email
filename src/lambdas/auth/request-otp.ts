@@ -120,8 +120,8 @@ async function ensureUserExists(userPoolId: string, phoneNumber: string): Promis
       })
     )
     console.log(`User ${phoneNumber} already exists`)
-  } catch (error: any) {
-    if (error.name === 'UserNotFoundException') {
+  } catch (error: unknown) {
+    if ((error as Error).name === 'UserNotFoundException') {
       // Create user
       console.log(`Creating new user: ${phoneNumber}`)
       await cognitoClient.send(

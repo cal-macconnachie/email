@@ -105,11 +105,11 @@ export const handler = async (
         },
       }),
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error verifying OTP:', error)
 
     // Handle specific Cognito errors
-    if (error.name === 'NotAuthorizedException') {
+    if ((error as Error).name === 'NotAuthorizedException') {
       return {
         statusCode: 401,
         headers: { 'Content-Type': 'application/json' },

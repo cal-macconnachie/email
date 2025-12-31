@@ -8,6 +8,7 @@ import { VerifyAuthChallengeResponseTriggerEvent, VerifyAuthChallengeResponseTri
 export const handler: VerifyAuthChallengeResponseTriggerHandler = async (
   event: VerifyAuthChallengeResponseTriggerEvent
 ) => {
+  await new Promise((resolve) => setTimeout(resolve, 10)) // Simulate async work
   console.log('VerifyAuthChallengeResponse event:', JSON.stringify(event, null, 2))
 
   const { request, response } = event

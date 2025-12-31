@@ -12,6 +12,7 @@ import { DefineAuthChallengeTriggerEvent, DefineAuthChallengeTriggerHandler } fr
 export const handler: DefineAuthChallengeTriggerHandler = async (
   event: DefineAuthChallengeTriggerEvent
 ) => {
+  await new Promise((resolve) => setTimeout(resolve, 10)) // Simulate async work
   console.log('DefineAuthChallenge event:', JSON.stringify(event, null, 2))
 
   const { request, response } = event
