@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.25](https://github.com/cal-macconnachie/email/compare/v0.0.24...v0.0.25) (2025-12-31)
+
+
+### Bug Fixes
+
+* add api to path ([ab03e63](https://github.com/cal-macconnachie/email/commit/ab03e632811053a6970af0039ab6f014cf9f475a))
+
 ### [0.0.24](https://github.com/cal-macconnachie/email/compare/v0.0.23...v0.0.24) (2025-12-31)
 
 
