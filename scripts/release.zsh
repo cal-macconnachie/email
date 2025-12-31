@@ -53,7 +53,7 @@ fi
 
 # run standard-version for release tagging
 echo "Creating release tag..."
-npx standard-version
+yarn standard-version
 
 echo "\nRelease tag created successfully!"
 git push --follow-tags origin main
