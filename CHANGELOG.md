@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.20](https://github.com/cal-macconnachie/email/compare/v0.0.19...v0.0.20) (2025-12-31)
+
+
+### Features
+
+* big change to macconnachie.com ([51a263e](https://github.com/cal-macconnachie/email/commit/51a263e70e7088ccfd1c530d72532e22e88962b3))
+
+
+### Bug Fixes
+
+* get all dist files ([e203fc0](https://github.com/cal-macconnachie/email/commit/e203fc0c29eeffc872f7cac0e2667af72846e550))
+* lets see ([21494eb](https://github.com/cal-macconnachie/email/commit/21494eb83ea477ac8a785b2bc7e2bf63e4214787))
+* lint ([859bb00](https://github.com/cal-macconnachie/email/commit/859bb00a69fbfa023e7e6e24f7dc69f44d3ddadf))
+
 ### [0.0.19](https://github.com/cal-macconnachie/email/compare/v0.0.18...v0.0.19) (2025-12-30)
 
 
