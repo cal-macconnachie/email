@@ -29,11 +29,13 @@ export async function getAuthenticatedRecipient(
   event: APIGatewayProxyEvent
 ): Promise<AuthResult | AuthError> {
   try {
-    // Extract JWT claims from API Gateway authorizer context
-    const claims = event.requestContext?.authorizer?.jwt?.claims
+    // Extract claims from Lambda authorizer context
+    // Lambda authorizer puts context in event.requestContext.authorizer.lambda
+    const authorizer = event.requestContext?.authorizer
+    const context = authorizer?.lambda || authorizer
 
-    if (!claims) {
-      console.error('No JWT claims found in request context')
+    if (!context) {
+      console.error('No authorizer context found in request')
       return {
         success: false,
         statusCode: 401,
@@ -41,11 +43,11 @@ export async function getAuthenticatedRecipient(
       }
     }
 
-    // Extract phone number from JWT claims
-    const phoneNumber = claims.phone_number as string | undefined
+    // Extract phone number from authorizer context
+    const phoneNumber = context.phone_number as string | undefined
 
     if (!phoneNumber) {
-      console.error('No phone_number in JWT claims')
+      console.error('No phone_number in authorizer context')
       return {
         success: false,
         statusCode: 401,

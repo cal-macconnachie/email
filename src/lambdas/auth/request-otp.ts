@@ -5,6 +5,7 @@ import {
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { get } from '../helpers/dynamo-helpers/get'
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION })
 
@@ -58,9 +59,24 @@ export const handler = async (
 
     const userPoolId = process.env.COGNITO_USER_POOL_ID
     const clientId = process.env.COGNITO_CLIENT_ID
+    const phoneEmailRelationsTable = process.env.PHONE_EMAIL_RELATIONS_TABLE
 
-    if (!userPoolId || !clientId) {
+    if (!userPoolId || !clientId || !phoneEmailRelationsTable) {
       throw new Error('Cognito configuration missing')
+    }
+
+    // Check if phone number is authorized (exists in phone-email relations table)
+    const isAuthorized = await checkPhoneNumberAuthorized(phoneEmailRelationsTable, phone_number)
+
+    if (!isAuthorized) {
+      console.log(`Unauthorized phone number attempted OTP request: ${phone_number}`)
+      return {
+        statusCode: 403,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: 'Access denied. This phone number is not authorized to access the system.',
+        }),
+      }
     }
 
     // Check if user exists, create if not
@@ -104,6 +120,27 @@ export const handler = async (
         message: error instanceof Error ? error.message : 'Unknown error',
       }),
     }
+  }
+}
+
+/**
+ * Check if phone number is authorized (exists in phone-email relations table)
+ */
+async function checkPhoneNumberAuthorized(
+  tableName: string,
+  phoneNumber: string
+): Promise<boolean> {
+  try {
+    const mapping = await get<{ phone_number: string; email_prefix: string }>({
+      tableName,
+      key: { phone_number: phoneNumber },
+    })
+
+    // Return true if mapping exists with an email_prefix
+    return !!(mapping && mapping.email_prefix)
+  } catch (error) {
+    console.error('Error checking phone number authorization:', error)
+    return false
   }
 }
 

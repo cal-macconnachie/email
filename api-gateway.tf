@@ -27,17 +27,25 @@ resource "aws_apigatewayv2_stage" "default" {
   }
 }
 
-# Cognito JWT Authorizer
-resource "aws_apigatewayv2_authorizer" "cognito" {
-  api_id           = aws_apigatewayv2_api.main.id
-  authorizer_type  = "JWT"
-  identity_sources = ["$request.header.Authorization"]
-  name             = "cognito-authorizer"
+# Lambda Authorizer (validates JWT from cookies)
+resource "aws_apigatewayv2_authorizer" "lambda" {
+  api_id                            = aws_apigatewayv2_api.main.id
+  authorizer_type                   = "REQUEST"
+  authorizer_uri                    = aws_lambda_function.lambda_authorizer.invoke_arn
+  identity_sources                  = ["$request.header.Cookie"]
+  name                              = "lambda-authorizer"
+  authorizer_payload_format_version = "2.0"
+  enable_simple_responses           = false
+  authorizer_result_ttl_in_seconds  = 300
+}
 
-  jwt_configuration {
-    audience = [aws_cognito_user_pool_client.main.id]
-    issuer   = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
-  }
+# Permission for API Gateway to invoke Lambda authorizer
+resource "aws_lambda_permission" "api_gateway_authorizer" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_authorizer.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.lambda.id}"
 }
 
 # Lambda Integrations
@@ -128,61 +136,61 @@ resource "aws_apigatewayv2_route" "verify_otp" {
   target    = "integrations/${aws_apigatewayv2_integration.verify_otp.id}"
 }
 
-# Routes - Protected (Require Cognito JWT)
+# Routes - Protected (Require Lambda Authorization)
 resource "aws_apigatewayv2_route" "logout" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "POST /api/auth/logout"
   target             = "integrations/${aws_apigatewayv2_integration.logout.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "send_email" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "POST /api/emails/send"
   target             = "integrations/${aws_apigatewayv2_integration.send_email.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "list_emails" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "GET /api/emails/list"
   target             = "integrations/${aws_apigatewayv2_integration.list_emails.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "get_full_email" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "GET /api/emails/detail"
   target             = "integrations/${aws_apigatewayv2_integration.get_full_email.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "update_email" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "POST /api/emails/update"
   target             = "integrations/${aws_apigatewayv2_integration.update_email.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "get_thread_emails" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "GET /api/emails/thread"
   target             = "integrations/${aws_apigatewayv2_integration.get_thread_emails.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 resource "aws_apigatewayv2_route" "get_attachment_upload_presign" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "POST /api/attachments/upload-url"
   target             = "integrations/${aws_apigatewayv2_integration.get_attachment_upload_presign.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
 
 # Lambda Permissions for API Gateway to invoke functions

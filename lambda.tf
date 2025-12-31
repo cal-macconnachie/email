@@ -133,6 +133,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/auth/request-otp"
       environment_vars = {
         # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
       }
     }
     verify_otp = {
@@ -153,6 +154,15 @@ locals {
       timeout          = 10
       memory_size      = 128
       source_dir       = "${path.module}/dist/lambdas/auth/logout"
+      environment_vars = {}
+    }
+    lambda_authorizer = {
+      description      = "Lambda authorizer to validate JWT from cookies"
+      handler          = "index.handler"
+      runtime          = "nodejs22.x"
+      timeout          = 10
+      memory_size      = 128
+      source_dir       = "${path.module}/dist/lambdas/auth/lambda-authorizer"
       environment_vars = {}
     }
   }
@@ -414,6 +424,48 @@ resource "aws_lambda_function" "auth_api_functions" {
     {
       Name     = "${local.lambda_prefix}-${each.key}"
       Function = each.key
+    }
+  )
+
+  depends_on = [
+    aws_cloudwatch_log_group.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_cognito_user_pool.main,
+    aws_cognito_user_pool_client.main
+  ]
+}
+
+# Lambda Authorizer (needs Cognito config)
+resource "aws_lambda_function" "lambda_authorizer" {
+  function_name = "${local.lambda_prefix}-lambda-authorizer"
+  description   = local.lambda_functions["lambda_authorizer"].description
+  role          = aws_iam_role.lambda_execution.arn
+  handler       = local.lambda_functions["lambda_authorizer"].handler
+  runtime       = local.lambda_functions["lambda_authorizer"].runtime
+  timeout       = local.lambda_functions["lambda_authorizer"].timeout
+  memory_size   = local.lambda_functions["lambda_authorizer"].memory_size
+
+  filename         = data.archive_file.lambda_zip["lambda_authorizer"].output_path
+  source_code_hash = data.archive_file.lambda_zip["lambda_authorizer"].output_base64sha256
+
+  environment {
+    variables = {
+      ENVIRONMENT          = var.environment
+      REGION               = var.aws_region
+      COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
+      COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+    }
+  }
+
+  tracing_config {
+    mode = "PassThrough"
+  }
+
+  tags = merge(
+    local.lambda_common_tags,
+    {
+      Name     = "${local.lambda_prefix}-lambda-authorizer"
+      Function = "lambda_authorizer"
     }
   )
 
