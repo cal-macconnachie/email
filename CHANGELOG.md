@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.29](https://github.com/cal-macconnachie/email/compare/v0.0.28...v0.0.29) (2025-12-31)
+
+
+### Bug Fixes
+
+* alignment ([b873e05](https://github.com/cal-macconnachie/email/commit/b873e051ec93f879d474207bb50f209115e15250))
+* correct structure ([2d1a6d5](https://github.com/cal-macconnachie/email/commit/2d1a6d5c89fa4ef183e63514db326878a1b88748))
+
 ### [0.0.28](https://github.com/cal-macconnachie/email/compare/v0.0.27...v0.0.28) (2025-12-31)
 
 
