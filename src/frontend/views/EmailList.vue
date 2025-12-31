@@ -10,7 +10,6 @@
 
     <header class="email-header">
       <div class="header-content">
-        <h1 class="inbox-title">Inbox</h1>
         <div class="header-actions">
           <base-button @click="handleLogout" variant="secondary">Logout</base-button>
         </div>
@@ -137,7 +136,6 @@ function formatDate(dateStr: string): string {
 .email-list-container {
   display: flex;
   flex-direction: column;
-  padding-top: var(--space-8);
 }
 
 .compose-button {
@@ -154,7 +152,6 @@ function formatDate(dateStr: string): string {
 .header-content {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .inbox-title {
