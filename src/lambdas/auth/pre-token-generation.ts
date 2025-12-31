@@ -11,6 +11,7 @@ export const handler = async (
   event: PreTokenGenerationTriggerEvent,
   _context: Context
 ): Promise<PreTokenGenerationTriggerEvent> => {
+  await Promise.resolve() // for linting async function without await
   console.log('Pre-token generation event:', JSON.stringify(event, null, 2))
 
   try {
