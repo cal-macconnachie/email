@@ -65,11 +65,20 @@ export const handler = async (
 
     console.log('Phone number from token:', phoneNumber)
 
-    // Generate IAM policy - use routeArn for HTTP API v2
+    // Generate wildcard resource to allow all routes in the API
+    // routeArn format: arn:aws:execute-api:region:account:apiId/stage/method/path
+    // We'll replace the method/path with */* to allow all routes
+    const arnParts = event.routeArn.split('/')
+    const wildcardArn = `${arnParts[0]}/${arnParts[1]}/*/*`
+
+    console.log('Original routeArn:', event.routeArn)
+    console.log('Wildcard resource:', wildcardArn)
+
+    // Generate IAM policy - use wildcard to allow all routes
     const policy = generatePolicy(
       payload.sub, // Use subject as principalId
       'Allow',
-      event.routeArn,
+      wildcardArn,
       {
         phone_number: phoneNumber,
         sub: payload.sub,
