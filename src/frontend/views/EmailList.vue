@@ -136,6 +136,7 @@ function formatDate(dateStr: string): string {
 .email-list-container {
   display: flex;
   flex-direction: column;
+  padding: var(--space-6);
 }
 
 .compose-button {

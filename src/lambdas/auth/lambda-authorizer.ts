@@ -54,18 +54,22 @@ export const handler = async (
     const payload = await verifier.verify(token)
 
     console.log('Token verified successfully:', payload.sub)
+    console.log('Username (phone number):', payload.username)
 
     // Generate IAM policy - use routeArn for HTTP API v2
+    // Note: username IS the phone number in our Cognito setup
     const policy = generatePolicy(
       payload.sub, // Use subject as principalId
       'Allow',
       event.routeArn,
       {
-        phone_number: payload.phone_number as string,
+        phone_number: payload.username, // username is the phone number
         sub: payload.sub,
         username: payload.username,
       }
     )
+
+    console.log('Returning policy with context:', JSON.stringify(policy.context, null, 2))
 
     return policy
   } catch (error) {
