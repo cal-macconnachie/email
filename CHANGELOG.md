@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.32](https://github.com/cal-macconnachie/email/compare/v0.0.31...v0.0.32) (2025-12-31)
+
+
+### Features
+
+* access token ([9d0e4c0](https://github.com/cal-macconnachie/email/commit/9d0e4c0cba6d5a9feaea2c47de590b9bd204ce44))
+
 ### [0.0.31](https://github.com/cal-macconnachie/email/compare/v0.0.30...v0.0.31) (2025-12-31)
 
 
