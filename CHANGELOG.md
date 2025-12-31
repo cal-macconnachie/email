@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.33](https://github.com/cal-macconnachie/email/compare/v0.0.32...v0.0.33) (2025-12-31)
+
+
+### Bug Fixes
+
+* greater auth access ([fb41607](https://github.com/cal-macconnachie/email/commit/fb416072b1ea4da365b801152a766404d1c5b0b8))
+* less gap ([a6e70ee](https://github.com/cal-macconnachie/email/commit/a6e70ee232c7e60a658ab17566c3c78490b87576))
+
 ### [0.0.32](https://github.com/cal-macconnachie/email/compare/v0.0.31...v0.0.32) (2025-12-31)
 
 
