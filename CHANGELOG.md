@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.27](https://github.com/cal-macconnachie/email/compare/v0.0.26...v0.0.27) (2025-12-31)
+
+
+### Features
+
+* frontent change ([d46da6c](https://github.com/cal-macconnachie/email/commit/d46da6c017888d9ed70f98cf28d32f980144e97d))
+
 ### [0.0.26](https://github.com/cal-macconnachie/email/compare/v0.0.25...v0.0.26) (2025-12-31)
 
 
