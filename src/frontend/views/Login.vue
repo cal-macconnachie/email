@@ -34,6 +34,7 @@
             <div class="form-field">
               <base-input
                 id="otp"
+                ref="otpInput"
                 v-model="otpCode"
                 type="text"
                 label="Verification Code"
@@ -63,7 +64,7 @@
 
 <script setup lang="ts">
 import { BaseInput } from '@cal.macconnachie/web-components'
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -72,6 +73,41 @@ const authStore = useAuthStore()
 
 const phoneNumber = ref('')
 const otpCode = ref('')
+
+const phoneNumberInput = ref<InstanceType<typeof BaseInput> | null>(null)
+const otpInput = ref<InstanceType<typeof BaseInput> | null>(null)
+
+function handleEnterKey(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (!authStore.otpRequested) {
+      handleRequestOtp()
+    } else {
+      handleVerifyOtp()
+    }
+  }
+}
+
+onMounted(() => {
+  phoneNumberInput.value?.focus()
+  // listener for enter key to submit forms
+  window.addEventListener('keydown', handleEnterKey)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleEnterKey)
+})
+
+watch (
+  () => authStore.otpRequested,
+  (newVal: boolean) => {
+    if (newVal) {
+      otpInput.value?.focus()
+    } else {
+      phoneNumberInput.value?.focus()
+    }
+  }
+)
 
 async function handleRequestOtp() {
   try {
