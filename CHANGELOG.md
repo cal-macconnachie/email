@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.41](https://github.com/cal-macconnachie/email/compare/v0.0.40...v0.0.41) (2026-01-01)
+
+
+### Bug Fixes
+
+* logout ([23651ae](https://github.com/cal-macconnachie/email/commit/23651ae145c2a7753be1c025eaf3aad6b2575ddf))
+
 ### [0.0.40](https://github.com/cal-macconnachie/email/compare/v0.0.39...v0.0.40) (2026-01-01)
 
 
