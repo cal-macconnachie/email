@@ -2,7 +2,7 @@ import {
   AdminRespondToAuthChallengeCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider'
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION })
 
@@ -19,9 +19,9 @@ interface VerifyOtpRequest {
  * returns JWT tokens (AccessToken, IdToken, RefreshToken) as HTTP-only cookies.
  */
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEventV2,
   _context: Context
-): Promise<APIGatewayProxyResult> => {
+): Promise<APIGatewayProxyResultV2> => {
   try {
     console.log('Verify OTP event:', JSON.stringify(event, null, 2))
 

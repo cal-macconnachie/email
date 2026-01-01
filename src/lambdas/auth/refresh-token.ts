@@ -2,7 +2,7 @@ import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
 } from '@aws-sdk/client-cognito-identity-provider'
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION })
 
@@ -14,16 +14,17 @@ const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.RE
  * re-entering their OTP on every page load.
  */
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEventV2,
   _context: Context
-): Promise<APIGatewayProxyResult> => {
+): Promise<APIGatewayProxyResultV2> => {
   try {
-    console.log('Refresh token event')
+    console.log('Refresh token event:', JSON.stringify(event, null, 2))
 
-    // Extract refresh token from cookies
-    const cookies = event.headers?.cookie || event.headers?.Cookie || ''
+    // Extract refresh token from cookies (v2 format uses event.cookies array)
+    const cookies = event.cookies || []
 
-    if (!cookies) {
+    if (cookies.length === 0) {
+      console.log('No cookies found in request')
       return {
         statusCode: 401,
         headers: { 'Content-Type': 'application/json' },
@@ -31,10 +32,11 @@ export const handler = async (
       }
     }
 
-    // Parse RefreshToken from cookies
-    const refreshTokenMatch = cookies.match(/RefreshToken=([^;]+)/)
+    // Find RefreshToken cookie
+    const refreshTokenCookie = cookies.find(cookie => cookie.startsWith('RefreshToken='))
 
-    if (!refreshTokenMatch || !refreshTokenMatch[1]) {
+    if (!refreshTokenCookie) {
+      console.log('RefreshToken cookie not found. Available cookies:', cookies)
       return {
         statusCode: 401,
         headers: { 'Content-Type': 'application/json' },
@@ -42,7 +44,8 @@ export const handler = async (
       }
     }
 
-    const refreshToken = refreshTokenMatch[1]
+    // Extract the token value from "RefreshToken=value"
+    const refreshToken = refreshTokenCookie.split('=')[1]
 
     const clientId = process.env.COGNITO_CLIENT_ID
 

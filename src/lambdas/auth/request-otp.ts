@@ -4,7 +4,7 @@ import {
   AdminInitiateAuthCommand,
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider'
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 import { get } from '../helpers/dynamo-helpers/get'
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION })
@@ -20,9 +20,9 @@ interface RequestOtpRequest {
  * and initiates the custom auth flow which triggers OTP generation and SMS sending.
  */
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEventV2,
   _context: Context
-): Promise<APIGatewayProxyResult> => {
+): Promise<APIGatewayProxyResultV2> => {
   try {
     console.log('Request OTP event:', JSON.stringify(event, null, 2))
 
