@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.38](https://github.com/cal-macconnachie/email/compare/v0.0.37...v0.0.38) (2026-01-01)
+
+
+### Bug Fixes
+
+* no headers only multivalue ([49cbe23](https://github.com/cal-macconnachie/email/commit/49cbe23d146cc9e2ad308f25ed8ed65162d8668d))
+
 ### [0.0.37](https://github.com/cal-macconnachie/email/compare/v0.0.36...v0.0.37) (2026-01-01)
 
 
