@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.43](https://github.com/cal-macconnachie/email/compare/v0.0.42...v0.0.43) (2026-01-01)
+
+
+### Bug Fixes
+
+* space effficient list ([ca36a8b](https://github.com/cal-macconnachie/email/commit/ca36a8b1b92876e90d4f0fea48d030f2d07961de))
+
 ### [0.0.42](https://github.com/cal-macconnachie/email/compare/v0.0.41...v0.0.42) (2026-01-01)
 
 
