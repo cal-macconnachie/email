@@ -93,9 +93,7 @@ export const handler = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      multiValueHeaders: {
-        'Set-Cookie': [accessTokenCookie, idTokenCookie],
-      },
+      cookies: [accessTokenCookie, idTokenCookie],
       body: JSON.stringify({
         message: 'Tokens refreshed successfully',
       }),

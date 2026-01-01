@@ -95,10 +95,10 @@ export const handler = async (
 
     return {
       statusCode: 200,
-      multiValueHeaders: {
-        'Set-Cookie': [accessTokenCookie, idTokenCookie, refreshTokenCookie],
-        'Content-Type': ['application/json'],
+      headers: {
+        'Content-Type': 'application/json',
       },
+      cookies: [accessTokenCookie, idTokenCookie, refreshTokenCookie],
       body: JSON.stringify({
         message: 'Authentication successful',
         user: {

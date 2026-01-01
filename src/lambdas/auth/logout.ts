@@ -22,7 +22,10 @@ export const handler = async (
     }
 
     // Clear cookies by setting Max-Age=0
-    const cookieOptions = 'HttpOnly; Secure; SameSite=Lax; Path=/; Domain=macconnachie.com; Max-Age=0'
+    const isProduction = process.env.STAGE === 'prod'
+    const domainSuffix = isProduction ? '; Domain=macconnachie.com' : ''
+    const secureFlag = isProduction ? 'Secure; ' : ''
+    const cookieOptions = `HttpOnly; ${secureFlag}SameSite=Lax; Path=/${domainSuffix}; Max-Age=0`
     const clearAccessToken = `AccessToken=; ${cookieOptions}`
     const clearIdToken = `IdToken=; ${cookieOptions}`
     const clearRefreshToken = `RefreshToken=; ${cookieOptions}`
