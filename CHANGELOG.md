@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.39](https://github.com/cal-macconnachie/email/compare/v0.0.38...v0.0.39) (2026-01-01)
+
+
+### Bug Fixes
+
+* correct cookies ([2390bf4](https://github.com/cal-macconnachie/email/commit/2390bf4e17acc78f907591210cab2ce40032ea76))
+* enter ([476d64d](https://github.com/cal-macconnachie/email/commit/476d64df4e95975ef265f23ff1f0527bdd9a4a9d))
+
 ### [0.0.38](https://github.com/cal-macconnachie/email/compare/v0.0.37...v0.0.38) (2026-01-01)
 
 
