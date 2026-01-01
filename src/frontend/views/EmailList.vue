@@ -1,22 +1,19 @@
 <template>
   <div class="email-list-container">
     <div class="search-bar-section">
-      <base-card variant="elevated" padding="sm">
-        <div class="search-bar-wrapper">
-          <base-input
-            v-model="searchQuery"
-            placeholder="Search emails..."
-            @focus="showFiltersDropdown = true"
-          />
-          <base-button
-            variant="ghost"
-            size="sm"
-            @click="showFiltersDropdown = !showFiltersDropdown"
-          >
-            Filters
-          </base-button>
-        </div>
-      </base-card>
+      <div class="search-bar-wrapper">
+        <base-input
+          v-model="searchQuery"
+          placeholder="Search emails..."
+        />
+        <base-button
+          variant="ghost"
+          size="sm"
+          @click="showFiltersDropdown = !showFiltersDropdown"
+        >
+          Filters
+        </base-button>
+      </div>
 
       <!-- Filters Dropdown -->
       <base-card
@@ -305,6 +302,7 @@ function formatDate(dateStr: string): string {
   right: 0;
   z-index: 10;
   max-width: 600px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .filters-content {

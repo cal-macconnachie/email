@@ -52,8 +52,8 @@ onMounted(() => {
     position: fixed;
     bottom: 1rem;
     right: 1rem;
-    width: 50px;
-    height: 50px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     background-color: var(--color-bg-muted);
     z-index: 1000;
