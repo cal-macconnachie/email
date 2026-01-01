@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.45](https://github.com/cal-macconnachie/email/compare/v0.0.44...v0.0.45) (2026-01-01)
+
+
+### Bug Fixes
+
+* button fixes filters and such ([9e14909](https://github.com/cal-macconnachie/email/commit/9e149096b6187720213065ad19e4b3cfd8d0473e))
+
 ### [0.0.44](https://github.com/cal-macconnachie/email/compare/v0.0.43...v0.0.44) (2026-01-01)
 
 
