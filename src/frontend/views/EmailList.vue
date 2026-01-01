@@ -1,77 +1,5 @@
 <template>
   <div class="email-list-container">
-    <div class="search-bar-section">
-      <div class="search-bar-wrapper">
-        <base-input
-          v-model="searchQuery"
-          placeholder="Search emails..."
-        />
-        <base-button
-          variant="ghost"
-          size="sm"
-          @click="showFiltersDropdown = !showFiltersDropdown"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
-        </base-button>
-      </div>
-
-      <!-- Filters Dropdown -->
-      <base-card
-        v-if="showFiltersDropdown"
-        ref="filtersDropdown"
-        variant="muted"
-        padding="md"
-        class="filters-dropdown"
-      >
-        <div class="filters-content">
-          <div class="filter-row">
-            <label class="filter-label">Sender</label>
-            <base-input
-              v-model="filters.sender"
-              placeholder="Filter by sender email"
-            />
-          </div>
-
-          <div class="filter-row">
-            <label class="filter-label">Start Date</label>
-            <base-datetime-picker
-              v-model="filters.startDate"
-              placeholder="Select start date"
-            />
-          </div>
-
-          <div class="filter-row">
-            <label class="filter-label">End Date</label>
-            <base-datetime-picker
-              v-model="filters.endDate"
-              placeholder="Select end date"
-            />
-          </div>
-
-          <div class="filter-actions">
-            <base-button variant="primary" @click="applyFiltersAndClose">
-              Apply Filters
-            </base-button>
-            <base-button variant="ghost" @click="clearFilters">
-              Clear Filters
-            </base-button>
-          </div>
-        </div>
-      </base-card>
-    </div>
-
     <main class="email-main">
       <div v-if="emailStore.isLoading && emailStore.emails.length === 0" class="loading-state">
         <p class="loading-text">Loading emails...</p>
@@ -97,6 +25,31 @@
           padding="sm"
           class="email-list-card">
         <div class="email-list-header">
+          <div class="search-bar-wrapper">
+            <base-input
+              v-model="searchQuery"
+              placeholder="Search emails..."
+            />
+            <base-button
+              variant="ghost"
+              size="sm"
+              @click="showFiltersDropdown = !showFiltersDropdown"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+            </base-button>
+          </div>
           <base-button
             variant="ghost"
             size="sm"
@@ -118,6 +71,59 @@
               <path d="M12 5v14M19 12l-7 7-7-7" />
             </svg>
           </base-button>
+        </div>
+
+        <!-- Filters Dropdown -->
+        <div v-if="showFiltersDropdown" class="filters-dropdown-container">
+          <base-card
+            ref="filtersDropdown"
+            variant="muted"
+            padding="md"
+            class="filters-dropdown"
+          >
+            <div class="filters-content">
+              <div class="filter-row">
+                <label class="filter-label">Sender</label>
+                <base-input
+                  v-model="filters.sender"
+                  placeholder="Filter by sender email"
+                />
+              </div>
+
+              <div class="filter-row">
+                <label class="filter-label">Start Date</label>
+                <base-datetime-picker
+                  id="start-datetime"
+                  v-model="filters.startDate"
+                  label="Start Date"
+                  placeholder="Select start date"
+                  format="12"
+                  size="md"
+                />
+              </div>
+
+              <div class="filter-row">
+                <label class="filter-label">End Date</label>
+                <base-datetime-picker
+                  id="end-datetime"
+                  v-model="filters.endDate"
+                  label="End Date"
+                  placeholder="Select end date"
+                  format="12"
+                  size="md"
+                />
+              </div>
+
+              <div class="filter-actions">
+                <base-button variant="primary" @click="applyFiltersAndClose">
+                  Apply Filters
+                </base-button>
+                <base-button variant="ghost" @click="clearFilters">
+                  Clear Filters
+                </base-button>
+              </div>
+            </div>
+          </base-card>
         </div>
         <div
           v-for="email in filteredEmails"
@@ -163,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, nextTick } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
@@ -325,25 +331,25 @@ function formatDate(dateStr: string): string {
   gap: var(--space-4);
 }
 
-.search-bar-section {
-  width: 100%;
-  position: relative;
-}
-
 .search-bar-wrapper {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2);
+  flex: 1;
+}
+
+.filters-dropdown-container {
+  position: relative;
+  width: 100%;
 }
 
 .filters-dropdown {
   position: absolute;
-  top: calc(100% + var(--space-2));
+  top: var(--space-2);
   left: 0;
   right: 0;
   z-index: 100;
-  max-width: 600px;
+  max-width: 100%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: visible;
 }
@@ -371,14 +377,6 @@ function formatDate(dateStr: string): string {
   color: var(--color-text-secondary);
 }
 
-.filters-dropdown :deep(.base-datetime-picker) {
-  z-index: 101;
-}
-
-.filters-dropdown :deep(.datetime-picker-dropdown) {
-  z-index: 102;
-}
-
 .filter-actions {
   display: flex;
   gap: var(--space-2);
@@ -391,7 +389,9 @@ function formatDate(dateStr: string): string {
 
 .email-list-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2);
   border-bottom: 1px solid var(--color-border);
 }

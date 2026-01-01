@@ -71,6 +71,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: translateY(-50%);
   }
   .theme-toggle {
     position: fixed;

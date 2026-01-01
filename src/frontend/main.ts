@@ -1,10 +1,12 @@
 import {
   registerBaseButton,
   registerBaseCard,
+  registerBaseDatePicker,
   registerBaseDateTimePicker,
   registerBaseDrawer,
   registerBaseInput,
   registerBaseTextarea,
+  registerBaseTimePicker,
   registerThemeToggle
 } from '@cal.macconnachie/web-components'
 import { createPinia } from 'pinia'
@@ -21,6 +23,8 @@ registerBaseCard()
 registerThemeToggle()
 registerBaseDrawer()
 registerBaseDateTimePicker()
+registerBaseDatePicker()
+registerBaseTimePicker()
 
 const app = createApp(App)
 const pinia = createPinia()
