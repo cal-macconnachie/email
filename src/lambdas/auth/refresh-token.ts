@@ -80,11 +80,11 @@ export const handler = async (
     console.log('Tokens refreshed successfully')
 
     // Set HTTP-only cookies with new tokens
-    // Note: Domain is omitted to allow cookies to work on any domain/subdomain
-    // Secure flag should only be used in production (HTTPS)
+    // Domain is required for cookies to work across subdomains (www.macconnachie.com and macconnachie.com)
     const isProduction = process.env.STAGE === 'prod'
+    const domainSuffix = isProduction ? '; Domain=macconnachie.com' : ''
     const secureFlag = isProduction ? 'Secure; ' : ''
-    const cookieOptions = `HttpOnly; ${secureFlag}SameSite=Lax; Path=/`
+    const cookieOptions = `HttpOnly; ${secureFlag}SameSite=Lax; Path=/${domainSuffix}`
     const accessTokenCookie = `AccessToken=${AccessToken}; Max-Age=3600; ${cookieOptions}`
     const idTokenCookie = `IdToken=${IdToken}; Max-Age=3600; ${cookieOptions}`
 

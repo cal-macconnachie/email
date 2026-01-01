@@ -74,24 +74,31 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function checkAuth() {
-    // Check if we have a valid cookie by attempting to access a protected resource
-    // This is a simple check - in a production app you might want to call a /me endpoint
-    isAuthenticated.value = document.cookie.includes('AccessToken')
+    // Note: We can't check HttpOnly cookies from JavaScript (they're not in document.cookie)
+    // This is intentional for security. The authentication state is managed by the store
+    // and verified server-side on each API request. We only update isAuthenticated here
+    // if we have no auth state yet - otherwise trust the store state.
+    // The real check happens server-side when making authenticated requests.
+
+    // Do nothing if already authenticated - trust the store state
+    if (isAuthenticated.value) {
+      return
+    }
+
+    // If we have a phone number in state, we might be authenticated
+    // The refresh token flow will verify this
   }
 
   async function refreshToken() {
-    // Only attempt refresh if we have a refresh token but no access token
-    if (!document.cookie.includes('RefreshToken')) {
-      isAuthenticated.value = false
-      return false
-    }
+    // RefreshToken is HttpOnly so we can't check it from JavaScript
+    // Just try to refresh - the server will tell us if there's no valid refresh token
 
     try {
       await api.auth.refresh()
       isAuthenticated.value = true
       return true
     } catch (err) {
-      // Refresh token is invalid or expired
+      // Refresh token is invalid, expired, or doesn't exist
       console.log('Token refresh failed:', err)
       isAuthenticated.value = false
       return false

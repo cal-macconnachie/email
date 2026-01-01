@@ -46,18 +46,25 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth !== false
 
-  // Check if we have an access token
+  // checkAuth doesn't overwrite existing auth state - it's safe to call
   authStore.checkAuth()
 
-  // If not authenticated, try to refresh the token
+  // If not authenticated, try to refresh the token (this checks HttpOnly cookies server-side)
   if (!authStore.isAuthenticated) {
-    await authStore.refreshToken()
+    const refreshed = await authStore.refreshToken()
+    // If refresh succeeded, we're authenticated now
+    if (!refreshed && requiresAuth) {
+      // Can't refresh and route requires auth - go to login
+      next({ name: 'login', query: { redirect: to.fullPath } })
+      return
+    }
   }
 
   // Now check if authentication is required
   if (requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if (to.name === 'login' && authStore.isAuthenticated) {
+    // Already logged in, redirect to emails
     next({ name: 'emails' })
   } else {
     next()

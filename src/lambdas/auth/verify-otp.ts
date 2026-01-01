@@ -84,11 +84,11 @@ export const handler = async (
     console.log(`OTP verified successfully for ${phone_number}`)
 
     // Set HTTP-only cookies
-    // Note: Domain is omitted to allow cookies to work on any domain/subdomain
-    // Secure flag should only be used in production (HTTPS)
+    // Domain is required for cookies to work across subdomains (www.macconnachie.com and macconnachie.com)
     const isProduction = process.env.STAGE === 'prod'
+    const domainSuffix = isProduction ? '; Domain=macconnachie.com' : ''
     const secureFlag = isProduction ? 'Secure; ' : ''
-    const cookieOptions = `HttpOnly; ${secureFlag}SameSite=Lax; Path=/`
+    const cookieOptions = `HttpOnly; ${secureFlag}SameSite=Lax; Path=/${domainSuffix}`
     const accessTokenCookie = `AccessToken=${AccessToken}; Max-Age=3600; ${cookieOptions}`
     const idTokenCookie = `IdToken=${IdToken}; Max-Age=3600; ${cookieOptions}`
     const refreshTokenCookie = `RefreshToken=${RefreshToken}; Max-Age=2592000; ${cookieOptions}`
@@ -97,7 +97,6 @@ export const handler = async (
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Set-Cookie': accessTokenCookie,
       },
       multiValueHeaders: {
         'Set-Cookie': [accessTokenCookie, idTokenCookie, refreshTokenCookie],
