@@ -11,14 +11,27 @@
           size="sm"
           @click="showFiltersDropdown = !showFiltersDropdown"
         >
-          Filters
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
         </base-button>
       </div>
 
       <!-- Filters Dropdown -->
       <base-card
         v-if="showFiltersDropdown"
-        variant="elevated"
+        ref="filtersDropdown"
+        variant="muted"
         padding="md"
         class="filters-dropdown"
       >
@@ -45,26 +58,6 @@
               v-model="filters.endDate"
               placeholder="Select end date"
             />
-          </div>
-
-          <div class="filter-row">
-            <label class="filter-label">Sort Order</label>
-            <div class="sort-order-toggle">
-              <base-button
-                :variant="filters.sortOrder === 'DESC' ? 'primary' : 'ghost'"
-                size="sm"
-                @click="filters.sortOrder = 'DESC'"
-              >
-                Newest First
-              </base-button>
-              <base-button
-                :variant="filters.sortOrder === 'ASC' ? 'primary' : 'ghost'"
-                size="sm"
-                @click="filters.sortOrder = 'ASC'"
-              >
-                Oldest First
-              </base-button>
-            </div>
           </div>
 
           <div class="filter-actions">
@@ -101,7 +94,31 @@
 
       <base-card v-else
           variant="elevated"
-          padding="sm">
+          padding="sm"
+          class="email-list-card">
+        <div class="email-list-header">
+          <base-button
+            variant="ghost"
+            size="sm"
+            @click="toggleSortOrder"
+            class="sort-button"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
+            >
+              <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+          </base-button>
+        </div>
         <div
           v-for="email in filteredEmails"
           :key="email.id"
@@ -146,7 +163,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
@@ -157,6 +174,7 @@ const emailStore = useEmailStore()
 const authStore = useAuthStore()
 
 const showFiltersDropdown = ref(false)
+const filtersDropdown = ref<HTMLElement | null>(null)
 const searchQuery = ref('')
 const filters = ref({
   sender: '',
@@ -186,6 +204,18 @@ function fetchEmails() {
 
 const fetchingInterval = ref<NodeJS.Timeout | null>(null)
 
+function handleClickOutside(event: MouseEvent) {
+  if (showFiltersDropdown.value && filtersDropdown.value) {
+    const target = event.target as Node
+    if (!filtersDropdown.value.contains(target)) {
+      const filterButton = document.querySelector('.search-bar-wrapper button')
+      if (filterButton && !filterButton.contains(target)) {
+        showFiltersDropdown.value = false
+      }
+    }
+  }
+}
+
 onMounted(async () => {
   try {
     await emailStore.fetchEmails()
@@ -194,6 +224,10 @@ onMounted(async () => {
   }
   // set up timer to fetch emails every 60 seconds
   fetchingInterval.value = setInterval(fetchEmails, 60000)
+
+  // Add click outside listener
+  await nextTick()
+  document.addEventListener('click', handleClickOutside)
 })
 
 onBeforeUnmount(() => {
@@ -201,6 +235,8 @@ onBeforeUnmount(() => {
   if (fetchingInterval.value !== null) {
     clearInterval(fetchingInterval.value)
   }
+  // Remove click outside listener
+  document.removeEventListener('click', handleClickOutside)
 })
 
 async function handleLogout() {
@@ -255,6 +291,11 @@ async function clearFilters() {
   }
 }
 
+async function toggleSortOrder() {
+  filters.value.sortOrder = filters.value.sortOrder === 'DESC' ? 'ASC' : 'DESC'
+  await applyFilters()
+}
+
 function handleEmailClick(email: Email) {
   router.push({ name: 'email-detail', params: { s3Key: encodeURIComponent(email.s3_key) } })
 }
@@ -293,6 +334,7 @@ function formatDate(dateStr: string): string {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-2);
 }
 
 .filters-dropdown {
@@ -300,9 +342,10 @@ function formatDate(dateStr: string): string {
   top: calc(100% + var(--space-2));
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 100;
   max-width: 600px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: visible;
 }
 
 .filters-content {
@@ -310,12 +353,16 @@ function formatDate(dateStr: string): string {
   flex-direction: column;
   gap: var(--space-4);
   margin-top: var(--space-4);
+  overflow: visible;
 }
 
 .filter-row {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  position: relative;
+  z-index: 1;
+  overflow: visible;
 }
 
 .filter-label {
@@ -324,15 +371,37 @@ function formatDate(dateStr: string): string {
   color: var(--color-text-secondary);
 }
 
-.sort-order-toggle {
-  display: flex;
-  gap: var(--space-2);
+.filters-dropdown :deep(.base-datetime-picker) {
+  z-index: 101;
+}
+
+.filters-dropdown :deep(.datetime-picker-dropdown) {
+  z-index: 102;
 }
 
 .filter-actions {
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-2);
+}
+
+.email-list-card {
+  position: relative;
+}
+
+.email-list-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sort-button svg {
+  transition: transform 0.3s ease;
+}
+
+.rotate-arrow {
+  transform: rotate(180deg);
 }
 
 .compose-button {

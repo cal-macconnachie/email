@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="min-h-screen">
     <div class="compose-button">
-      <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="sm">+</base-button>
+      <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="theme-toggle">
       <theme-toggle size="sm"/>
@@ -52,11 +52,22 @@ onMounted(() => {
     position: fixed;
     bottom: 1rem;
     right: 1rem;
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background-color: var(--color-bg-muted);
     z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .compose-plus {
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
