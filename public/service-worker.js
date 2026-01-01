@@ -43,33 +43,29 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // not api should use network then fall back to cache if no network
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
+        // Check if we received a valid response
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response
         }
 
-        // Clone the request
-        const fetchRequest = event.request.clone()
+        // Clone the response
+        const responseToCache = response.clone()
 
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response
-          }
+        // Open the cache and put the fetched response in it
+        caches.open(CACHE_NAME)
+          .then((cache) => {
+            cache.put(event.request, responseToCache)
+          })
 
-          // Clone the response
-          const responseToCache = response.clone()
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache)
-            })
-
-          return response
-        })
+        return response
+      })
+      .catch(() => {
+        // If network request fails, try to serve from cache
+        return caches.match(event.request)
       })
   )
 })
