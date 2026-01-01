@@ -17,12 +17,13 @@
         </router-link>
       </div>
 
-      <div v-else class="email-list">
-        <base-card
+      <base-card v-else
+          variant="elevated"
+          padding="sm">
+        <div
           v-for="email in emailStore.emails"
           :key="email.id"
-          variant="elevated"
-          padding="md"
+          class="email-list-item"
           hoverable
           @click="handleEmailClick(email)"
         >
@@ -55,8 +56,8 @@
               {{ formatDate(email.created_at) }}
             </div>
           </div>
-        </base-card>
-      </div>
+        </div>
+      </base-card>
 
       <div v-if="emailStore.unreadCount > 0" class="unread-count">
         {{ emailStore.unreadCount }} unread email{{ emailStore.unreadCount !== 1 ? 's' : '' }}
@@ -97,15 +98,13 @@ function formatDate(dateStr: string): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  // date is utc, convert to local time for display
-  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
 
   if (diffHours < 24) {
-    return localDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   } else if (diffHours < 24 * 7) {
-    return localDate.toLocaleDateString([], { weekday: 'short' })
+    return date.toLocaleDateString([], { weekday: 'short' })
   } else {
-    return localDate.toLocaleDateString([], { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
   }
 }
 </script>
@@ -158,6 +157,20 @@ function formatDate(dateStr: string): string {
   color: var(--color-text-secondary);
   animation: pulse 2s ease-in-out infinite;
 }
+.email-list-item {
+  padding: var(--space-2) var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.email-list-item:hover {
+  background-color: var(--color-bg-muted);
+}
+
+.email-list-item:last-child {
+  border-bottom: none;
+}
 
 @keyframes pulse {
   0%, 100% {
@@ -207,7 +220,7 @@ function formatDate(dateStr: string): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-2);
   width: 100%;
 }
 
@@ -217,14 +230,14 @@ function formatDate(dateStr: string): string {
 }
 
 .email-details {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .email-sender {
-  margin: 0 0 var(--space-1) 0;
+  margin: 0;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .email-subject {
@@ -238,7 +251,7 @@ function formatDate(dateStr: string): string {
 
 .email-badges {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
   flex-wrap: wrap;
   align-items: center;
 }
