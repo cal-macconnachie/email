@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import Login from '../views/Login.vue'
-import EmailList from '../views/EmailList.vue'
 import EmailDetail from '../views/EmailDetail.vue'
-import Compose from '../views/Compose.vue'
+import EmailList from '../views/EmailList.vue'
+import Login from '../views/Login.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,13 +30,7 @@ const router = createRouter({
       component: EmailDetail,
       meta: { requiresAuth: true },
       props: true,
-    },
-    {
-      path: '/compose',
-      name: 'compose',
-      component: Compose,
-      meta: { requiresAuth: true },
-    },
+    }
   ],
 })
 

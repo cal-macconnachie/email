@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { api, type Email } from '../api/client'
 
 export const useEmailStore = defineStore('email', () => {
@@ -9,6 +9,21 @@ export const useEmailStore = defineStore('email', () => {
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
   const lastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
+
+  const formData = ref({
+    to: '',
+    cc: '',
+    bcc: '',
+    subject: '',
+    body: '',
+  })
+
+  const replyData = ref<{
+    inReplyTo?: string
+    references?: string[]
+  }>({})
+
+  const composing = ref(false)
 
   const unreadCount = computed(() => emails.value.filter(email => !email.read).length)
   const threads = computed(() => {
@@ -147,6 +162,26 @@ export const useEmailStore = defineStore('email', () => {
     currentEmail.value = null
   }
 
+  function resetCompose() {
+    formData.value = {
+      to: '',
+      cc: '',
+      bcc: '',
+      subject: '',
+      body: '',
+    }
+    replyData.value = {}
+    composing.value = false
+  }
+
+  function prepareReply(email: Email) {
+    formData.value.to = email.sender
+    formData.value.subject = `Re: ${email.subject || ''}`
+    replyData.value.inReplyTo = email.message_id
+    replyData.value.references = email.references || []
+    composing.value = true
+  }
+
   return {
     emails,
     currentEmail,
@@ -155,6 +190,9 @@ export const useEmailStore = defineStore('email', () => {
     error,
     unreadCount,
     threads,
+    formData,
+    replyData,
+    composing,
     fetchEmails,
     fetchEmailDetail,
     sendEmail,
@@ -162,5 +200,7 @@ export const useEmailStore = defineStore('email', () => {
     toggleArchived,
     fetchThread,
     clearCurrentEmail,
+    resetCompose,
+    prepareReply,
   }
 })

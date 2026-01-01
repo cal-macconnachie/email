@@ -125,7 +125,7 @@ onMounted(async () => {
 
     if (emailStore.currentEmail) {
       // Parse the email body
-      parsedBody.value = parseEmailBody(emailStore.currentEmail.body)
+      parsedBody.value = parseEmailBody(emailStore.currentEmail.body ?? '')
 
       if (!emailStore.currentEmail.read) {
         await emailStore.markAsRead(emailStore.currentEmail.timestamp)
@@ -151,16 +151,7 @@ async function handleToggleArchive() {
 
 function handleReply() {
   if (!emailStore.currentEmail) return
-
-  router.push({
-    name: 'compose',
-    query: {
-      replyTo: emailStore.currentEmail.sender,
-      subject: `Re: ${emailStore.currentEmail.subject || ''}`,
-      inReplyTo: emailStore.currentEmail.message_id,
-      references: emailStore.currentEmail.references?.join(',') || '',
-    },
-  })
+  emailStore.prepareReply(emailStore.currentEmail)
 }
 
 function handleThreadEmailClick(email: Email) {

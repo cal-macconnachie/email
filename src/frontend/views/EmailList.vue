@@ -1,23 +1,5 @@
 <template>
   <div class="email-list-container">
-    <base-button
-      variant="link-primary"
-      class="compose-button"
-      @click="navigateToCompose"
-    >
-      +
-    </base-button>
-
-    <header class="email-header">
-      <div class="header-content">
-        <div class="header-actions">
-          <div v-if="emailStore.isRefreshing" class="refresh-indicator">
-            <span class="refresh-text">Refreshing...</span>
-          </div>
-          <base-button @click="handleLogout" variant="ghost-secondary">Logout</base-button>
-        </div>
-      </div>
-    </header>
 
     <main class="email-main">
       <div v-if="emailStore.isLoading && emailStore.emails.length === 0" class="loading-state">
@@ -108,15 +90,6 @@ function navigateToCompose() {
 
 function handleEmailClick(email: Email) {
   router.push({ name: 'email-detail', params: { s3Key: encodeURIComponent(email.s3_key) } })
-}
-
-async function handleLogout() {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch (error) {
-    console.error('Logout failed:', error)
-  }
 }
 
 function formatDate(dateStr: string): string {

@@ -1,20 +1,12 @@
 <template>
   <div class="compose-container">
-    <header class="compose-header">
-      <div class="header-content">
-        <base-button @click="handleCancel" variant="secondary">←</base-button>
-      </div>
-    </header>
-
     <main class="compose-main">
       <base-card variant="elevated" padding="lg" class="compose-card">
-        <h1 class="compose-title">Compose Email</h1>
-
         <form class="compose-form">
           <div class="form-field">
             <base-input
               id="to"
-              v-model="formData.to"
+              v-model="emailStore.formData.to"
               type="email"
               label="To"
               placeholder="recipient@example.com"
@@ -26,7 +18,7 @@
           <div class="form-field">
             <base-input
               id="cc"
-              v-model="formData.cc"
+              v-model="emailStore.formData.cc"
               type="text"
               label="CC (optional)"
               placeholder="cc@example.com"
@@ -36,7 +28,7 @@
           <div class="form-field">
             <base-input
               id="bcc"
-              v-model="formData.bcc"
+              v-model="emailStore.formData.bcc"
               type="text"
               label="BCC (optional)"
               placeholder="bcc@example.com"
@@ -46,7 +38,7 @@
           <div class="form-field">
             <base-input
               id="subject"
-              v-model="formData.subject"
+              v-model="emailStore.formData.subject"
               type="text"
               label="Subject"
               placeholder="Email subject"
@@ -57,7 +49,7 @@
           <div class="form-field form-field-textarea">
             <base-textarea
               id="body"
-              v-model="formData.body"
+              v-model="emailStore.formData.body"
               label="Message"
               :rows="12"
               placeholder="Write your message..."
@@ -93,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
 
@@ -101,36 +93,23 @@ const router = useRouter()
 const route = useRoute()
 const emailStore = useEmailStore()
 
-const formData = ref({
-  to: '',
-  cc: '',
-  bcc: '',
-  subject: '',
-  body: '',
-})
-
-const replyData = ref<{
-  inReplyTo?: string
-  references?: string[]
-}>({})
-
 onMounted(() => {
   // Pre-fill form if replying to an email
   if (route.query.replyTo) {
-    formData.value.to = route.query.replyTo as string
+    emailStore.formData.to = route.query.replyTo as string
   }
   if (route.query.subject) {
-    formData.value.subject = route.query.subject as string
+    emailStore.formData.subject = route.query.subject as string
   }
   if (route.query.inReplyTo) {
-    replyData.value.inReplyTo = route.query.inReplyTo as string
+    emailStore.replyData.inReplyTo = route.query.inReplyTo as string
   }
   if (route.query.references) {
     const refsString = route.query.references as string
-    replyData.value.references = refsString ? refsString.split(',') : []
+    emailStore.replyData.references = refsString ? refsString.split(',') : []
     // Add the inReplyTo to references for proper threading
-    if (replyData.value.inReplyTo) {
-      replyData.value.references.push(replyData.value.inReplyTo)
+    if (emailStore.replyData.inReplyTo) {
+      emailStore.replyData.references.push(emailStore.replyData.inReplyTo)
     }
   }
 })
@@ -138,13 +117,13 @@ onMounted(() => {
 async function handleSend() {
   try {
     const emailData = {
-      to: formData.value.to.split(',').map(e => e.trim()).filter(e => e),
-      subject: formData.value.subject,
-      body: formData.value.body,
-      cc: formData.value.cc ? formData.value.cc.split(',').map(e => e.trim()).filter(e => e) : undefined,
-      bcc: formData.value.bcc ? formData.value.bcc.split(',').map(e => e.trim()).filter(e => e) : undefined,
-      inReplyTo: replyData.value.inReplyTo,
-      references: replyData.value.references,
+      to: emailStore.formData.to.split(',').map(e => e.trim()).filter(e => e),
+      subject: emailStore.formData.subject,
+      body: emailStore.formData.body,
+      cc: emailStore.formData.cc ? emailStore.formData.cc.split(',').map(e => e.trim()).filter(e => e) : undefined,
+      bcc: emailStore.formData.bcc ? emailStore.formData.bcc.split(',').map(e => e.trim()).filter(e => e) : undefined,
+      inReplyTo: emailStore.replyData.inReplyTo,
+      references: emailStore.replyData.references,
     }
 
     await emailStore.sendEmail(emailData)
@@ -155,7 +134,7 @@ async function handleSend() {
 }
 
 function handleCancel() {
-  router.back()
+  emailStore.resetCompose()
 }
 </script>
 
@@ -217,6 +196,7 @@ function handleCancel() {
 
 .form-actions {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   padding-top: var(--space-4);

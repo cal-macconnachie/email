@@ -1,6 +1,7 @@
 import {
   registerBaseButton,
   registerBaseCard,
+  registerBaseDrawer,
   registerBaseInput,
   registerBaseTextarea,
   registerThemeToggle
@@ -17,6 +18,7 @@ registerBaseInput()
 registerBaseTextarea()
 registerBaseCard()
 registerThemeToggle()
+registerBaseDrawer()
 
 const app = createApp(App)
 const pinia = createPinia()
