@@ -8,16 +8,11 @@
           <div class="email-header-main">
             <h1 class="email-title">{{ emailStore.currentEmail.subject || '(No subject)' }}</h1>
             <div class="email-meta">
-              <p class="meta-item"><strong>From:</strong> {{ emailStore.currentEmail.sender }}</p>
-              <p class="meta-item"><strong>To:</strong> {{ emailStore.currentEmail.recipient }}</p>
-              <p class="meta-item"><strong>Date:</strong> {{ formatFullDate(emailStore.currentEmail.created_at) }}</p>
+              <p class="meta-item"><strong>Thread:</strong> {{ threadEmails.length }} message{{ threadEmails.length !== 1 ? 's' : '' }}</p>
             </div>
           </div>
 
           <div class="email-header-actions">
-            <base-button @click="handleToggleArchive" variant="ghost-secondary">
-              {{ emailStore.currentEmail.archived ? 'Unarchive' : 'Archive' }}
-            </base-button>
             <base-button @click="handleReply" variant="ghost-primary">Reply</base-button>
           </div>
         </div>
@@ -33,66 +28,75 @@
         {{ emailStore.error }}
       </base-card>
 
-      <base-card v-else-if="emailStore.currentEmail" variant="elevated" padding="lg">
-        <div v-if="emailStore.currentEmail.cc && emailStore.currentEmail.cc.length > 0" class="cc-info">
-          <p class="cc-text"><strong>CC:</strong> {{ emailStore.currentEmail.cc.join(', ') }}</p>
-        </div>
-
-        <div class="email-body" v-html="parsedBody.content"></div>
-
-        <div v-if="emailStore.currentEmail.attachment_keys && emailStore.currentEmail.attachment_keys.length > 0" class="attachments-section">
-          <h3 class="section-title">Attachments ({{ emailStore.currentEmail.attachment_keys.length }})</h3>
-          <div class="attachments-list">
-            <div
-              v-for="(key, index) in emailStore.currentEmail.attachment_keys"
-              :key="key"
-              class="attachment-item"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="16"
-                width="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="attachment-icon"
+      <div v-else-if="threadEmails.length > 0" class="thread-container">
+        <base-card
+          v-for="email in threadEmails"
+          :key="email.id"
+          :ref="email.s3_key === props.s3Key ? 'targetEmailCard' : undefined"
+          variant="elevated"
+          padding="lg"
+          class="thread-email-card"
+          :class="{ 'thread-email-active': email.s3_key === decodeURIComponent(props.s3Key) }"
+        >
+          <div class="thread-email-header">
+            <div class="thread-email-meta">
+              <p class="thread-email-sender"><strong>From:</strong> {{ email.sender }}</p>
+              <p class="thread-email-date">{{ formatFullDate(email.created_at) }}</p>
+            </div>
+            <div class="thread-email-actions">
+              <base-button
+                v-if="email.s3_key === decodeURIComponent(props.s3Key)"
+                @click="handleToggleArchive(email)"
+                variant="ghost-secondary"
+                size="sm"
               >
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-              </svg>
-              <span class="attachment-name">{{ getFilename(key) }}</span>
+                {{ email.archived ? 'Unarchive' : 'Archive' }}
+              </base-button>
             </div>
           </div>
-        </div>
 
-        <div v-if="emailStore.currentEmail.thread_id && threadEmails.length > 1" class="thread-section">
-          <h3 class="section-title">Thread ({{ threadEmails.length }} messages)</h3>
-          <div class="thread-list">
-            <div
-              v-for="email in threadEmails"
-              :key="email.id"
-              class="thread-item"
-              :class="{ 'thread-item-active': email.id === emailStore.currentEmail.id }"
-              @click="handleThreadEmailClick(email)"
-            >
-              <div class="thread-item-content">
-                <div class="thread-item-info">
-                  <p class="thread-subject">{{ email.subject || '(No subject)' }}</p>
-                  <p class="thread-sender">{{ email.sender }}</p>
-                </div>
-                <p class="thread-date">{{ formatDate(email.created_at) }}</p>
+          <div v-if="email.cc && email.cc.length > 0" class="cc-info">
+            <p class="cc-text"><strong>CC:</strong> {{ email.cc.join(', ') }}</p>
+          </div>
+
+          <div v-if="email.body" class="email-body" v-html="parseEmailBody(email.body).content"></div>
+          <div v-else class="email-body-loading">
+            <p>Loading email content...</p>
+          </div>
+
+          <div v-if="email.attachment_keys && email.attachment_keys.length > 0" class="attachments-section">
+            <h3 class="section-title">Attachments ({{ email.attachment_keys.length }})</h3>
+            <div class="attachments-list">
+              <div
+                v-for="key in email.attachment_keys"
+                :key="key"
+                class="attachment-item"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="attachment-icon"
+                >
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+                <span class="attachment-name">{{ getFilename(key) }}</span>
               </div>
             </div>
           </div>
-        </div>
-      </base-card>
+        </base-card>
+      </div>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { nextTick, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Email } from '../api/client'
 import { useEmailStore } from '../stores/email'
 
@@ -101,10 +105,9 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const route = useRoute()
 const emailStore = useEmailStore()
 const threadEmails = ref<Email[]>([])
-const parsedBody = ref<{ isHtml: boolean; content: string }>({ isHtml: false, content: '' })
+const targetEmailCard = ref<HTMLElement[]>([])
 
 onMounted(async () => {
   try {
@@ -119,20 +122,59 @@ onMounted(async () => {
       // Use cached email
       emailStore.currentEmail = cachedEmail
     } else {
-      // Fetch from API if not cached
+      // Fetch from API if not cached (this will also fetch thread relations)
       await emailStore.fetchEmailDetail(decodedKey)
     }
 
     if (emailStore.currentEmail) {
-      // Parse the email body
-      parsedBody.value = parseEmailBody(emailStore.currentEmail.body ?? '')
+      // Load thread emails from the response or the store
+      if (emailStore.currentEmail.thread_id) {
+        if (emailStore.currentEmail.threadEmails && emailStore.currentEmail.threadEmails.length > 0) {
+          // Use thread emails from the detail response, enhanced with cached data from store
+          threadEmails.value = emailStore.currentEmail.threadEmails.map(threadEmail => {
+            // Check if we have a cached version with body
+            const cachedVersion = emailStore.emails.find(e => e.s3_key === threadEmail.s3_key && e.body)
+            return cachedVersion || threadEmail
+          })
+        } else {
+          // Fallback to fetching thread separately if not included in response
+          threadEmails.value = await emailStore.fetchThread(emailStore.currentEmail.thread_id, false)
+        }
 
-      if (!emailStore.currentEmail.read) {
-        await emailStore.markAsRead(emailStore.currentEmail.timestamp)
+        // Fetch bodies for thread emails that don't have them yet
+        const emailsWithoutBodies = threadEmails.value.filter(email => !email.body)
+        await Promise.all(
+          emailsWithoutBodies.map(async (email) => {
+            try {
+              await emailStore.fetchEmailDetail(email.s3_key)
+              // Update the thread email with the fetched body
+              const updatedEmail = emailStore.emails.find(e => e.s3_key === email.s3_key)
+              if (updatedEmail) {
+                const index = threadEmails.value.findIndex(e => e.s3_key === email.s3_key)
+                if (index !== -1) {
+                  threadEmails.value[index] = updatedEmail
+                }
+              }
+            } catch (error) {
+              console.error(`Failed to fetch body for email ${email.s3_key}:`, error)
+            }
+          })
+        )
+      } else {
+        // Single email, not part of a thread
+        threadEmails.value = [emailStore.currentEmail]
       }
 
-      if (emailStore.currentEmail.thread_id) {
-        threadEmails.value = await emailStore.fetchThread(emailStore.currentEmail.thread_id, false)
+      // Mark the target email as read
+      const targetEmail = threadEmails.value.find(e => e.s3_key === decodedKey)
+      if (targetEmail && !targetEmail.read) {
+        await emailStore.markAsRead(targetEmail.timestamp)
+      }
+
+      // Scroll to the target email after rendering
+      await nextTick()
+      if (targetEmailCard.value && targetEmailCard.value.length > 0) {
+        targetEmailCard.value[0].scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
     }
   } catch (error) {
@@ -140,10 +182,14 @@ onMounted(async () => {
   }
 })
 
-async function handleToggleArchive() {
-  if (!emailStore.currentEmail) return
+async function handleToggleArchive(email: Email) {
   try {
-    await emailStore.toggleArchived(emailStore.currentEmail.timestamp)
+    await emailStore.toggleArchived(email.timestamp)
+    // Update the local thread emails
+    const index = threadEmails.value.findIndex(e => e.timestamp === email.timestamp)
+    if (index !== -1) {
+      threadEmails.value[index].archived = !threadEmails.value[index].archived
+    }
   } catch (error) {
     console.error('Failed to toggle archive:', error)
   }
@@ -154,17 +200,8 @@ function handleReply() {
   emailStore.prepareReply(emailStore.currentEmail)
 }
 
-function handleThreadEmailClick(email: Email) {
-  router.push({ name: 'email-detail', params: { s3Key: encodeURIComponent(email.s3_key) } })
-}
-
 function formatFullDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString()
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function getFilename(key: string): string {
@@ -292,6 +329,62 @@ function decodeQuotedPrintable(text: string): string {
   padding: var(--space-6);
 }
 
+.thread-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.thread-email-card {
+  scroll-margin-top: var(--space-20);
+  transition: all 0.3s ease;
+}
+
+.thread-email-active {
+  border-left: 4px solid var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary-light);
+}
+
+.thread-email-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.thread-email-meta {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.thread-email-sender {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.thread-email-date {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.thread-email-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.email-body-loading {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
 .loading-state {
   text-align: center;
   padding: var(--space-12);
@@ -359,63 +452,6 @@ function decodeQuotedPrintable(text: string): string {
 .attachment-name {
   flex: 1;
   font-size: var(--font-size-sm);
-}
-
-.thread-section {
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border);
-}
-
-.thread-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.thread-item {
-  padding: var(--space-3);
-  background-color: var(--color-bg-muted);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-}
-
-.thread-item:hover {
-  background-color: var(--color-bg-secondary);
-}
-
-.thread-item-active {
-  background-color: var(--color-primary-light);
-}
-
-.thread-item-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-2);
-}
-
-.thread-item-info {
-  flex: 1;
-}
-
-.thread-subject {
-  margin: 0 0 var(--space-1) 0;
-  font-weight: var(--font-weight-medium);
-}
-
-.thread-sender {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-.thread-date {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  white-space: nowrap;
 }
 
 @media (max-width: 768px) {

@@ -37,7 +37,7 @@ export const useEmailStore = defineStore('email', () => {
     return threadMap
   })
 
-  async function fetchEmails(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number }) {
+  async function fetchEmails(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC' }) {
     // Determine if this is initial load or background refresh
     const hasExistingEmails = emails.value.length > 0
 
@@ -73,6 +73,23 @@ export const useEmailStore = defineStore('email', () => {
       const index = emails.value.findIndex(e => e.s3_key === s3Key)
       if (index !== -1) {
         emails.value[index] = email
+      }
+
+      // If threadEmails are provided, merge them with existing emails in the store
+      if (email.threadEmails && email.threadEmails.length > 0) {
+        email.threadEmails.forEach(threadEmail => {
+          const existingIndex = emails.value.findIndex(e => e.s3_key === threadEmail.s3_key)
+          if (existingIndex !== -1) {
+            // Update existing email with thread email data, but preserve body if it exists
+            emails.value[existingIndex] = {
+              ...threadEmail,
+              body: emails.value[existingIndex].body || threadEmail.body,
+            }
+          } else {
+            // Add new thread email to the list
+            emails.value.push(threadEmail)
+          }
+        })
       }
 
       return email

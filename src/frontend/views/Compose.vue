@@ -170,6 +170,7 @@ function handleCancel() {
   flex-direction: column;
   overflow-y: auto;
   gap: var(--space-4);
+  padding: var(--space-2);
 }
 
 .form-field {

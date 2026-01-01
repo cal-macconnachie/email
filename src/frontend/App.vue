@@ -1,10 +1,10 @@
 <template>
   <div id="app" class="min-h-screen">
-    <div class="logout-button">
+    <div class="compose-button">
+      <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="sm">+</base-button>
     </div>
     <div class="theme-toggle">
-      <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="xs">Compose</base-button>
-      <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="xs">Logout</base-button>
+      <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
       <theme-toggle size="sm"/>
     </div>
     <router-view />
@@ -58,10 +58,14 @@ onMounted(() => {
 </script>
 
 <style>
-  .logout-button {
+  .compose-button {
     position: fixed;
-    top: 1rem;
-    left: 1rem;
+    bottom: 1rem;
+    right: 1rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--color-bg-secondary);
     z-index: 1000;
   }
   .theme-toggle {

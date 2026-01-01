@@ -30,6 +30,7 @@ interface Email {
   references?: string[]
   s3_key: string
   attachment_keys?: string[]
+  threadEmails?: Email[]
 }
 
 interface ListEmailsResponse {
@@ -88,12 +89,13 @@ export const api = {
   },
 
   emails: {
-    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number }): Promise<ListEmailsResponse> {
+    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC' }): Promise<ListEmailsResponse> {
       const queryParams = new URLSearchParams()
       if (params?.sender) queryParams.append('sender', params.sender)
       if (params?.startDate) queryParams.append('startDate', params.startDate)
       if (params?.endDate) queryParams.append('endDate', params.endDate)
       if (params?.limit) queryParams.append('limit', params.limit.toString())
+      if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
 
       const response = await fetch(`${API_BASE}/emails/list?${queryParams}`, {
         credentials: 'include',

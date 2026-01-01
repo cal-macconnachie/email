@@ -1,5 +1,6 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
+import { query } from './helpers/dynamo-helpers/query'
 import { Email } from './helpers/parse-email'
 import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
@@ -77,15 +78,50 @@ export const handler = async (
       }
     }
 
-    // Parse and return the email
+    // Parse the email
     const email = JSON.parse(emailContent) as Email
+
+    // Fetch thread relations if the email has a thread_id
+    let threadEmails: Email[] = []
+    if (email.thread_id) {
+      try {
+        const tableName = process.env.DYNAMODB_TABLE_NAME
+        const threadRelationsTableName = `${tableName?.replace('-emails', '')}-thread-relations`
+
+        // Query thread_relations table to get all emails in the thread for this recipient
+        const threadRelationsResult = await query<Email>({
+          tableName: threadRelationsTableName,
+          keyConditionExpression: 'thread_id = :threadId',
+          filterExpression: 'recipient = :recipient',
+          expressionAttributeValues: {
+            ':threadId': email.thread_id,
+            ':recipient': recipient,
+          },
+        })
+
+        threadEmails = threadRelationsResult.items || []
+
+        // Sort emails by timestamp (chronological order)
+        threadEmails.sort((a, b) => {
+          const timestampA = a.timestamp.split('#')[0]
+          const timestampB = b.timestamp.split('#')[0]
+          return timestampA.localeCompare(timestampB)
+        })
+      } catch (error) {
+        console.error('Error fetching thread relations:', error)
+        // Continue without thread info if fetch fails
+      }
+    }
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(email),
+      body: JSON.stringify({
+        ...email,
+        threadEmails,
+      }),
     }
   } catch (error) {
     console.error('Error fetching email:', error)
