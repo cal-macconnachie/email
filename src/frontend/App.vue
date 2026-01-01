@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="min-h-screen">
-    <div class="compose-button">
-      <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
+    <div v-if="authStore.isAuthenticated" class="compose-button">
+      <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="theme-toggle">
       <theme-toggle size="sm"/>
@@ -71,7 +71,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-50%);
+    transform: translateY(-2px);
   }
   .theme-toggle {
     position: fixed;

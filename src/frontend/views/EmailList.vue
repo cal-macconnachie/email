@@ -77,7 +77,6 @@
         <div v-if="showFiltersDropdown" class="filters-dropdown-container">
           <base-card
             ref="filtersDropdown"
-            variant="muted"
             padding="md"
             class="filters-dropdown"
           >
@@ -91,7 +90,6 @@
               </div>
 
               <div class="filter-row">
-                <label class="filter-label">Start Date</label>
                 <base-datetime-picker
                   id="start-datetime"
                   v-model="filters.startDate"
@@ -103,7 +101,6 @@
               </div>
 
               <div class="filter-row">
-                <label class="filter-label">End Date</label>
                 <base-datetime-picker
                   id="end-datetime"
                   v-model="filters.endDate"
@@ -289,6 +286,7 @@ async function clearFilters() {
     endDate: '',
     sortOrder: 'DESC',
   }
+  showFiltersDropdown.value = false
 
   try {
     await emailStore.fetchEmails()
@@ -341,6 +339,7 @@ function formatDate(dateStr: string): string {
 .filters-dropdown-container {
   position: relative;
   width: 100%;
+  z-index: 1000;
 }
 
 .filters-dropdown {
@@ -348,10 +347,11 @@ function formatDate(dateStr: string): string {
   top: var(--space-2);
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 1000;
   max-width: 100%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: visible;
+  background-color: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
 }
 
 .filters-content {
@@ -383,8 +383,27 @@ function formatDate(dateStr: string): string {
   margin-top: var(--space-2);
 }
 
+/* Ensure datetime pickers and their dropdowns are not clipped */
+.filters-dropdown :deep(.datetime-picker-wrapper) {
+  position: relative;
+  z-index: 1001;
+}
+
+.filters-dropdown :deep(.datetime-picker-dropdown),
+.filters-dropdown :deep(.picker-dropdown),
+.filters-dropdown :deep([class*="dropdown"]) {
+  position: fixed !important;
+  z-index: 10000 !important;
+}
+
+.email-list-container :deep(.datetime-picker-dropdown),
+.email-list-container :deep(.picker-dropdown) {
+  z-index: 10000 !important;
+}
+
 .email-list-card {
   position: relative;
+  overflow: visible;
 }
 
 .email-list-header {
@@ -394,6 +413,7 @@ function formatDate(dateStr: string): string {
   gap: var(--space-2);
   padding: var(--space-2);
   border-bottom: 1px solid var(--color-border);
+  overflow: visible;
 }
 
 .sort-button svg {
