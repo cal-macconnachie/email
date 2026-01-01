@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.37](https://github.com/cal-macconnachie/email/compare/v0.0.36...v0.0.37) (2026-01-01)
+
+
+### Bug Fixes
+
+* refresh tokens ([50e39e9](https://github.com/cal-macconnachie/email/commit/50e39e95aa4871e40980b15f1ebf62885a191c51))
+* send ([e0bcdd2](https://github.com/cal-macconnachie/email/commit/e0bcdd216962e1d83a1dbe7110d8483cffb033a8))
+
 ### [0.0.36](https://github.com/cal-macconnachie/email/compare/v0.0.35...v0.0.36) (2025-12-31)
 
 
