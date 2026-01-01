@@ -1,11 +1,11 @@
 <template>
   <div id="app" class="min-h-screen">
     <div class="logout-button">
-      <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="xs">Logout</base-button>
     </div>
     <div class="theme-toggle">
+      <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="xs">Compose</base-button>
+      <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="xs">Logout</base-button>
       <theme-toggle size="sm"/>
-      <base-button @click="emailStore.composing = true" variant="link-primary" size="xs">Compose</base-button>
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">

@@ -28,33 +28,26 @@
           @click="handleEmailClick(email)"
         >
           <div class="email-card-content">
-            <div class="email-info">
-              <div class="email-details">
-                <p class="email-sender">{{ email.sender }}</p>
-                <h3 class="email-subject">{{ email.subject || '(No subject)' }}</h3>
-              </div>
-              <div class="email-badges">
-                <span v-if="!email.read" class="badge unread-badge">Unread</span>
-                <span v-if="email.archived" class="badge archived-badge">Archived</span>
-                <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="12"
-                    width="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                  </svg>
-                  {{ email.attachment_keys.length }}
-                </span>
-              </div>
+            <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+            <span class="email-sender">{{ email.sender }}</span>
+            <div class="email-badges">
+              <span v-if="!email.read" class="badge unread-badge">•</span>
+              <span v-if="email.archived" class="badge archived-badge">A</span>
+              <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="10"
+                  width="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              </span>
             </div>
-            <div class="email-date">
-              {{ formatDate(email.created_at) }}
-            </div>
+            <span class="email-date">{{ formatDate(email.created_at) }}</span>
           </div>
         </div>
       </base-card>
@@ -158,7 +151,7 @@ function formatDate(dateStr: string): string {
   animation: pulse 2s ease-in-out infinite;
 }
 .email-list-item {
-  padding: var(--space-2) var(--space-1);
+  padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -219,73 +212,64 @@ function formatDate(dateStr: string): string {
 .email-card-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
   width: 100%;
-}
-
-.email-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.email-details {
-  margin-bottom: var(--space-1);
-}
-
-.email-sender {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  opacity: 0.7;
+  overflow: hidden;
 }
 
 .email-subject {
-  margin: 0;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.email-sender {
+  font-size: var(--font-size-sm);
+  opacity: 0.6;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .email-badges {
   display: flex;
   gap: var(--space-1);
-  flex-wrap: wrap;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
+  justify-content: center;
   font-size: var(--font-size-xs);
-  border-radius: var(--radius-base);
-  font-weight: var(--font-weight-medium);
+  line-height: 1;
 }
 
 .unread-badge {
-  background-color: var(--color-info-bg);
   color: var(--color-info);
+  font-size: var(--font-size-base);
 }
 
 .archived-badge {
-  background-color: var(--color-bg-muted);
   color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
 }
 
 .attachment-badge {
-  background-color: var(--color-metered-bg);
   color: var(--color-metered);
 }
 
 .email-date {
   font-size: var(--font-size-sm);
-  opacity: 0.7;
+  opacity: 0.6;
   white-space: nowrap;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .unread-count {

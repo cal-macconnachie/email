@@ -1,87 +1,81 @@
 <template>
-  <div class="compose-container">
-    <main class="compose-main">
-      <base-card variant="elevated" padding="lg" class="compose-card">
-        <form class="compose-form">
-          <div class="form-field">
-            <base-input
-              id="to"
-              v-model="emailStore.formData.to"
-              type="email"
-              label="To"
-              placeholder="recipient@example.com"
-              required
-              hint="For multiple recipients, separate with commas"
-            />
-          </div>
+  <form class="compose-form">
+    <div class="form-field">
+      <base-input
+        id="to"
+        v-model="emailStore.formData.to"
+        type="email"
+        label="To"
+        placeholder="recipient@example.com"
+        required
+        hint="For multiple recipients, separate with commas"
+      />
+    </div>
 
-          <div class="form-field">
-            <base-input
-              id="cc"
-              v-model="emailStore.formData.cc"
-              type="text"
-              label="CC (optional)"
-              placeholder="cc@example.com"
-            />
-          </div>
+    <div class="form-field">
+      <base-input
+        id="cc"
+        v-model="emailStore.formData.cc"
+        type="text"
+        label="CC (optional)"
+        placeholder="cc@example.com"
+      />
+    </div>
 
-          <div class="form-field">
-            <base-input
-              id="bcc"
-              v-model="emailStore.formData.bcc"
-              type="text"
-              label="BCC (optional)"
-              placeholder="bcc@example.com"
-            />
-          </div>
+    <div class="form-field">
+      <base-input
+        id="bcc"
+        v-model="emailStore.formData.bcc"
+        type="text"
+        label="BCC (optional)"
+        placeholder="bcc@example.com"
+      />
+    </div>
 
-          <div class="form-field">
-            <base-input
-              id="subject"
-              v-model="emailStore.formData.subject"
-              type="text"
-              label="Subject"
-              placeholder="Email subject"
-              required
-            />
-          </div>
+    <div class="form-field">
+      <base-input
+        id="subject"
+        v-model="emailStore.formData.subject"
+        type="text"
+        label="Subject"
+        placeholder="Email subject"
+        required
+      />
+    </div>
 
-          <div class="form-field form-field-textarea">
-            <base-textarea
-              id="body"
-              v-model="emailStore.formData.body"
-              label="Message"
-              :rows="12"
-              placeholder="Write your message..."
-              required
-            />
-          </div>
+    <div class="form-field form-field-textarea">
+      <base-textarea
+        id="body"
+        v-model="emailStore.formData.body"
+        label="Message"
+        :rows="12"
+        placeholder="Write your message..."
+        required
+      />
+    </div>
 
-          <div v-if="emailStore.error" class="error-message">
-            {{ emailStore.error }}
-          </div>
+    <div v-if="emailStore.error" class="error-message">
+      {{ emailStore.error }}
+    </div>
 
-          <div class="form-actions">
-            <base-button
-              type="button"
-              variant="ghost-secondary"
-              @click="handleCancel"
-            >
-              Cancel
-            </base-button>
+    <div class="form-actions">
+      <base-button
+        type="button"
+        variant="ghost-secondary"
+        @click="handleCancel"
+      >
+        Cancel
+      </base-button>
 
-            <base-button
-              variant="ghost-primary"
-              :disabled="emailStore.isLoading"
-              @click="handleSend"
-            >
-              {{ emailStore.isLoading ? 'Sending...' : 'Send' }}
-            </base-button>
-          </div>
-        </form>
-      </base-card>
-    </main>
-  </div>
+      <base-button
+        variant="ghost-primary"
+        :disabled="emailStore.isLoading"
+        @click="handleSend"
+      >
+        {{ emailStore.isLoading ? 'Sending...' : 'Send' }}
+      </base-button>
+    </div>
+  </form>
 </template>
 
 <script setup lang="ts">
@@ -174,6 +168,7 @@ function handleCancel() {
 .compose-form {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   gap: var(--space-4);
 }
 
