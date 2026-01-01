@@ -12,7 +12,6 @@ const s3Client = new S3Client({ region: process.env.REGION })
 
 interface SendEmailRequest {
   to: string[]
-  from: string
   subject: string
   body: string
   cc?: string[]
@@ -61,18 +60,19 @@ export const handler = async (
     }
 
     const emailRequest = JSON.parse(event.body) as SendEmailRequest
-    const { to, from, subject, body, cc, bcc, replyTo, attachmentKeys, inReplyTo, references } = emailRequest
+    const { to, subject, body, cc, bcc, replyTo, attachmentKeys, inReplyTo, references } = emailRequest
 
     // Validate inputs
-    if (!to || to.length === 0 || !from || !subject || !body) {
+    if (!to || to.length === 0 || !subject || !body) {
       return {
         statusCode: 400,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'to (non-empty array), from, subject, and body are required' }),
+        body: JSON.stringify({ error: 'to (non-empty array), subject, and body are required' }),
       }
     }
 
     // Validate that from address matches authenticated user's email
+    const from = authenticatedRecipient
     if (from !== authenticatedRecipient) {
       return {
         statusCode: 403,
