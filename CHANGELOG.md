@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.42](https://github.com/cal-macconnachie/email/compare/v0.0.41...v0.0.42) (2026-01-01)
+
+
+### Features
+
+* replies and compose drawer ([14a3093](https://github.com/cal-macconnachie/email/commit/14a30937577dc4bac9feb59e6789043a0c937209))
+
 ### [0.0.41](https://github.com/cal-macconnachie/email/compare/v0.0.40...v0.0.41) (2026-01-01)
 
 
