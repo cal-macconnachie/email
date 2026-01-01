@@ -4,7 +4,6 @@
       <base-button v-if="authStore.isAuthenticated" @click="emailStore.composing = true" variant="link-primary" size="sm">+</base-button>
     </div>
     <div class="theme-toggle">
-      <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
       <theme-toggle size="sm"/>
     </div>
     <router-view />
@@ -42,15 +41,6 @@ watch(
   }
 )
 
-async function handleLogout() {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch (error) {
-    console.error('Logout failed:', error)
-  }
-}
-
 onMounted(() => {
   // Check if user is already authenticated (has valid cookie)
   authStore.checkAuth()
@@ -65,8 +55,11 @@ onMounted(() => {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-bg-muted);
     z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .theme-toggle {
     position: fixed;

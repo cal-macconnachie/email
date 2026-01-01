@@ -5,6 +5,8 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
   "icons": [
     {
       "src": "/direct-market.svg",
@@ -21,5 +23,7 @@
   ],
   "categories": ["productivity", "communication"],
   "scope": "/",
-  "screenshots": []
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "iarc_rating_id": ""
 }

@@ -13,7 +13,20 @@
           </div>
 
           <div class="email-header-actions">
-            <base-button @click="handleReply" variant="ghost-primary">Reply</base-button>
+            <base-button @click="handleReply(emailStore.currentEmail)" variant="ghost-primary" title="Reply">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="18"
+                width="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 11l-6 6v-6H1V1h18v10h-7.5z" />
+                <path d="M15 18l6-6" />
+              </svg>
+            </base-button>
           </div>
         </div>
       </div>
@@ -45,12 +58,44 @@
             </div>
             <div class="thread-email-actions">
               <base-button
+                @click="handleReply(email)"
+                variant="ghost-secondary"
+                size="sm"
+                title="Reply"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 11l-6 6v-6H1V1h18v10h-7.5z" />
+                  <path d="M15 18l6-6" />
+                </svg>
+              </base-button>
+              <base-button
                 v-if="email.s3_key === decodeURIComponent(props.s3Key)"
                 @click="handleToggleArchive(email)"
                 variant="ghost-secondary"
                 size="sm"
+                :title="email.archived ? 'Unarchive' : 'Archive'"
               >
-                {{ email.archived ? 'Unarchive' : 'Archive' }}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 8v13H3V8" />
+                  <path d="M1 3h22v5H1z" />
+                  <path d="M10 12h4" />
+                </svg>
               </base-button>
             </div>
           </div>
@@ -195,9 +240,9 @@ async function handleToggleArchive(email: Email) {
   }
 }
 
-function handleReply() {
-  if (!emailStore.currentEmail) return
-  emailStore.prepareReply(emailStore.currentEmail)
+function handleReply(email: Email) {
+  emailStore.prepareReply(email)
+  router.push('/compose')
 }
 
 function formatFullDate(dateStr: string): string {
@@ -338,11 +383,6 @@ function decodeQuotedPrintable(text: string): string {
 .thread-email-card {
   scroll-margin-top: var(--space-20);
   transition: all 0.3s ease;
-}
-
-.thread-email-active {
-  border-left: 4px solid var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary-light);
 }
 
 .thread-email-header {

@@ -1,31 +1,31 @@
 <template>
   <div class="email-list-container">
-    <div class="search-section">
-      <base-card variant="elevated" padding="md">
-        <div class="search-header">
-          <label class="search-label">Search</label>
-        </div>
-        <base-input
-          v-model="searchQuery"
-          placeholder="subject..."
-        />
-      </base-card>
-    </div>
-
-    <div class="filters-section">
-      <base-card variant="elevated" padding="md">
-        <div class="filters-header">
-          <h3 class="filters-title">Filters</h3>
+    <div class="search-bar-section">
+      <base-card variant="elevated" padding="sm">
+        <div class="search-bar-wrapper">
+          <base-input
+            v-model="searchQuery"
+            placeholder="Search emails..."
+            @focus="showFiltersDropdown = true"
+          />
           <base-button
             variant="ghost"
             size="sm"
-            @click="toggleFiltersExpanded"
+            @click="showFiltersDropdown = !showFiltersDropdown"
           >
-            {{ filtersExpanded ? 'Hide' : 'Show' }}
+            Filters
           </base-button>
         </div>
+      </base-card>
 
-        <div v-if="filtersExpanded" class="filters-content">
+      <!-- Filters Dropdown -->
+      <base-card
+        v-if="showFiltersDropdown"
+        variant="elevated"
+        padding="md"
+        class="filters-dropdown"
+      >
+        <div class="filters-content">
           <div class="filter-row">
             <label class="filter-label">Sender</label>
             <base-input
@@ -36,7 +36,7 @@
 
           <div class="filter-row">
             <label class="filter-label">Start Date</label>
-            <base-date-time-picker
+            <base-datetime-picker
               v-model="filters.startDate"
               placeholder="Select start date"
             />
@@ -44,7 +44,7 @@
 
           <div class="filter-row">
             <label class="filter-label">End Date</label>
-            <base-date-time-picker
+            <base-datetime-picker
               v-model="filters.endDate"
               placeholder="Select end date"
             />
@@ -71,7 +71,7 @@
           </div>
 
           <div class="filter-actions">
-            <base-button variant="primary" @click="applyFilters">
+            <base-button variant="primary" @click="applyFiltersAndClose">
               Apply Filters
             </base-button>
             <base-button variant="ghost" @click="clearFilters">
@@ -139,6 +139,10 @@
 
       <div v-if="filteredUnreadCount > 0" class="unread-count">
         {{ filteredUnreadCount }} unread email{{ filteredUnreadCount !== 1 ? 's' : '' }}
+
+      </div>
+      <div class="unread-count">
+        <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
       </div>
     </main>
   </div>
@@ -148,12 +152,14 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Email } from '../api/client'
+import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
 
 const router = useRouter()
 const emailStore = useEmailStore()
+const authStore = useAuthStore()
 
-const filtersExpanded = ref(false)
+const showFiltersDropdown = ref(false)
 const searchQuery = ref('')
 const filters = ref({
   sender: '',
@@ -200,8 +206,13 @@ onBeforeUnmount(() => {
   }
 })
 
-function toggleFiltersExpanded() {
-  filtersExpanded.value = !filtersExpanded.value
+async function handleLogout() {
+  try {
+    await authStore.logout()
+    router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
 async function applyFilters() {
@@ -225,6 +236,11 @@ async function applyFilters() {
   } catch (error) {
     console.error('Failed to apply filters:', error)
   }
+}
+
+async function applyFiltersAndClose() {
+  await applyFilters()
+  showFiltersDropdown.value = false
 }
 
 async function clearFilters() {
@@ -271,43 +287,24 @@ function formatDate(dateStr: string): string {
   gap: var(--space-4);
 }
 
-.search-section {
+.search-bar-section {
   width: 100%;
+  position: relative;
 }
 
-.search-header {
+.search-bar-wrapper {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-
-.search-label {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-}
-
-.search-hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  opacity: 0.8;
-}
-
-.filters-section {
-  width: 100%;
-}
-
-.filters-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-2);
+  gap: var(--space-2);
 }
 
-.filters-title {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+.filters-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-width: 600px;
 }
 
 .filters-content {
