@@ -339,7 +339,6 @@ function formatDate(dateStr: string): string {
 .filters-dropdown-container {
   position: relative;
   width: 100%;
-  z-index: 1000;
 }
 
 .filters-dropdown {
@@ -347,7 +346,7 @@ function formatDate(dateStr: string): string {
   top: var(--space-2);
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 100;
   max-width: 100%;
   overflow: visible;
   background-color: var(--color-bg-muted);
@@ -366,8 +365,6 @@ function formatDate(dateStr: string): string {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  position: relative;
-  z-index: 1;
   overflow: visible;
 }
 
@@ -381,24 +378,6 @@ function formatDate(dateStr: string): string {
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-2);
-}
-
-/* Ensure datetime pickers and their dropdowns are not clipped */
-.filters-dropdown :deep(.datetime-picker-wrapper) {
-  position: relative;
-  z-index: 1001;
-}
-
-.filters-dropdown :deep(.datetime-picker-dropdown),
-.filters-dropdown :deep(.picker-dropdown),
-.filters-dropdown :deep([class*="dropdown"]) {
-  position: fixed !important;
-  z-index: 10000 !important;
-}
-
-.email-list-container :deep(.datetime-picker-dropdown),
-.email-list-container :deep(.picker-dropdown) {
-  z-index: 10000 !important;
 }
 
 .email-list-card {
