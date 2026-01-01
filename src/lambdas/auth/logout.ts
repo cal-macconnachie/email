@@ -1,5 +1,5 @@
 import { CognitoIdentityProviderClient, RevokeTokenCommand } from '@aws-sdk/client-cognito-identity-provider'
-import { APIGatewayProxyEventV2WithJWTAuthorizer, APIGatewayProxyResultV2, Context } from 'aws-lambda'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 
 /**
  * Logout - Clear session cookies
@@ -8,20 +8,12 @@ import { APIGatewayProxyEventV2WithJWTAuthorizer, APIGatewayProxyResultV2, Conte
  * Optionally, could revoke refresh token in Cognito for enhanced security.
  */
 export const handler = async (
-  event: APIGatewayProxyEventV2WithJWTAuthorizer,
+  event: APIGatewayProxyEventV2,
   _context: Context
 ): Promise<APIGatewayProxyResultV2> => {
   try {
     console.log('Logout event:', JSON.stringify(event, null, 2))
 
-    // Extract user info from JWT claims (if available) for logging
-    const phoneNumber = event.requestContext.authorizer.jwt.claims.phone_number as string | undefined
-
-    if (phoneNumber) {
-      console.log(`User ${phoneNumber} logging out`)
-    }
-
-    // Clear cookies by setting Max-Age=0
     const isProduction = process.env.STAGE === 'prod'
     const domainSuffix = isProduction ? '; Domain=macconnachie.com' : ''
     const secureFlag = isProduction ? 'Secure; ' : ''
