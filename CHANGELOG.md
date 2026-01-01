@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.50](https://github.com/cal-macconnachie/email/compare/v0.0.49...v0.0.50) (2026-01-01)
+
+
+### Bug Fixes
+
+* another attempt ([17e9782](https://github.com/cal-macconnachie/email/commit/17e97820bf42f76f09118e2bc9514674137f11fe))
+* serve from network before cache ([d1c8d4e](https://github.com/cal-macconnachie/email/commit/d1c8d4ec44088ff9557f6be92315ccf18452a635))
+
 ### [0.0.49](https://github.com/cal-macconnachie/email/compare/v0.0.48...v0.0.49) (2026-01-01)
 
 
