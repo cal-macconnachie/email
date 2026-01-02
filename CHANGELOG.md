@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.68](https://github.com/cal-macconnachie/email/compare/v0.0.67...v0.0.68) (2026-01-02)
+
+
+### Bug Fixes
+
+* mobile filter ([f5a55a6](https://github.com/cal-macconnachie/email/commit/f5a55a6b72d2488fc83c012b8f5b76e90dae4ff2))
+
 ### [0.0.67](https://github.com/cal-macconnachie/email/compare/v0.0.66...v0.0.67) (2026-01-02)
 
 
