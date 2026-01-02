@@ -292,6 +292,19 @@ resource "aws_s3_bucket" "ses_received_emails" {
   }
 }
 
+# CORS configuration for S3 bucket to allow direct uploads from browser
+resource "aws_s3_bucket_cors_configuration" "ses_received_emails_cors" {
+  bucket = aws_s3_bucket.ses_received_emails.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "PUT", "HEAD"]
+    allowed_origins = ["https://${var.domain_name}"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
+
 # Lifecycle policy for SES received emails bucket
 resource "aws_s3_bucket_lifecycle_configuration" "ses_received_emails_lifecycle" {
   bucket = aws_s3_bucket.ses_received_emails.id
