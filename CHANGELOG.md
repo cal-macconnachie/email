@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.61](https://github.com/cal-macconnachie/email/compare/v0.0.60...v0.0.61) (2026-01-02)
+
+
+### Bug Fixes
+
+* no www redirect to root ([1fad7f8](https://github.com/cal-macconnachie/email/commit/1fad7f85798d206aba5a20507dcb8691858eb68d))
+
 ### [0.0.60](https://github.com/cal-macconnachie/email/compare/v0.0.59...v0.0.60) (2026-01-02)
 
 
