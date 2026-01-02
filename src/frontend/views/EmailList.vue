@@ -5,12 +5,61 @@
         active-tab="inbox"
         sync-with-hash
       >
-        
+        <!-- Sidebar Header with Filter Button -->
+        <div
+          slot="sidebar-header"
+          class="sidebar-header-content"
+        >
+          <base-button
+            variant="ghost"
+            size="sm"
+            @click="showFiltersDropdown = !showFiltersDropdown"
+            title="Filters"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+          </base-button>
+        </div>
+
+        <!-- Sidebar Footer with Logout Button -->
         <div
           slot="sidebar-footer"
           class="portfolio-footer-slot"
         >
-          <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          <base-button
+            v-if="authStore.isAuthenticated"
+            @click="handleLogout"
+            variant="ghost"
+            size="sm"
+            title="Logout"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </base-button>
         </div>
         <!-- Inbox Tab -->
         <base-tab
@@ -42,25 +91,6 @@
                   v-model="searchQuery"
                   placeholder="Search emails..."
                 />
-                <base-button
-                  variant="ghost"
-                  size="sm"
-                  @click="showFiltersDropdown = !showFiltersDropdown"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                  </svg>
-                </base-button>
               </div>
               <base-button
                 variant="ghost"
@@ -176,25 +206,6 @@
                   v-model="searchQuery"
                   placeholder="Search emails..."
                 />
-                <base-button
-                  variant="ghost"
-                  size="sm"
-                  style="visibility: hidden; pointer-events: none;"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                  </svg>
-                </base-button>
               </div>
               <base-button
                 variant="ghost"
@@ -308,25 +319,6 @@
                   v-model="searchQuery"
                   placeholder="Search emails..."
                 />
-                <base-button
-                  variant="ghost"
-                  size="sm"
-                  @click="showFiltersDropdown = !showFiltersDropdown"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                  </svg>
-                </base-button>
               </div>
               <base-button
                 variant="ghost"
@@ -761,6 +753,13 @@ function formatDate(dateStr: string): string {
 }
 
 
+.sidebar-header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
 .portfolio-footer-slot {
   display: flex;
   justify-content: center;
@@ -804,6 +803,7 @@ function formatDate(dateStr: string): string {
 .email-main {
   display: flex;
   flex-direction: column;
+  height: 100%;
   gap: var(--space-3);
 }
 
