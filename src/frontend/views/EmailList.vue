@@ -4,7 +4,6 @@
       <base-tabs
         active-tab="inbox"
         sync-with-hash
-        force-expanded
       >
         <!-- Inbox Tab -->
         <base-tab
@@ -177,11 +176,13 @@
             </div>
           </div>
 
-          <div v-if="filteredInboxUnreadCount > 0" class="unread-count">
-            {{ filteredInboxUnreadCount }} unread email{{ filteredInboxUnreadCount !== 1 ? 's' : '' }}
-          </div>
-          <div class="unread-count">
-            <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          <div class="tab-footer">
+            <div class="unread-count" :style="{ visibility: filteredInboxUnreadCount > 0 ? 'visible' : 'hidden' }">
+              {{ filteredInboxUnreadCount }} unread email{{ filteredInboxUnreadCount !== 1 ? 's' : '' }}
+            </div>
+            <div class="unread-count">
+              <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+            </div>
           </div>
         </base-tab>
 
@@ -291,8 +292,13 @@
             </div>
           </div>
 
-          <div class="unread-count">
-            <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          <div class="tab-footer">
+            <div class="unread-count" style="visibility: hidden;">
+              &nbsp;
+            </div>
+            <div class="unread-count">
+              <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+            </div>
           </div>
         </base-tab>
 
@@ -404,8 +410,13 @@
             </div>
           </div>
 
-          <div class="unread-count">
-            <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          <div class="tab-footer">
+            <div class="unread-count" style="visibility: hidden;">
+              &nbsp;
+            </div>
+            <div class="unread-count">
+              <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+            </div>
           </div>
         </base-tab>
       </base-tabs>
