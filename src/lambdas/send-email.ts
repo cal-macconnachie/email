@@ -222,7 +222,7 @@ export const handler = async (
 
       // Create email object
       const emailKey = `${sanitizedRecipient}/${date}/${messageId}.json`
-      const generatedMessageId = sesResponse.MessageId ? sesResponse.MessageId : `<${v4()}@macconnachie.com>`
+      const generatedMessageId = sesResponse.MessageId ? `<${sesResponse.MessageId}@email.amazonses.com>` : `<${v4()}@macconnachie.com>`
       const { thread_id } = await determineThreadId(
         generatedMessageId,
         inReplyTo,

@@ -51,16 +51,6 @@ export const handler = async (
       }
     }
 
-    // Validate that s3_key belongs to the authenticated user
-    const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
-    if (!s3Key.startsWith(`${sanitizedRecipient}/`)) {
-      return {
-        statusCode: 403,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Forbidden - You can only access your own emails' }),
-      }
-    }
-
     console.log(`Fetching email from s3://${bucketName}/${s3Key}`)
 
     // Fetch the email from S3
@@ -81,6 +71,15 @@ export const handler = async (
 
     // Parse the email
     const email = JSON.parse(emailContent) as Email
+
+    // Validate that the authenticated user is either the recipient or sender
+    if (email.recipient !== recipient && email.sender !== recipient) {
+      return {
+        statusCode: 403,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Forbidden - You can only access your own emails' }),
+      }
+    }
 
     // Generate presigned URLs for the main email's attachments
     if (email.attachment_keys && email.attachment_keys.length > 0) {
