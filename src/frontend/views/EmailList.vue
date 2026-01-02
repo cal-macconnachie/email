@@ -67,24 +67,13 @@
           label="Inbox"
           icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><path d=&quot;M22 12h-6l-2 3h-4l-2-3H2&quot;/><path d=&quot;M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z&quot;/></svg>"
         >
-          <div v-if="isLoadingInbox && inboxEmails.length === 0" class="loading-state">
-            <p class="loading-text">Loading emails...</p>
-          </div>
 
-          <base-card v-else-if="inboxError" variant="elevated" padding="md" class="error-card">
-            {{ inboxError }}
-          </base-card>
-
-          <div v-else-if="inboxEmails.length === 0" class="empty-state">
-            <p class="empty-text">No emails in inbox</p>
-            <base-button variant="ghost-primary" @click="emailStore.composing = true">Send your first email</base-button>
-          </div>
-
-          <div v-else-if="filteredInboxEmails.length === 0" class="empty-state">
-            <p class="empty-text">No emails match your search</p>
-          </div>
-
-          <div v-else class="email-list-card">
+          <div class="email-list-card">
+            <div v-if="inboxError" class="error-card">
+              <base-card variant="elevated" padding="md">
+                {{ inboxError }}
+              </base-card>
+            </div>
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -114,6 +103,11 @@
                 </svg>
               </base-button>
             </div>
+
+            <div v-if="isLoadingInbox && inboxEmails.length === 0" class="loading-state">
+              <p class="loading-text">Loading emails...</p>
+            </div>
+            <div v-else>
 
             <div
               v-for="email in filteredInboxEmails"
@@ -168,6 +162,7 @@
                 </div>
               </div>
             </div>
+            </div>
           </div>
 
           <div class="tab-footer">
@@ -183,23 +178,8 @@
           label="Sent"
           icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><line x1=&quot;22&quot; y1=&quot;2&quot; x2=&quot;11&quot; y2=&quot;13&quot;/><polygon points=&quot;22 2 15 22 11 13 2 9 22 2&quot;/></svg>"
         >
-          <div v-if="isLoadingSent && sentEmails.length === 0" class="loading-state">
-            <p class="loading-text">Loading sent emails...</p>
-          </div>
 
-          <base-card v-else-if="sentError" variant="elevated" padding="md" class="error-card">
-            {{ sentError }}
-          </base-card>
-
-          <div v-else-if="sentEmails.length === 0" class="empty-state">
-            <p class="empty-text">No sent emails</p>
-          </div>
-
-          <div v-else-if="filteredSentEmails.length === 0" class="empty-state">
-            <p class="empty-text">No emails match your search</p>
-          </div>
-
-          <div v-else class="email-list-card">
+          <div class="email-list-card">
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -229,6 +209,15 @@
                 </svg>
               </base-button>
             </div>
+
+
+          <base-card v-if="sentError" variant="elevated" padding="md" class="error-card">
+            {{ sentError }}
+          </base-card>
+          <div v-if="isLoadingSent && sentEmails.length === 0" class="loading-state">
+            <p class="loading-text">Loading sent emails...</p>
+          </div>
+          <div v-else>
 
             <div
               v-for="email in filteredSentEmails"
@@ -282,6 +271,7 @@
               </div>
             </div>
           </div>
+          </div>
 
           <div class="tab-footer">
             <div class="unread-count" style="visibility: hidden;">
@@ -296,23 +286,7 @@
           label="Archived"
           icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><polyline points=&quot;21 8 21 21 3 21 3 8&quot;/><rect x=&quot;1&quot; y=&quot;3&quot; width=&quot;22&quot; height=&quot;5&quot;/><line x1=&quot;10&quot; y1=&quot;12&quot; x2=&quot;14&quot; y2=&quot;12&quot;/></svg>"
         >
-          <div v-if="isLoadingArchived && archivedEmails.length === 0" class="loading-state">
-            <p class="loading-text">Loading archived emails...</p>
-          </div>
-
-          <base-card v-else-if="archivedError" variant="elevated" padding="md" class="error-card">
-            {{ archivedError }}
-          </base-card>
-
-          <div v-else-if="archivedEmails.length === 0" class="empty-state">
-            <p class="empty-text">No archived emails</p>
-          </div>
-
-          <div v-else-if="filteredArchivedEmails.length === 0" class="empty-state">
-            <p class="empty-text">No emails match your search</p>
-          </div>
-
-          <div v-else class="email-list-card">
+          <div class="email-list-card">
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -342,6 +316,22 @@
                 </svg>
               </base-button>
             </div>
+
+          <base-card v-if="archivedError" variant="elevated" padding="md" class="error-card">
+            {{ archivedError }}
+          </base-card>
+<div v-if="isLoadingArchived && archivedEmails.length === 0" class="loading-state">
+            <p class="loading-text">Loading archived emails...</p>
+          </div>
+
+          <div v-else-if="archivedEmails.length === 0" class="empty-state">
+            <p class="empty-text">No archived emails</p>
+          </div>
+
+          <div v-else-if="filteredArchivedEmails.length === 0" class="empty-state">
+            <p class="empty-text">No emails match your search</p>
+          </div>
+          <div v-else>
 
             <div
               v-for="email in filteredArchivedEmails"
@@ -396,6 +386,7 @@
                 </div>
               </div>
             </div>
+          </div>
           </div>
 
           <div class="tab-footer">
