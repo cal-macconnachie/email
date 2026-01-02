@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0](https://github.com/cal-macconnachie/email/compare/v0.0.68...v1.0.0) (2026-01-02)
+
+
+### Features
+
+* use ses mesageId ([69f334b](https://github.com/cal-macconnachie/email/commit/69f334bf322a50063b88a62a12ec2d2836ff4b6b))
+
 ### [0.0.68](https://github.com/cal-macconnachie/email/compare/v0.0.67...v0.0.68) (2026-01-02)
 
 
