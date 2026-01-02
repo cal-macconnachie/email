@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.52](https://github.com/cal-macconnachie/email/compare/v0.0.51...v0.0.52) (2026-01-02)
+
+
+### Bug Fixes
+
+* autocomplete and plus ([10686ab](https://github.com/cal-macconnachie/email/commit/10686ab71359755478185657a9eaf9c4dfc63605))
+* mobile list item ([6dbd956](https://github.com/cal-macconnachie/email/commit/6dbd956abdbf17cce3088af7c90baa3d7c895c67))
+* move compose and add drawer for filters ([52748c4](https://github.com/cal-macconnachie/email/commit/52748c4ae8d942f6d8b591f1748c4abb82241080))
+* rmeove card ([6f86860](https://github.com/cal-macconnachie/email/commit/6f868604c35133175fbdfcf9e2ef7b7c48d9a6d0))
+
 ### [0.0.51](https://github.com/cal-macconnachie/email/compare/v0.0.50...v0.0.51) (2026-01-01)
 
 
