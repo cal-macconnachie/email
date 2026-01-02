@@ -17,13 +17,11 @@
 import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'
 
 const authStore = useAuthStore()
 const emailStore = useEmailStore()
-const router = useRouter()
 const { composing } = storeToRefs(emailStore)
 const composeDrawer = ref<BaseDrawer | null>(null)
 

@@ -123,7 +123,7 @@
           hoverable
           @click="handleEmailClick(email)"
         >
-          <div class="email-card-content">
+          <div v-if="!isMobile" class="email-card-content">
             <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
             <span class="email-sender">{{ email.sender }}</span>
             <div class="email-badges">
@@ -144,6 +144,29 @@
               </span>
             </div>
             <span class="email-date">{{ formatDate(email.created_at) }}</span>
+          </div>
+          <div v-else class="mobile-email-list-item">
+            <!-- two rows, top subject and badges, bottom sender and date -->
+            <div class="email-card-content">
+              <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+              <div class="email-badges">
+                <span v-if="!email.read" class="badge unread-badge">•</span>
+                <span v-if="email.archived" class="badge archived-badge">A</span>
+                <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="10"
+                    width="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                  </svg>
+                </span>
+              </div>
+              <span class="email-date">{{ formatDate(email.created_at) }}</span>
+            </div>
           </div>
         </div>
       </base-card>
@@ -172,6 +195,7 @@ const emailStore = useEmailStore()
 const authStore = useAuthStore()
 
 const showFiltersDropdown = ref(false)
+const isMobile = ref(window.innerWidth <= 768)
 const filtersDropdown = ref<BaseDrawer | null>(null)
 watch(
   showFiltersDropdown,
@@ -229,6 +253,9 @@ function handleClickOutside(event: MouseEvent) {
 function closeDrawer() {
   showFiltersDropdown.value = false
 }
+function onResize() {
+  isMobile.value = window.innerWidth <= 768
+}
 
 onMounted(async () => {
   try {
@@ -243,6 +270,7 @@ onMounted(async () => {
   await nextTick()
   document.addEventListener('click', handleClickOutside)
   filtersDropdown.value?.addEventListener('close-drawer', closeDrawer)
+  window.addEventListener('resize', onResize)
 })
 
 onBeforeUnmount(() => {
@@ -253,6 +281,7 @@ onBeforeUnmount(() => {
   // Remove click outside listener
   document.removeEventListener('click', handleClickOutside)
   filtersDropdown.value?.removeEventListener('close-drawer', closeDrawer)
+  window.removeEventListener('resize', onResize)
 })
 
 async function handleLogout() {
@@ -530,6 +559,7 @@ function formatDate(dateStr: string): string {
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+  flex-shrink: 0;
   min-width: 0;
 }
 
@@ -537,7 +567,8 @@ function formatDate(dateStr: string): string {
   font-size: var(--font-size-sm);
   opacity: 0.6;
   white-space: nowrap;
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .email-badges {
