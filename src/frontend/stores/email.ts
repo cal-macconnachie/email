@@ -5,6 +5,7 @@ import { api, type Email } from '../api/client'
 export const useEmailStore = defineStore('email', () => {
   const emails = ref<Email[]>([])
   const currentEmail = ref<Email | null>(null)
+  const currentUserEmail = ref<string | null>(null)
   const isLoading = ref(false)
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
@@ -60,6 +61,11 @@ export const useEmailStore = defineStore('email', () => {
       const response = await api.emails.list(params)
       emails.value = response.emails
       lastEvaluatedKey.value = response.lastEvaluatedKey
+
+      // Set current user email from first email's recipient (if not already set)
+      if (!currentUserEmail.value && response.emails.length > 0) {
+        currentUserEmail.value = response.emails[0].recipient
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch emails'
       throw err
@@ -75,6 +81,11 @@ export const useEmailStore = defineStore('email', () => {
     try {
       const email = await api.emails.getDetail(s3Key)
       currentEmail.value = email
+
+      // Set current user email if not already set
+      if (!currentUserEmail.value) {
+        currentUserEmail.value = email.recipient
+      }
 
       // Update in the emails list if it exists
       const index = emails.value.findIndex(e => e.s3_key === s3Key)
@@ -135,6 +146,13 @@ export const useEmailStore = defineStore('email', () => {
   }
 
   async function markAsRead(timestamp: string) {
+    // Don't try to mark sent emails as read
+    const email = emails.value.find(e => e.timestamp === timestamp) || currentEmail.value
+    if (email && currentUserEmail.value && email.sender === currentUserEmail.value) {
+      // This is a sent email, don't try to update it
+      return
+    }
+
     try {
       await api.emails.update(timestamp, { read: true })
       // Update local state

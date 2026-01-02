@@ -282,6 +282,7 @@ export const handler = async (
           message_id: generatedMessageId,
           recipient,
           subject,
+          email_recipient: recipient, // Store the actual email record's recipient for fetching
         },
       })
 
@@ -335,6 +336,7 @@ export const handler = async (
         message_id: generatedMessageId,
         recipient: from,
         subject,
+        email_recipient: to[0], // Store the first recipient's email for fetching the sent email record
       },
     })
 

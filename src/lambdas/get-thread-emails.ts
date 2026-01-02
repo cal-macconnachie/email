@@ -3,10 +3,19 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { batchGet } from './helpers/dynamo-helpers/batch-get'
 import { query } from './helpers/dynamo-helpers/query'
 import { Email } from './helpers/parse-email'
-import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 import { generateAttachmentUrls } from './helpers/s3-presigned-url'
+import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
 const s3Client = new S3Client({ region: process.env.REGION })
+
+interface ThreadRelation {
+  thread_id: string
+  timestamp: string
+  message_id: string
+  recipient: string
+  subject: string
+  email_recipient: string // The actual recipient in the emails table
+}
 
 interface GetThreadEmailsResponse {
   thread_id: string
@@ -58,7 +67,7 @@ export const handler = async (
     }
 
     // Query thread_relations table to get all emails in the thread for this recipient
-    const threadRelationsResult = await query<Email>({
+    const threadRelationsResult = await query<ThreadRelation>({
       tableName: threadRelationsTableName,
       keyConditionExpression: 'thread_id = :threadId',
       filterExpression: 'recipient = :recipient',
@@ -83,8 +92,9 @@ export const handler = async (
     }
 
     // Fetch email metadata from emails table using batch get
+    // Use email_recipient field (stores the actual emails table recipient)
     const emailKeys = threadRelationsResult.items.map((item) => ({
-      recipient: item.recipient,
+      recipient: item.email_recipient,
       timestamp: item.timestamp,
     }))
 

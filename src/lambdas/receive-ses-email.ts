@@ -130,6 +130,7 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
             message_id: email.message_id,
             recipient: email.recipient,
             subject: email.subject,
+            email_recipient: email.recipient, // Store the actual email record's recipient for fetching
           },
         })
 
