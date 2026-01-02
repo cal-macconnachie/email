@@ -4,6 +4,7 @@
       <base-tabs
         active-tab="inbox"
         sync-with-hash
+        force-expanded
       >
         <!-- Sidebar Header with Filter Button -->
         <div
@@ -285,7 +286,7 @@
 
           <div class="tab-footer">
             <div class="unread-count" style="visibility: hidden;">
-              &nbsp;
+              0 unread emails
             </div>
           </div>
         </base-tab>
@@ -400,7 +401,7 @@
 
           <div class="tab-footer">
             <div class="unread-count" style="visibility: hidden;">
-              &nbsp;
+              0 unread emails
             </div>
           </div>
         </base-tab>
