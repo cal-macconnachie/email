@@ -62,7 +62,8 @@ onMounted(async () => {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background-color: var(--color-bg-inverse-muted);
+    background-color: var(--color-bg-secondary);
+    box-shadow: var(--shadow-md);
     z-index: 1000;
     display: flex;
     align-items: center;
