@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.55](https://github.com/cal-macconnachie/email/compare/v0.0.54...v0.0.55) (2026-01-02)
+
+
+### Bug Fixes
+
+* attempt to allow push ([c0762ac](https://github.com/cal-macconnachie/email/commit/c0762acb49053bbcb5317a65498f525e81081c81))
+
 ### [0.0.54](https://github.com/cal-macconnachie/email/compare/v0.0.53...v0.0.54) (2026-01-02)
 
 
