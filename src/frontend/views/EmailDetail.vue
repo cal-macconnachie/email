@@ -104,8 +104,6 @@
                 :href="attachment.downloadUrl"
                 :download="attachment.filename"
                 class="attachment-item"
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -266,10 +264,6 @@ function handleReply(email: Email) {
 
 function formatFullDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString()
-}
-
-function getFilename(key: string): string {
-  return key.split('/').pop() || key
 }
 
 function parseEmailBody(rawBody: string, attachments?: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string; contentId?: string }>): { isHtml: boolean; content: string } {

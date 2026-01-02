@@ -29,7 +29,7 @@ export async function generatePresignedUrls(
     Key: key,
     ResponseContentDisposition: 'inline',
   })
-  const viewUrl = await getSignedUrl(s3Client, viewCommand, { expiresIn })
+  const viewUrlPromise = getSignedUrl(s3Client, viewCommand, { expiresIn })
 
   // Generate URL for downloading (attachment)
   const filename = key.split('/').pop() || 'attachment'
@@ -38,8 +38,11 @@ export async function generatePresignedUrls(
     Key: key,
     ResponseContentDisposition: `attachment; filename="${filename}"`,
   })
-  const downloadUrl = await getSignedUrl(s3Client, downloadCommand, { expiresIn })
-
+  const downloadUrlPromise = getSignedUrl(s3Client, downloadCommand, { expiresIn })
+  const [
+    viewUrl,
+    downloadUrl,
+  ] = await Promise.all([viewUrlPromise, downloadUrlPromise])
   return { viewUrl, downloadUrl }
 }
 

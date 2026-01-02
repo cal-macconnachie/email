@@ -55,6 +55,82 @@
         />
       </div>
 
+      <div class="form-field">
+        <label class="attachment-label">Attachments</label>
+        <input
+          ref="fileInput"
+          type="file"
+          multiple
+          @change="handleFileSelect"
+          class="file-input"
+          style="display: none;"
+        />
+        <base-button
+          type="button"
+          variant="ghost-secondary"
+          size="sm"
+          @click="fileInput?.click()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="16"
+            width="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            style="margin-right: 8px;"
+          >
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+          Add Attachments
+        </base-button>
+
+        <div v-if="emailStore.attachments.length > 0" class="attachments-list">
+          <div
+            v-for="attachment in emailStore.attachments"
+            :key="attachment.key"
+            class="attachment-item"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="16"
+              width="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="attachment-icon"
+            >
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+            </svg>
+            <span class="attachment-name">{{ attachment.filename }}</span>
+            <span class="attachment-size">({{ formatFileSize(attachment.size) }})</span>
+            <span v-if="attachment.uploading" class="attachment-status">Uploading...</span>
+            <button
+              v-else
+              type="button"
+              @click="handleRemoveAttachment(attachment.key)"
+              class="remove-button"
+              title="Remove attachment"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="16"
+                width="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="emailStore.error" class="error-message">
         {{ emailStore.error }}
       </div>
@@ -84,11 +160,13 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
+import { api } from '../api/client'
 
 const router = useRouter()
 const route = useRoute()
 const emailStore = useEmailStore()
 const composeContainer = ref<HTMLElement | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 let touchStartY = 0
 let scrollTopAtTouchStart = 0
@@ -152,6 +230,7 @@ async function handleSend() {
       bcc: emailStore.formData.bcc ? emailStore.formData.bcc.split(',').map(e => e.trim()).filter(e => e) : undefined,
       inReplyTo: emailStore.replyData.inReplyTo,
       references: emailStore.replyData.references,
+      attachmentKeys: emailStore.attachments.map(a => a.key),
     }
 
     await emailStore.sendEmail(emailData)
@@ -163,6 +242,62 @@ async function handleSend() {
 
 function handleCancel() {
   emailStore.resetCompose()
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (!files || files.length === 0) return
+
+  for (const file of Array.from(files)) {
+    try {
+      // Get presigned upload URL
+      const { uploadUrl, attachmentKey } = await api.attachments.getUploadUrl(
+        file.name,
+        file.type || 'application/octet-stream'
+      )
+
+      // Add to store with uploading state
+      emailStore.addAttachment(attachmentKey, file.name, file.size)
+      emailStore.setAttachmentUploading(attachmentKey, true)
+
+      // Upload file to S3
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+        },
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload ${file.name}`)
+      }
+
+      // Mark as uploaded
+      emailStore.setAttachmentUploading(attachmentKey, false)
+    } catch (error) {
+      console.error(`Failed to upload ${file.name}:`, error)
+      emailStore.error = `Failed to upload ${file.name}`
+    }
+  }
+
+  // Reset file input
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+function handleRemoveAttachment(key: string) {
+  emailStore.removeAttachment(key)
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
 }
 </script>
 
@@ -229,6 +364,75 @@ function handleCancel() {
   justify-content: space-between;
   align-items: center;
   padding-top: var(--space-4);
+}
+
+.attachment-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.attachments-list {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background-color: var(--color-bg-muted);
+  border-radius: var(--radius-md);
+}
+
+.attachment-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.attachment-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-size {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.attachment-status {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.remove-button {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: var(--space-1);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.remove-button:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-error);
 }
 
 @media (max-width: 768px) {

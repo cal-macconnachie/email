@@ -23,6 +23,13 @@ export const useEmailStore = defineStore('email', () => {
     references?: string[]
   }>({})
 
+  const attachments = ref<Array<{
+    key: string
+    filename: string
+    size: number
+    uploading: boolean
+  }>>([])
+
   const composing = ref(false)
 
   const unreadCount = computed(() => emails.value.filter(email => !email.read).length)
@@ -188,7 +195,26 @@ export const useEmailStore = defineStore('email', () => {
       body: '',
     }
     replyData.value = {}
+    attachments.value = []
     composing.value = false
+  }
+
+  function addAttachment(key: string, filename: string, size: number) {
+    attachments.value.push({ key, filename, size, uploading: false })
+  }
+
+  function removeAttachment(key: string) {
+    const index = attachments.value.findIndex(a => a.key === key)
+    if (index !== -1) {
+      attachments.value.splice(index, 1)
+    }
+  }
+
+  function setAttachmentUploading(key: string, uploading: boolean) {
+    const attachment = attachments.value.find(a => a.key === key)
+    if (attachment) {
+      attachment.uploading = uploading
+    }
   }
 
   function prepareReply(email: Email) {
@@ -209,6 +235,7 @@ export const useEmailStore = defineStore('email', () => {
     threads,
     formData,
     replyData,
+    attachments,
     composing,
     fetchEmails,
     fetchEmailDetail,
@@ -219,5 +246,8 @@ export const useEmailStore = defineStore('email', () => {
     clearCurrentEmail,
     resetCompose,
     prepareReply,
+    addAttachment,
+    removeAttachment,
+    setAttachmentUploading,
   }
 })
