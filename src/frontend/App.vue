@@ -8,7 +8,7 @@
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
-      <compose />
+      <compose-drawer />
     </base-drawer>
   </div>
 </template>
@@ -20,7 +20,6 @@ import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'
-import Compose from './views/Compose.vue'
 
 const authStore = useAuthStore()
 const emailStore = useEmailStore()

@@ -74,12 +74,7 @@
         </div>
 
         <!-- Filters Dropdown -->
-        <div v-if="showFiltersDropdown" class="filters-dropdown-container">
-          <base-card
-            ref="filtersDropdown"
-            padding="md"
-            class="filters-dropdown"
-          >
+        <base-drawer ref="filtersDropdown">
             <div class="filters-content">
               <div class="filter-row">
                 <label class="filter-label">Sender</label>
@@ -120,8 +115,7 @@
                 </base-button>
               </div>
             </div>
-          </base-card>
-        </div>
+        </base-drawer>
         <div
           v-for="email in filteredEmails"
           :key="email.id"
@@ -166,7 +160,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { BaseDrawer } from '@cal.macconnachie/web-components'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
@@ -177,7 +172,19 @@ const emailStore = useEmailStore()
 const authStore = useAuthStore()
 
 const showFiltersDropdown = ref(false)
-const filtersDropdown = ref<HTMLElement | null>(null)
+const filtersDropdown = ref<BaseDrawer | null>(null)
+watch(
+  showFiltersDropdown,
+  (newVal) => {
+    if (filtersDropdown.value) {
+      if (newVal) {
+        filtersDropdown.value.openDrawer()
+      } else {
+        filtersDropdown.value.closeDrawer()
+      }
+    }
+  }
+)
 const searchQuery = ref('')
 const filters = ref({
   sender: '',
@@ -219,6 +226,10 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+function closeDrawer() {
+  showFiltersDropdown.value = false
+}
+
 onMounted(async () => {
   try {
     await emailStore.fetchEmails()
@@ -231,6 +242,7 @@ onMounted(async () => {
   // Add click outside listener
   await nextTick()
   document.addEventListener('click', handleClickOutside)
+  filtersDropdown.value?.addEventListener('close-drawer', closeDrawer)
 })
 
 onBeforeUnmount(() => {
@@ -240,6 +252,7 @@ onBeforeUnmount(() => {
   }
   // Remove click outside listener
   document.removeEventListener('click', handleClickOutside)
+  filtersDropdown.value?.removeEventListener('close-drawer', closeDrawer)
 })
 
 async function handleLogout() {
