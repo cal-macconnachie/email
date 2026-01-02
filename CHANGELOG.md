@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.6](https://github.com/cal-macconnachie/email/compare/v1.1.5...v1.1.6) (2026-01-02)
+
+
+### Bug Fixes
+
+* claudes attempt at resolving three ciritcal bugs lets see how it goes ([c64af69](https://github.com/cal-macconnachie/email/commit/c64af6923c55b5b2249780263edfc6e2b60d53a0))
+
 ### [1.1.5](https://github.com/cal-macconnachie/email/compare/v1.1.4...v1.1.5) (2026-01-02)
 
 
