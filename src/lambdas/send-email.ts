@@ -118,9 +118,6 @@ export const handler = async (
       }
     }
 
-    // Generate Message-ID for outgoing email (RFC 5322 format)
-    const domain = from.split('@')[1] // Extract domain from from address
-    const generatedMessageId = `<${v4()}@${domain}>`
 
     // Construct raw MIME email
     const boundary = 'NextPartBoundary'
@@ -133,7 +130,6 @@ export const handler = async (
       rawEmail += `Bcc: ${bcc.join(', ')}\n`
     }
     rawEmail += `Subject: ${subject}\n`
-    rawEmail += `Message-ID: ${generatedMessageId}\n`
     if (inReplyTo) {
       rawEmail += `In-Reply-To: ${inReplyTo}\n`
     }
@@ -196,13 +192,6 @@ export const handler = async (
       const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
 
       // Determine thread_id for this email
-      const { thread_id } = await determineThreadId(
-        generatedMessageId,
-        inReplyTo,
-        references,
-        recipient,
-        threadRelationsTableName
-      )
 
       // Move attachments from pending to final location and collect keys
       const finalAttachmentKeys: string[] = []
@@ -233,6 +222,14 @@ export const handler = async (
 
       // Create email object
       const emailKey = `${sanitizedRecipient}/${date}/${messageId}.json`
+      const generatedMessageId = sesResponse.MessageId ? sesResponse.MessageId : `<${v4()}@macconnachie.com>`
+      const { thread_id } = await determineThreadId(
+        generatedMessageId,
+        inReplyTo,
+        references,
+        recipient,
+        threadRelationsTableName
+      )
       const email: Email = {
         recipient,
         sender: from,
