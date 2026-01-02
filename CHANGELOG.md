@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.64](https://github.com/cal-macconnachie/email/compare/v0.0.63...v0.0.64) (2026-01-02)
+
+
+### Bug Fixes
+
+* logout move ([16900dd](https://github.com/cal-macconnachie/email/commit/16900ddd7e17e91c7813e74dab5fdb2abead0a4e))
+* try to make it consistent ([4aeaede](https://github.com/cal-macconnachie/email/commit/4aeaede2232e6ea5172eaa4373c67cd041af064e))
+
 ### [0.0.63](https://github.com/cal-macconnachie/email/compare/v0.0.62...v0.0.63) (2026-01-02)
 
 ### [0.0.62](https://github.com/cal-macconnachie/email/compare/v0.0.61...v0.0.62) (2026-01-02)
