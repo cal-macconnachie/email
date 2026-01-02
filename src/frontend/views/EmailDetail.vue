@@ -7,28 +7,6 @@
         <div v-if="emailStore.currentEmail" class="email-header-info">
           <div class="email-header-main">
             <h1 class="email-title">{{ emailStore.currentEmail.subject || '(No subject)' }}</h1>
-            <div class="email-meta">
-              <p class="meta-item"><strong>Thread:</strong> {{ threadEmails.length }} message{{ threadEmails.length !== 1 ? 's' : '' }}</p>
-            </div>
-          </div>
-
-          <div class="email-header-actions">
-            <base-button @click="handleReply(emailStore.currentEmail)" variant="ghost-primary" title="Reply">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="18"
-                width="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M9 14l-5-5 5-5"/>
-                <path d="M4 9h10.5a5.5 5.5 0 010 11H12"/>
-              </svg>
-            </base-button>
           </div>
         </div>
       </div>

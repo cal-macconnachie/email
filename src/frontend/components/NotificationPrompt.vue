@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { usePushNotifications } from '../composables/usePushNotifications'
 
 const { isSupported, permission, requestPermission } = usePushNotifications()
@@ -55,7 +55,7 @@ function handleDismiss() {
 <style scoped>
 .notification-prompt {
   position: fixed;
-  bottom: 2rem;
+  bottom: 4rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
