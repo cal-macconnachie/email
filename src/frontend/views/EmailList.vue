@@ -5,6 +5,13 @@
         active-tab="inbox"
         sync-with-hash
       >
+        
+        <div
+          slot="sidebar-footer"
+          class="portfolio-footer-slot"
+        >
+          <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+        </div>
         <!-- Inbox Tab -->
         <base-tab
           id="inbox"
@@ -78,49 +85,6 @@
               </base-button>
             </div>
 
-            <base-drawer ref="filtersDropdown">
-              <div class="filters-content">
-                <div class="filter-row">
-                  <label class="filter-label">Sender</label>
-                  <base-input
-                    v-model="filters.sender"
-                    placeholder="Filter by sender email"
-                  />
-                </div>
-
-                <div class="filter-row">
-                  <base-datetime-picker
-                    id="start-datetime"
-                    v-model="filters.startDate"
-                    label="Start Date"
-                    placeholder="Select start date"
-                    format="12"
-                    size="md"
-                  />
-                </div>
-
-                <div class="filter-row">
-                  <base-datetime-picker
-                    id="end-datetime"
-                    v-model="filters.endDate"
-                    label="End Date"
-                    placeholder="Select end date"
-                    format="12"
-                    size="md"
-                  />
-                </div>
-
-                <div class="filter-actions">
-                  <base-button variant="primary" @click="applyFiltersAndClose">
-                    Apply Filters
-                  </base-button>
-                  <base-button variant="ghost" @click="clearFilters">
-                    Clear Filters
-                  </base-button>
-                </div>
-              </div>
-            </base-drawer>
-
             <div
               v-for="email in filteredInboxEmails"
               :key="email.id"
@@ -179,9 +143,6 @@
           <div class="tab-footer">
             <div class="unread-count" :style="{ visibility: filteredInboxUnreadCount > 0 ? 'visible' : 'hidden' }">
               {{ filteredInboxUnreadCount }} unread email{{ filteredInboxUnreadCount !== 1 ? 's' : '' }}
-            </div>
-            <div class="unread-count">
-              <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
             </div>
           </div>
         </base-tab>
@@ -295,9 +256,6 @@
           <div class="tab-footer">
             <div class="unread-count" style="visibility: hidden;">
               &nbsp;
-            </div>
-            <div class="unread-count">
-              <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
             </div>
           </div>
         </base-tab>
@@ -414,12 +372,51 @@
             <div class="unread-count" style="visibility: hidden;">
               &nbsp;
             </div>
-            <div class="unread-count">
-              <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
-            </div>
           </div>
         </base-tab>
       </base-tabs>
+      <base-drawer ref="filtersDropdown">
+              <div class="filters-content">
+                <div class="filter-row">
+                  <label class="filter-label">Sender</label>
+                  <base-input
+                    v-model="filters.sender"
+                    placeholder="Filter by sender email"
+                  />
+                </div>
+
+                <div class="filter-row">
+                  <base-datetime-picker
+                    id="start-datetime"
+                    v-model="filters.startDate"
+                    label="Start Date"
+                    placeholder="Select start date"
+                    format="12"
+                    size="md"
+                  />
+                </div>
+
+                <div class="filter-row">
+                  <base-datetime-picker
+                    id="end-datetime"
+                    v-model="filters.endDate"
+                    label="End Date"
+                    placeholder="Select end date"
+                    format="12"
+                    size="md"
+                  />
+                </div>
+
+                <div class="filter-actions">
+                  <base-button variant="primary" @click="applyFiltersAndClose">
+                    Apply Filters
+                  </base-button>
+                  <base-button variant="ghost" @click="clearFilters">
+                    Clear Filters
+                  </base-button>
+                </div>
+              </div>
+            </base-drawer>
     </main>
   </div>
 </template>
@@ -723,6 +720,14 @@ function formatDate(dateStr: string): string {
 .email-list-card {
   position: relative;
   overflow: visible;
+}
+
+
+.portfolio-footer-slot {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
 }
 
 .email-list-header {
