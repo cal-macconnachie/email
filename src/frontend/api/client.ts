@@ -12,6 +12,13 @@ interface VerifyOtpResponse {
   }
 }
 
+interface AttachmentUrl {
+  key: string
+  filename: string
+  viewUrl: string
+  downloadUrl: string
+}
+
 interface Email {
   id: string
   recipient: string
@@ -30,6 +37,7 @@ interface Email {
   references?: string[]
   s3_key: string
   attachment_keys?: string[]
+  attachments?: AttachmentUrl[]
   threadEmails?: Email[]
 }
 

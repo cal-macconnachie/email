@@ -4,6 +4,7 @@ import { batchGet } from './helpers/dynamo-helpers/batch-get'
 import { query } from './helpers/dynamo-helpers/query'
 import { Email } from './helpers/parse-email'
 import { getAuthenticatedRecipient } from './middleware/auth-middleware'
+import { generateAttachmentUrls } from './helpers/s3-presigned-url'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -115,6 +116,11 @@ export const handler = async (
           console.error(`Error fetching email body from S3 for key ${metadata.s3_key}:`, error)
           // Continue with metadata only if S3 fetch fails
         }
+      }
+
+      // Generate presigned URLs for attachments
+      if (email.attachment_keys && email.attachment_keys.length > 0) {
+        email.attachments = await generateAttachmentUrls(bucketName, email.attachment_keys)
       }
 
       emails.push(email)

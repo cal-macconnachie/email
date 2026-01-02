@@ -3,6 +3,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda
 import { query } from './helpers/dynamo-helpers/query'
 import { Email } from './helpers/parse-email'
 import { getAuthenticatedRecipient } from './middleware/auth-middleware'
+import { generateAttachmentUrls } from './helpers/s3-presigned-url'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -81,6 +82,11 @@ export const handler = async (
     // Parse the email
     const email = JSON.parse(emailContent) as Email
 
+    // Generate presigned URLs for the main email's attachments
+    if (email.attachment_keys && email.attachment_keys.length > 0) {
+      email.attachments = await generateAttachmentUrls(bucketName, email.attachment_keys)
+    }
+
     // Fetch thread relations if the email has a thread_id
     let threadEmails: Email[] = []
     if (email.thread_id) {
@@ -107,6 +113,15 @@ export const handler = async (
           const timestampB = b.timestamp.split('#')[0]
           return timestampA.localeCompare(timestampB)
         })
+
+        // Generate presigned URLs for all thread emails' attachments
+        await Promise.all(
+          threadEmails.map(async (threadEmail) => {
+            if (threadEmail.attachment_keys && threadEmail.attachment_keys.length > 0) {
+              threadEmail.attachments = await generateAttachmentUrls(bucketName, threadEmail.attachment_keys)
+            }
+          })
+        )
       } catch (error) {
         console.error('Error fetching thread relations:', error)
         // Continue without thread info if fetch fails

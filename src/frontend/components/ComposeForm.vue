@@ -172,7 +172,7 @@ function handleCancel() {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   height: 100%;
-  padding: var(--space-2);
+  margin: var(--space-2);
   margin-bottom: var(--space-2);
 }
 

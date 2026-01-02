@@ -383,7 +383,7 @@ function formatDate(dateStr: string): string {
   flex-direction: column;
   gap: var(--space-4);
   margin-top: var(--space-4);
-  padding: var(--space-2);
+  margin: var(--space-2);
   overflow: visible;
 }
 

@@ -74,6 +74,14 @@ Content-Type: text/html; charset="UTF-8"
 */
 
 import { v4 } from 'uuid'
+
+export interface AttachmentUrl {
+    key: string
+    filename: string
+    viewUrl: string
+    downloadUrl: string
+}
+
 export interface Email {
     recipient: string
     sender: string
@@ -88,12 +96,14 @@ export interface Email {
     created_at: string
     id: string
     attachment_keys?: string[]
+    attachments?: AttachmentUrl[]
     read: boolean
     archived: boolean
     thread_id: string
     message_id: string
     in_reply_to?: string
     references?: string[]
+    threadEmails?: Email[]
 }
 
 export function parseEmail(emailString: string): {

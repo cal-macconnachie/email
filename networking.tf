@@ -291,6 +291,22 @@ resource "aws_s3_bucket" "ses_received_emails" {
     Environment = var.environment
   }
 }
+
+# Lifecycle policy for SES received emails bucket
+resource "aws_s3_bucket_lifecycle_configuration" "ses_received_emails_lifecycle" {
+  bucket = aws_s3_bucket.ses_received_emails.id
+
+  rule {
+    id     = "transition-to-glacier-ir"
+    status = "Enabled"
+
+    transition {
+      days          = 30
+      storage_class = "GLACIER_IR"
+    }
+  }
+}
+
 # IAM Role for SES to write to S3
 resource "aws_iam_role" "ses_s3_role" {
   name = "${local.sanitized_domain}-ses-s3-role"

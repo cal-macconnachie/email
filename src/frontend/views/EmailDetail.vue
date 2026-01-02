@@ -90,18 +90,22 @@
             <p class="cc-text"><strong>CC:</strong> {{ email.cc.join(', ') }}</p>
           </div>
 
-          <div v-if="email.body" class="email-body" v-html="parseEmailBody(email.body).content"></div>
+          <div v-if="email.body" class="email-body" v-html="parseEmailBody(email.body, email.attachments).content"></div>
           <div v-else class="email-body-loading">
             <p>Loading email content...</p>
           </div>
 
-          <div v-if="email.attachment_keys && email.attachment_keys.length > 0" class="attachments-section">
-            <h3 class="section-title">Attachments ({{ email.attachment_keys.length }})</h3>
+          <div v-if="email.attachments && email.attachments.length > 0" class="attachments-section">
+            <h3 class="section-title">Attachments ({{ email.attachments.length }})</h3>
             <div class="attachments-list">
-              <div
-                v-for="key in email.attachment_keys"
-                :key="key"
+              <a
+                v-for="attachment in email.attachments"
+                :key="attachment.key"
+                :href="attachment.downloadUrl"
+                :download="attachment.filename"
                 class="attachment-item"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -115,8 +119,22 @@
                 >
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                 </svg>
-                <span class="attachment-name">{{ getFilename(key) }}</span>
-              </div>
+                <span class="attachment-name">{{ attachment.filename }}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="download-icon"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </a>
             </div>
           </div>
         </base-card>
@@ -254,7 +272,7 @@ function getFilename(key: string): string {
   return key.split('/').pop() || key
 }
 
-function parseEmailBody(rawBody: string): { isHtml: boolean; content: string } {
+function parseEmailBody(rawBody: string, attachments?: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string }>): { isHtml: boolean; content: string } {
   if (!rawBody) return { isHtml: false, content: '' }
 
   // Check if the body contains MIME headers
@@ -263,10 +281,14 @@ function parseEmailBody(rawBody: string): { isHtml: boolean; content: string } {
   if (headerEndIndex === -1) {
     // No headers found, treat as plain text or HTML based on content
     const isHtml = /<[a-z][\s\S]*>/i.test(rawBody)
-    return {
-      isHtml,
-      content: isHtml ? rawBody : rawBody.replace(/\r?\n/g, '<br>')
+    let content = isHtml ? rawBody : rawBody.replace(/\r?\n/g, '<br>')
+
+    // Replace inline attachment references with actual URLs
+    if (attachments && attachments.length > 0) {
+      content = replaceInlineAttachments(content, attachments)
     }
+
+    return { isHtml, content }
   }
 
   // Extract headers and body
@@ -307,7 +329,33 @@ function parseEmailBody(rawBody: string): { isHtml: boolean; content: string } {
     bodyContent = bodyContent.replace(/\r?\n/g, '<br>')
   }
 
+  // Replace inline attachment references with actual URLs
+  if (attachments && attachments.length > 0) {
+    bodyContent = replaceInlineAttachments(bodyContent, attachments)
+  }
+
   return { isHtml, content: bodyContent }
+}
+
+function replaceInlineAttachments(content: string, attachments: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string }>): string {
+  // Replace cid: references with actual presigned URLs
+  // Pattern: src="cid:filename" or src='cid:filename'
+  return content.replace(/src=["']cid:([^"']+)["']/gi, (match, cidFilename) => {
+    // Try to find the attachment by matching the filename
+    const attachment = attachments.find(att => {
+      // Extract just the filename from the attachment key
+      const attachmentFilename = att.filename
+      // Match against the cid filename (which might be just the filename or Content-ID)
+      return attachmentFilename === cidFilename || att.key.includes(cidFilename)
+    })
+
+    if (attachment) {
+      return `src="${attachment.viewUrl}"`
+    }
+
+    // If no match found, return original
+    return match
+  })
 }
 
 function decodeQuotedPrintable(text: string): string {
@@ -456,6 +504,8 @@ function decodeQuotedPrintable(text: string): string {
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .attachments-section {
@@ -483,6 +533,13 @@ function decodeQuotedPrintable(text: string): string {
   padding: var(--space-2);
   background-color: var(--color-bg-muted);
   border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text);
+  transition: background-color 0.2s ease;
+}
+
+.attachment-item:hover {
+  background-color: var(--color-bg-tertiary);
 }
 
 .attachment-icon {
@@ -493,6 +550,11 @@ function decodeQuotedPrintable(text: string): string {
 .attachment-name {
   flex: 1;
   font-size: var(--font-size-sm);
+}
+
+.download-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 768px) {
