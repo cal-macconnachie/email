@@ -1,3 +1,4 @@
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import * as webpush from 'web-push'
@@ -62,7 +63,7 @@ export async function handler(event: DynamoDBStreamEvent): Promise<void> {
   const newEmails = event.Records.filter((record) => record.eventName === 'INSERT')
     .map((record) => {
       if (!record.dynamodb?.NewImage) return null
-      return unmarshall(record.dynamodb.NewImage) as EmailRecord
+      return unmarshall(record.dynamodb.NewImage as unknown as Record<string, AttributeValue>) as EmailRecord
     })
     .filter((email): email is EmailRecord => email !== null)
 
@@ -137,11 +138,11 @@ async function processNewEmail(
   const notificationPayload = {
     title: `New email from ${email.sender}`,
     body: email.subject || '(No subject)',
-    icon: '/direct-market.svg',
-    badge: '/direct-market.svg',
+    icon: './direct-market.svg',
+    badge: './direct-market.svg',
     tag: email.s3_key, // Prevents duplicate notifications
     data: {
-      url: `/email/${encodeURIComponent(email.s3_key)}`,
+      url: `/emails/${encodeURIComponent(email.s3_key)}`,
       s3_key: email.s3_key,
       timestamp: email.timestamp,
       recipient: email.recipient,

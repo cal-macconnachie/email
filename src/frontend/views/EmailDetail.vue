@@ -2,7 +2,7 @@
   <div class="email-detail-container">
     <header class="email-detail-header">
       <div class="header-content">
-        <base-button @click="router.back()" variant="ghost-secondary" class="back-button">←</base-button>
+        <base-button @click="router.push('/emails')" variant="ghost-secondary" class="back-button">←</base-button>
 
         <div v-if="emailStore.currentEmail" class="email-header-info">
           <div class="email-header-main">
@@ -22,9 +22,11 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <path d="M9 11l-6 6v-6H1V1h18v10h-7.5z" />
-                <path d="M15 18l6-6" />
+                <path d="M9 14l-5-5 5-5"/>
+                <path d="M4 9h10.5a5.5 5.5 0 010 11H12"/>
               </svg>
             </base-button>
           </div>
@@ -71,9 +73,11 @@
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
                 >
-                  <path d="M9 11l-6 6v-6H1V1h18v10h-7.5z" />
-                  <path d="M15 18l6-6" />
+                  <path d="M9 14l-5-5 5-5"/>
+                  <path d="M4 9h10.5a5.5 5.5 0 010 11H12"/>
                 </svg>
               </base-button>
               <base-button
@@ -91,10 +95,14 @@
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
                 >
-                  <path d="M21 8v13H3V8" />
-                  <path d="M1 3h22v5H1z" />
-                  <path d="M10 12h4" />
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+                  <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                  <path d="M10 11v6"/>
+                  <path d="M14 11v6"/>
                 </svg>
               </base-button>
             </div>
@@ -177,6 +185,10 @@ onMounted(async () => {
         if (emailStore.currentEmail.threadEmails && emailStore.currentEmail.threadEmails.length > 0) {
           // Use thread emails from the detail response, enhanced with cached data from store
           threadEmails.value = emailStore.currentEmail.threadEmails.map(threadEmail => {
+            // Check if this is the current email being viewed (which has the body)
+            if (emailStore.currentEmail && threadEmail.s3_key === emailStore.currentEmail.s3_key && emailStore.currentEmail.body) {
+              return emailStore.currentEmail
+            }
             // Check if we have a cached version with body
             const cachedVersion = emailStore.emails.find(e => e.s3_key === threadEmail.s3_key && e.body)
             return cachedVersion || threadEmail
@@ -242,7 +254,6 @@ async function handleToggleArchive(email: Email) {
 
 function handleReply(email: Email) {
   emailStore.prepareReply(email)
-  router.push('/compose')
 }
 
 function formatFullDate(dateStr: string): string {
