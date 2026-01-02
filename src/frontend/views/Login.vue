@@ -10,11 +10,13 @@
           <div class="form-field">
             <base-input
               id="phone"
+              name="phone"
               ref="phoneNumberInput"
               v-model="phoneNumber"
               type="tel"
               label="Phone Number"
               placeholder="+15551234567"
+              autocomplete="tel"
               required
             />
           </div>
@@ -111,7 +113,12 @@ watch (
 
 async function handleRequestOtp() {
   try {
-    await authStore.requestOtp(phoneNumber.value)
+    let phone = phoneNumber.value.trim()
+    if (!phone.startsWith('+')) {
+      // assume country code exists if not provided
+      phone = '+' + phone
+    }
+    await authStore.requestOtp(phone)
   } catch (error) {
     console.error('Failed to request OTP:', error)
   }
