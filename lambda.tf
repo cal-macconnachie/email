@@ -591,12 +591,12 @@ resource "aws_lambda_function" "lambda_authorizer" {
 
 # Event Source Mapping: DynamoDB Stream -> process-email-stream Lambda
 resource "aws_lambda_event_source_mapping" "email_stream_to_push" {
-  event_source_arn  = aws_dynamodb_table.email_tracking.stream_arn
-  function_name     = aws_lambda_function.functions["process_email_stream"].arn
-  starting_position = "LATEST"
-  batch_size        = 10
+  event_source_arn                   = aws_dynamodb_table.email_tracking.stream_arn
+  function_name                      = aws_lambda_function.functions["process_email_stream"].arn
+  starting_position                  = "LATEST"
+  batch_size                         = 10
   maximum_batching_window_in_seconds = 1
-  parallelization_factor = 1
+  parallelization_factor             = 1
 
   # Only process INSERT events (new emails)
   filter_criteria {
