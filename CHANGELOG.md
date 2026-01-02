@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.4](https://github.com/cal-macconnachie/email/compare/v1.1.3...v1.1.4) (2026-01-02)
+
+
+### Bug Fixes
+
+* remove polling in favor of push ([634d6f6](https://github.com/cal-macconnachie/email/commit/634d6f6314cf6e49a5882e78b3a1296256ac32c7))
+
 ### [1.1.3](https://github.com/cal-macconnachie/email/compare/v1.1.2...v1.1.3) (2026-01-02)
 
 
