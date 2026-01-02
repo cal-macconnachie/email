@@ -11,9 +11,7 @@
 
       <div v-else-if="emailStore.emails.length === 0" class="empty-state">
         <p class="empty-text">No emails yet</p>
-        <router-link to="/compose">
-          <base-button variant="ghost-primary">Send your first email</base-button>
-        </router-link>
+        <base-button variant="ghost-primary" @click="emailStore.composing = true">Send your first email</base-button>
       </div>
 
       <div v-else-if="filteredEmails.length === 0" class="empty-state">
@@ -118,7 +116,6 @@
           v-for="email in filteredEmails"
           :key="email.id"
           class="email-list-item"
-          hoverable
           @click="handleEmailClick(email)"
         >
           <div v-if="!isMobile" class="email-card-content">
@@ -145,7 +142,7 @@
           </div>
           <div v-else class="mobile-email-list-item">
             <!-- two rows, top subject and badges, bottom sender and date -->
-            <div class="email-card-content">
+            <div class="mobile-row-top">
               <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
               <div class="email-badges">
                 <span v-if="!email.read" class="badge unread-badge">•</span>
@@ -160,9 +157,13 @@
                     stroke="currentColor"
                     stroke-width="2"
                   >
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                   </svg>
                 </span>
               </div>
+            </div>
+            <div class="mobile-row-bottom">
+              <span class="email-sender">{{ email.sender }}</span>
               <span class="email-date">{{ formatDate(email.created_at) }}</span>
             </div>
           </div>
@@ -236,18 +237,6 @@ function fetchEmails() {
 
 const fetchingInterval = ref<NodeJS.Timeout | null>(null)
 
-function handleClickOutside(event: MouseEvent) {
-  if (showFiltersDropdown.value && filtersDropdown.value) {
-    const target = event.target as Node
-    if (!filtersDropdown.value.contains(target)) {
-      const filterButton = document.querySelector('.search-bar-wrapper button')
-      if (filterButton && !filterButton.contains(target)) {
-        showFiltersDropdown.value = false
-      }
-    }
-  }
-}
-
 function closeDrawer() {
   showFiltersDropdown.value = false
 }
@@ -264,9 +253,7 @@ onMounted(async () => {
   // set up timer to fetch emails every 60 seconds
   fetchingInterval.value = setInterval(fetchEmails, 60000)
 
-  // Add click outside listener
   await nextTick()
-  document.addEventListener('click', handleClickOutside)
   filtersDropdown.value?.addEventListener('close-drawer', closeDrawer)
   window.addEventListener('resize', onResize)
 })
@@ -276,8 +263,6 @@ onBeforeUnmount(() => {
   if (fetchingInterval.value !== null) {
     clearInterval(fetchingInterval.value)
   }
-  // Remove click outside listener
-  document.removeEventListener('click', handleClickOutside)
   filtersDropdown.value?.removeEventListener('close-drawer', closeDrawer)
   window.removeEventListener('resize', onResize)
 })
@@ -611,6 +596,28 @@ function formatDate(dateStr: string): string {
   margin-top: var(--space-2);
   padding: var(--space-2);
   text-align: center;
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+}
+
+.mobile-email-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.mobile-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.mobile-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   font-size: var(--font-size-sm);
   opacity: 0.7;
 }

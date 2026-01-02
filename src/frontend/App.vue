@@ -8,7 +8,7 @@
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
-      <compose-drawer />
+      <ComposeDrawer />
     </base-drawer>
   </div>
 </template>
@@ -17,6 +17,7 @@
 import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
+import ComposeDrawer from './components/ComposeForm.vue'
 import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'
 

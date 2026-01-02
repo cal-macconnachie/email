@@ -1,81 +1,83 @@
 <template>
-  <form class="compose-form">
-    <div class="form-field">
-      <base-input
-        id="to"
-        v-model="emailStore.formData.to"
-        type="email"
-        label="To"
-        placeholder="recipient@example.com"
-        required
-        hint="For multiple recipients, separate with commas"
-      />
-    </div>
+  <div class="compose-container">
+    <form class="compose-form">
+      <div class="form-field">
+        <base-input
+          id="to"
+          v-model="emailStore.formData.to"
+          type="email"
+          label="To"
+          placeholder="recipient@example.com"
+          required
+          hint="For multiple recipients, separate with commas"
+        />
+      </div>
 
-    <div class="form-field">
-      <base-input
-        id="cc"
-        v-model="emailStore.formData.cc"
-        type="text"
-        label="CC (optional)"
-        placeholder="cc@example.com"
-      />
-    </div>
+      <div class="form-field">
+        <base-input
+          id="cc"
+          v-model="emailStore.formData.cc"
+          type="text"
+          label="CC (optional)"
+          placeholder="cc@example.com"
+        />
+      </div>
 
-    <div class="form-field">
-      <base-input
-        id="bcc"
-        v-model="emailStore.formData.bcc"
-        type="text"
-        label="BCC (optional)"
-        placeholder="bcc@example.com"
-      />
-    </div>
+      <div class="form-field">
+        <base-input
+          id="bcc"
+          v-model="emailStore.formData.bcc"
+          type="text"
+          label="BCC (optional)"
+          placeholder="bcc@example.com"
+        />
+      </div>
 
-    <div class="form-field">
-      <base-input
-        id="subject"
-        v-model="emailStore.formData.subject"
-        type="text"
-        label="Subject"
-        placeholder="Email subject"
-        required
-      />
-    </div>
+      <div class="form-field">
+        <base-input
+          id="subject"
+          v-model="emailStore.formData.subject"
+          type="text"
+          label="Subject"
+          placeholder="Email subject"
+          required
+        />
+      </div>
 
-    <div class="form-field form-field-textarea">
-      <base-textarea
-        id="body"
-        v-model="emailStore.formData.body"
-        label="Message"
-        :rows="12"
-        placeholder="Write your message..."
-        required
-      />
-    </div>
+      <div class="form-field form-field-textarea">
+        <base-textarea
+          id="body"
+          v-model="emailStore.formData.body"
+          label="Message"
+          :rows="12"
+          placeholder="Write your message..."
+          required
+        />
+      </div>
 
-    <div v-if="emailStore.error" class="error-message">
-      {{ emailStore.error }}
-    </div>
+      <div v-if="emailStore.error" class="error-message">
+        {{ emailStore.error }}
+      </div>
 
-    <div class="form-actions">
-      <base-button
-        type="button"
-        variant="ghost-secondary"
-        @click="handleCancel"
-      >
-        Cancel
-      </base-button>
+      <div class="form-actions">
+        <base-button
+          type="button"
+          variant="ghost-secondary"
+          @click="handleCancel"
+        >
+          Cancel
+        </base-button>
 
-      <base-button
-        variant="ghost-primary"
-        :disabled="emailStore.isLoading"
-        @click="handleSend"
-      >
-        {{ emailStore.isLoading ? 'Sending...' : 'Send' }}
-      </base-button>
-    </div>
-  </form>
+        <base-button
+          variant="ghost-primary"
+          :disabled="emailStore.isLoading"
+          @click="handleSend"
+        >
+          {{ emailStore.isLoading ? 'Sending...' : 'Send' }}
+        </base-button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -134,11 +136,7 @@ function handleCancel() {
 
 <style scoped>
 .compose-container {
-  min-height: 100vh;
-  background-color: var(--color-bg-secondary);
-}
-
-.compose-header {
+  overflow: auto;
 }
 
 .header-content {
