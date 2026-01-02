@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/cal-macconnachie/email/compare/v1.0.1...v1.1.0) (2026-01-02)
+
+
+### Features
+
+* allow cors on s3 bucket for upload and download ([060cb70](https://github.com/cal-macconnachie/email/commit/060cb706b6658f250939084843493b11a0886a37))
+
 ### [1.0.1](https://github.com/cal-macconnachie/email/compare/v1.0.0...v1.0.1) (2026-01-02)
 
 
