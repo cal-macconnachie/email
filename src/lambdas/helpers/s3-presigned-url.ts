@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 const s3Client = new S3Client({ region: process.env.REGION })
@@ -8,6 +8,7 @@ export interface AttachmentWithUrls {
   filename: string
   viewUrl: string
   downloadUrl: string
+  contentId?: string
 }
 
 /**
@@ -58,11 +59,26 @@ export async function generateAttachmentUrls(
     const { viewUrl, downloadUrl } = await generatePresignedUrls(bucketName, key, expiresIn)
     const filename = key.split('/').pop() || 'attachment'
 
+    // Retrieve Content-ID from S3 metadata if it exists
+    let contentId: string | undefined
+    try {
+      const headCommand = new HeadObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      })
+      const headResponse = await s3Client.send(headCommand)
+      contentId = headResponse.Metadata?.['content-id']
+    } catch (error) {
+      console.error(`Failed to retrieve metadata for ${key}:`, error)
+      // Continue without contentId if metadata fetch fails
+    }
+
     return {
       key,
       filename,
       viewUrl,
       downloadUrl,
+      contentId,
     }
   })
 

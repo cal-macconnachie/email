@@ -74,16 +74,23 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
             const attachmentKey = `${sanitizedRecipient}/${date}/${messageId}/${attachment.filename}`
             console.log(`Storing attachment: ${bucketName}/${attachmentKey}`)
 
+            const metadata: Record<string, string> = {
+              'message-id': messageId,
+              'recipient': recipient,
+              'original-filename': attachment.filename,
+            }
+
+            // Add Content-ID to metadata if it exists (for inline attachments)
+            if (attachment.contentId) {
+              metadata['content-id'] = attachment.contentId
+            }
+
             await s3Client.send(new PutObjectCommand({
               Bucket: bucketName,
               Key: attachmentKey,
               Body: attachment.rawContent,
               ContentType: attachment.contentType,
-              Metadata: {
-                'message-id': messageId,
-                'recipient': recipient,
-                'original-filename': attachment.filename,
-              },
+              Metadata: metadata,
             }))
 
             attachmentKeys.push(attachmentKey)

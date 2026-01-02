@@ -108,11 +108,11 @@ export interface Email {
 
 export function parseEmail(emailString: string): {
     emails: Email[];
-    attachments?: Array<{ filename: string; contentType: string; rawContent: Buffer }>;
+    attachments?: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }>;
 } {
     const headers: Record<string, string> = {}
     const bodyParts: string[] = []
-    const attachments: Array<{ filename: string; contentType: string; rawContent: Buffer }> = []
+    const attachments: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }> = []
     let isBody = false
 
     // Split the email string into lines
@@ -183,7 +183,7 @@ function formatEmailAddress(email: string): string {
     return match ? match[1].trim() : email.trim()
 }
 
-function extractHtmlBody(body: string, attachments: Array<{ filename: string; contentType: string; rawContent: Buffer }>): string {
+function extractHtmlBody(body: string, attachments: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }>): string {
     const parts = body.split('--')
     let htmlBody = ''
 
@@ -206,6 +206,7 @@ function extractHtmlBody(body: string, attachments: Array<{ filename: string; co
         } else if (part.includes('Content-Disposition: attachment')) {
             const filenameMatch = part.match(/filename="(.+?)"/)
             const contentTypeMatch = part.match(/Content-Type: (.+?);/)
+            const contentIdMatch = part.match(/Content-ID:\s*<([^>]+)>/i)
             const rawContentStartIndex = part.indexOf('\r\n\r\n') + 4 // Find the start of the raw content
             const rawContent = part.slice(rawContentStartIndex).trim()
 
@@ -214,11 +215,13 @@ function extractHtmlBody(body: string, attachments: Array<{ filename: string; co
                     filename: filenameMatch[1],
                     contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
                     rawContent: Buffer.from(rawContent, 'base64'),
+                    contentId: contentIdMatch ? contentIdMatch[1] : undefined,
                 })
             }
         } else if (part.includes('Content-Disposition: inline')) {
             const filenameMatch = part.match(/filename="(.+?)"/)
             const contentTypeMatch = part.match(/Content-Type: (.+?);/)
+            const contentIdMatch = part.match(/Content-ID:\s*<([^>]+)>/i)
             const rawContentStartIndex = part.indexOf('\r\n\r\n') + 4 // Find the start of the raw content
             const rawContent = part.slice(rawContentStartIndex).trim()
 
@@ -227,6 +230,7 @@ function extractHtmlBody(body: string, attachments: Array<{ filename: string; co
                     filename: filenameMatch[1],
                     contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
                     rawContent: Buffer.from(rawContent, 'base64'),
+                    contentId: contentIdMatch ? contentIdMatch[1] : undefined,
                 })
             }
         }

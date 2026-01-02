@@ -2,7 +2,7 @@
   <div class="email-detail-container">
     <header class="email-detail-header">
       <div class="header-content">
-        <base-button @click="router.push('/emails')" variant="ghost-secondary" class="back-button">←</base-button>
+        <base-button @click="router.push('/emails')" variant="link-secondary" class="back-button">←</base-button>
 
         <div v-if="emailStore.currentEmail" class="email-header-info">
           <div class="email-header-main">
@@ -272,7 +272,7 @@ function getFilename(key: string): string {
   return key.split('/').pop() || key
 }
 
-function parseEmailBody(rawBody: string, attachments?: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string }>): { isHtml: boolean; content: string } {
+function parseEmailBody(rawBody: string, attachments?: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string; contentId?: string }>): { isHtml: boolean; content: string } {
   if (!rawBody) return { isHtml: false, content: '' }
 
   // Check if the body contains MIME headers
@@ -337,16 +337,18 @@ function parseEmailBody(rawBody: string, attachments?: Array<{ key: string; file
   return { isHtml, content: bodyContent }
 }
 
-function replaceInlineAttachments(content: string, attachments: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string }>): string {
+function replaceInlineAttachments(content: string, attachments: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string; contentId?: string }>): string {
   // Replace cid: references with actual presigned URLs
   // Pattern: src="cid:filename" or src='cid:filename'
-  return content.replace(/src=["']cid:([^"']+)["']/gi, (match, cidFilename) => {
-    // Try to find the attachment by matching the filename
+  return content.replace(/src=["']cid:([^"']+)["']/gi, (match, cid) => {
+    // Try to find the attachment by matching the Content-ID first
     const attachment = attachments.find(att => {
-      // Extract just the filename from the attachment key
-      const attachmentFilename = att.filename
-      // Match against the cid filename (which might be just the filename or Content-ID)
-      return attachmentFilename === cidFilename || att.key.includes(cidFilename)
+      // First try to match by Content-ID (most reliable)
+      if (att.contentId === cid) {
+        return true
+      }
+      // Fallback: try matching against filename or key
+      return att.filename === cid || att.key.includes(cid)
     })
 
     if (attachment) {

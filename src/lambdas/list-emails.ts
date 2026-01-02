@@ -9,6 +9,7 @@ interface ListEmailsRequest {
   limit?: number
   lastEvaluatedKey?: Record<string, unknown>
   sortOrder?: 'ASC' | 'DESC'
+  mailbox?: 'inbox' | 'sent' | 'archived'
 }
 
 interface EmailMetadata {
@@ -59,6 +60,7 @@ export const handler = async (
         endDate: event.queryStringParameters.endDate,
         limit: event.queryStringParameters.limit ? parseInt(event.queryStringParameters.limit) : undefined,
         sortOrder: event.queryStringParameters.sortOrder as 'ASC' | 'DESC' | undefined,
+        mailbox: event.queryStringParameters.mailbox as 'inbox' | 'sent' | 'archived' | undefined,
       }
     } else if (event.body) {
       request = JSON.parse(event.body) as ListEmailsRequest
@@ -66,16 +68,40 @@ export const handler = async (
       request = {}
     }
 
-    const { sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder } = request
+    const { sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder, mailbox } = request
 
     // Build query parameters
     let keyConditionExpression: string
     const expressionAttributeValues: Record<string, unknown> = {}
     const expressionAttributeNames: Record<string, string> = {}
     let indexName: string | undefined
+    let filterExpression: string | undefined
 
-    // If sender is provided, use GSI
-    if (sender) {
+    // Determine query strategy based on mailbox type
+    if (mailbox === 'sent') {
+      // Query sent emails using SenderTimestampIndex
+      indexName = 'SenderTimestampIndex'
+      keyConditionExpression = '#sender = :sender'
+      expressionAttributeNames['#sender'] = 'sender'
+      expressionAttributeValues[':sender'] = recipient // User's emails they sent
+
+      // Add timestamp range if provided
+      if (startDate && endDate) {
+        keyConditionExpression += ' AND #timestamp BETWEEN :startDate AND :endDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':startDate'] = startDate
+        expressionAttributeValues[':endDate'] = endDate
+      } else if (startDate) {
+        keyConditionExpression += ' AND #timestamp >= :startDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':startDate'] = startDate
+      } else if (endDate) {
+        keyConditionExpression += ' AND #timestamp <= :endDate'
+        expressionAttributeNames['#timestamp'] = 'timestamp'
+        expressionAttributeValues[':endDate'] = endDate
+      }
+    } else if (sender) {
+      // If sender is provided, use GSI
       indexName = 'RecipientSenderIndex'
       const recipientSender = `${recipient}#${sender}`
       keyConditionExpression = '#recipientSender = :recipientSender'
@@ -96,6 +122,17 @@ export const handler = async (
         keyConditionExpression += ' AND #timestamp <= :endDate'
         expressionAttributeNames['#timestamp'] = 'timestamp'
         expressionAttributeValues[':endDate'] = endDate
+      }
+
+      // Add filter for inbox/archived if specified
+      if (mailbox === 'inbox') {
+        filterExpression = '#archived = :archived'
+        expressionAttributeNames['#archived'] = 'archived'
+        expressionAttributeValues[':archived'] = false
+      } else if (mailbox === 'archived') {
+        filterExpression = '#archived = :archived'
+        expressionAttributeNames['#archived'] = 'archived'
+        expressionAttributeValues[':archived'] = true
       }
     } else {
       // Use primary key query
@@ -118,6 +155,17 @@ export const handler = async (
         expressionAttributeNames['#timestamp'] = 'timestamp'
         expressionAttributeValues[':endDate'] = endDate
       }
+
+      // Add filter for inbox/archived if specified
+      if (mailbox === 'inbox') {
+        filterExpression = '#archived = :archived'
+        expressionAttributeNames['#archived'] = 'archived'
+        expressionAttributeValues[':archived'] = false
+      } else if (mailbox === 'archived') {
+        filterExpression = '#archived = :archived'
+        expressionAttributeNames['#archived'] = 'archived'
+        expressionAttributeValues[':archived'] = true
+      }
     }
 
     // Query DynamoDB
@@ -126,6 +174,7 @@ export const handler = async (
       keyConditionExpression,
       expressionAttributeValues,
       expressionAttributeNames,
+      filterExpression,
       indexName,
       limit: limit || 50, // Default to 50 items per page
       exclusiveStartKey: lastEvaluatedKey,

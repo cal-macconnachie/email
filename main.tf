@@ -28,9 +28,21 @@ resource "aws_dynamodb_table" "email_tracking" {
     type = "S"
   }
 
+  attribute {
+    name = "sender"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "RecipientSenderIndex"
     hash_key        = "recipient_sender"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "SenderTimestampIndex"
+    hash_key        = "sender"
     range_key       = "timestamp"
     projection_type = "ALL"
   }

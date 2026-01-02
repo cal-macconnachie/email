@@ -17,6 +17,7 @@ interface AttachmentUrl {
   filename: string
   viewUrl: string
   downloadUrl: string
+  contentId?: string
 }
 
 interface Email {
@@ -97,13 +98,14 @@ export const api = {
   },
 
   emails: {
-    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC' }): Promise<ListEmailsResponse> {
+    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC'; mailbox?: 'inbox' | 'sent' | 'archived' }): Promise<ListEmailsResponse> {
       const queryParams = new URLSearchParams()
       if (params?.sender) queryParams.append('sender', params.sender)
       if (params?.startDate) queryParams.append('startDate', params.startDate)
       if (params?.endDate) queryParams.append('endDate', params.endDate)
       if (params?.limit) queryParams.append('limit', params.limit.toString())
       if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+      if (params?.mailbox) queryParams.append('mailbox', params.mailbox)
 
       const response = await fetch(`${API_BASE}/emails/list?${queryParams}`, {
         credentials: 'include',

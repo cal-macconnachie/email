@@ -1,182 +1,414 @@
 <template>
   <div class="email-list-container">
     <main class="email-main">
-      <div v-if="emailStore.isLoading && emailStore.emails.length === 0" class="loading-state">
-        <p class="loading-text">Loading emails...</p>
-      </div>
-
-      <base-card v-else-if="emailStore.error" variant="elevated" padding="md" class="error-card">
-        {{ emailStore.error }}
-      </base-card>
-
-      <div v-else-if="emailStore.emails.length === 0" class="empty-state">
-        <p class="empty-text">No emails yet</p>
-        <base-button variant="ghost-primary" @click="emailStore.composing = true">Send your first email</base-button>
-      </div>
-
-      <div v-else-if="filteredEmails.length === 0" class="empty-state">
-        <p class="empty-text">No emails match your search</p>
-      </div>
-
-      <div v-else
-          class="email-list-card">
-        <div class="email-list-header">
-          <div class="search-bar-wrapper">
-            <base-input
-              v-model="searchQuery"
-              placeholder="Search emails..."
-            />
-            <base-button
-              variant="ghost"
-              size="sm"
-              @click="showFiltersDropdown = !showFiltersDropdown"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-            </base-button>
-          </div>
-          <base-button
-            variant="ghost"
-            size="sm"
-            @click="toggleSortOrder"
-            class="sort-button"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
-            >
-              <path d="M12 5v14M19 12l-7 7-7-7" />
-            </svg>
-          </base-button>
-        </div>
-
-        <!-- Filters Dropdown -->
-        <base-drawer ref="filtersDropdown">
-            <div class="filters-content">
-              <div class="filter-row">
-                <label class="filter-label">Sender</label>
-                <base-input
-                  v-model="filters.sender"
-                  placeholder="Filter by sender email"
-                />
-              </div>
-
-              <div class="filter-row">
-                <base-datetime-picker
-                  id="start-datetime"
-                  v-model="filters.startDate"
-                  label="Start Date"
-                  placeholder="Select start date"
-                  format="12"
-                  size="md"
-                />
-              </div>
-
-              <div class="filter-row">
-                <base-datetime-picker
-                  id="end-datetime"
-                  v-model="filters.endDate"
-                  label="End Date"
-                  placeholder="Select end date"
-                  format="12"
-                  size="md"
-                />
-              </div>
-
-              <div class="filter-actions">
-                <base-button variant="primary" @click="applyFiltersAndClose">
-                  Apply Filters
-                </base-button>
-                <base-button variant="ghost" @click="clearFilters">
-                  Clear Filters
-                </base-button>
-              </div>
-            </div>
-        </base-drawer>
-        <div
-          v-for="email in filteredEmails"
-          :key="email.id"
-          class="email-list-item"
-          @click="handleEmailClick(email)"
+      <base-tabs
+        active-tab="inbox"
+        sync-with-hash
+        force-expanded
+      >
+        <!-- Inbox Tab -->
+        <base-tab
+          id="inbox"
+          label="Inbox"
+          icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><path d=&quot;M22 12h-6l-2 3h-4l-2-3H2&quot;/><path d=&quot;M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z&quot;/></svg>"
         >
-          <div v-if="!isMobile" class="email-card-content">
-            <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
-            <span class="email-sender">{{ email.sender }}</span>
-            <div class="email-badges">
-              <span v-if="!email.read" class="badge unread-badge">•</span>
-              <span v-if="email.archived" class="badge archived-badge">A</span>
-              <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="10"
-                  width="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                </svg>
-              </span>
-            </div>
-            <span class="email-date">{{ formatDate(email.created_at) }}</span>
+          <div v-if="isLoadingInbox && inboxEmails.length === 0" class="loading-state">
+            <p class="loading-text">Loading emails...</p>
           </div>
-          <div v-else class="mobile-email-list-item">
-            <!-- two rows, top subject and badges, bottom sender and date -->
-            <div class="mobile-row-top">
-              <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
-              <div class="email-badges">
-                <span v-if="!email.read" class="badge unread-badge">•</span>
-                <span v-if="email.archived" class="badge archived-badge">A</span>
-                <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+
+          <base-card v-else-if="inboxError" variant="elevated" padding="md" class="error-card">
+            {{ inboxError }}
+          </base-card>
+
+          <div v-else-if="inboxEmails.length === 0" class="empty-state">
+            <p class="empty-text">No emails in inbox</p>
+            <base-button variant="ghost-primary" @click="emailStore.composing = true">Send your first email</base-button>
+          </div>
+
+          <div v-else-if="filteredInboxEmails.length === 0" class="empty-state">
+            <p class="empty-text">No emails match your search</p>
+          </div>
+
+          <div v-else class="email-list-card">
+            <div class="email-list-header">
+              <div class="search-bar-wrapper">
+                <base-input
+                  v-model="searchQuery"
+                  placeholder="Search emails..."
+                />
+                <base-button
+                  variant="ghost"
+                  size="sm"
+                  @click="showFiltersDropdown = !showFiltersDropdown"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    height="10"
-                    width="10"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   >
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                   </svg>
-                </span>
+                </base-button>
+              </div>
+              <base-button
+                variant="ghost"
+                size="sm"
+                @click="toggleSortOrder"
+                class="sort-button"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
+                >
+                  <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+              </base-button>
+            </div>
+
+            <base-drawer ref="filtersDropdown">
+              <div class="filters-content">
+                <div class="filter-row">
+                  <label class="filter-label">Sender</label>
+                  <base-input
+                    v-model="filters.sender"
+                    placeholder="Filter by sender email"
+                  />
+                </div>
+
+                <div class="filter-row">
+                  <base-datetime-picker
+                    id="start-datetime"
+                    v-model="filters.startDate"
+                    label="Start Date"
+                    placeholder="Select start date"
+                    format="12"
+                    size="md"
+                  />
+                </div>
+
+                <div class="filter-row">
+                  <base-datetime-picker
+                    id="end-datetime"
+                    v-model="filters.endDate"
+                    label="End Date"
+                    placeholder="Select end date"
+                    format="12"
+                    size="md"
+                  />
+                </div>
+
+                <div class="filter-actions">
+                  <base-button variant="primary" @click="applyFiltersAndClose">
+                    Apply Filters
+                  </base-button>
+                  <base-button variant="ghost" @click="clearFilters">
+                    Clear Filters
+                  </base-button>
+                </div>
+              </div>
+            </base-drawer>
+
+            <div
+              v-for="email in filteredInboxEmails"
+              :key="email.id"
+              class="email-list-item"
+              @click="handleEmailClick(email)"
+            >
+              <div v-if="!isMobile" class="email-card-content">
+                <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                <span class="email-sender">{{ email.sender }}</span>
+                <div class="email-badges">
+                  <span v-if="!email.read" class="badge unread-badge">•</span>
+                  <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      height="10"
+                      width="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                  </span>
+                </div>
+                <span class="email-date">{{ formatDate(email.created_at) }}</span>
+              </div>
+              <div v-else class="mobile-email-list-item">
+                <div class="mobile-row-top">
+                  <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                  <div class="email-badges">
+                    <span v-if="!email.read" class="badge unread-badge">•</span>
+                    <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="10"
+                        width="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="mobile-row-bottom">
+                  <span class="email-sender">{{ email.sender }}</span>
+                  <span class="email-date">{{ formatDate(email.created_at) }}</span>
+                </div>
               </div>
             </div>
-            <div class="mobile-row-bottom">
-              <span class="email-sender">{{ email.sender }}</span>
-              <span class="email-date">{{ formatDate(email.created_at) }}</span>
+          </div>
+
+          <div v-if="filteredInboxUnreadCount > 0" class="unread-count">
+            {{ filteredInboxUnreadCount }} unread email{{ filteredInboxUnreadCount !== 1 ? 's' : '' }}
+          </div>
+          <div class="unread-count">
+            <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          </div>
+        </base-tab>
+
+        <!-- Sent Tab -->
+        <base-tab
+          id="sent"
+          label="Sent"
+          icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><line x1=&quot;22&quot; y1=&quot;2&quot; x2=&quot;11&quot; y2=&quot;13&quot;/><polygon points=&quot;22 2 15 22 11 13 2 9 22 2&quot;/></svg>"
+        >
+          <div v-if="isLoadingSent && sentEmails.length === 0" class="loading-state">
+            <p class="loading-text">Loading sent emails...</p>
+          </div>
+
+          <base-card v-else-if="sentError" variant="elevated" padding="md" class="error-card">
+            {{ sentError }}
+          </base-card>
+
+          <div v-else-if="sentEmails.length === 0" class="empty-state">
+            <p class="empty-text">No sent emails</p>
+          </div>
+
+          <div v-else-if="filteredSentEmails.length === 0" class="empty-state">
+            <p class="empty-text">No emails match your search</p>
+          </div>
+
+          <div v-else class="email-list-card">
+            <div class="email-list-header">
+              <div class="search-bar-wrapper">
+                <base-input
+                  v-model="searchQuery"
+                  placeholder="Search emails..."
+                />
+              </div>
+              <base-button
+                variant="ghost"
+                size="sm"
+                @click="toggleSortOrder"
+                class="sort-button"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
+                >
+                  <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+              </base-button>
+            </div>
+
+            <div
+              v-for="email in filteredSentEmails"
+              :key="email.id"
+              class="email-list-item"
+              @click="handleEmailClick(email)"
+            >
+              <div v-if="!isMobile" class="email-card-content">
+                <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                <span class="email-sender">To: {{ email.recipient }}</span>
+                <div class="email-badges">
+                  <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      height="10"
+                      width="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                  </span>
+                </div>
+                <span class="email-date">{{ formatDate(email.created_at) }}</span>
+              </div>
+              <div v-else class="mobile-email-list-item">
+                <div class="mobile-row-top">
+                  <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                  <div class="email-badges">
+                    <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="10"
+                        width="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="mobile-row-bottom">
+                  <span class="email-sender">To: {{ email.recipient }}</span>
+                  <span class="email-date">{{ formatDate(email.created_at) }}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div v-if="filteredUnreadCount > 0" class="unread-count">
-        {{ filteredUnreadCount }} unread email{{ filteredUnreadCount !== 1 ? 's' : '' }}
+          <div class="unread-count">
+            <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          </div>
+        </base-tab>
 
-      </div>
-      <div class="unread-count">
-        <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
-      </div>
+        <!-- Archived Tab -->
+        <base-tab
+          id="archived"
+          label="Archived"
+          icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><polyline points=&quot;21 8 21 21 3 21 3 8&quot;/><rect x=&quot;1&quot; y=&quot;3&quot; width=&quot;22&quot; height=&quot;5&quot;/><line x1=&quot;10&quot; y1=&quot;12&quot; x2=&quot;14&quot; y2=&quot;12&quot;/></svg>"
+        >
+          <div v-if="isLoadingArchived && archivedEmails.length === 0" class="loading-state">
+            <p class="loading-text">Loading archived emails...</p>
+          </div>
+
+          <base-card v-else-if="archivedError" variant="elevated" padding="md" class="error-card">
+            {{ archivedError }}
+          </base-card>
+
+          <div v-else-if="archivedEmails.length === 0" class="empty-state">
+            <p class="empty-text">No archived emails</p>
+          </div>
+
+          <div v-else-if="filteredArchivedEmails.length === 0" class="empty-state">
+            <p class="empty-text">No emails match your search</p>
+          </div>
+
+          <div v-else class="email-list-card">
+            <div class="email-list-header">
+              <div class="search-bar-wrapper">
+                <base-input
+                  v-model="searchQuery"
+                  placeholder="Search emails..."
+                />
+              </div>
+              <base-button
+                variant="ghost"
+                size="sm"
+                @click="toggleSortOrder"
+                class="sort-button"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
+                >
+                  <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+              </base-button>
+            </div>
+
+            <div
+              v-for="email in filteredArchivedEmails"
+              :key="email.id"
+              class="email-list-item"
+              @click="handleEmailClick(email)"
+            >
+              <div v-if="!isMobile" class="email-card-content">
+                <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                <span class="email-sender">{{ email.sender }}</span>
+                <div class="email-badges">
+                  <span v-if="!email.read" class="badge unread-badge">•</span>
+                  <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      height="10"
+                      width="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                  </span>
+                </div>
+                <span class="email-date">{{ formatDate(email.created_at) }}</span>
+              </div>
+              <div v-else class="mobile-email-list-item">
+                <div class="mobile-row-top">
+                  <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                  <div class="email-badges">
+                    <span v-if="!email.read" class="badge unread-badge">•</span>
+                    <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="10"
+                        width="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="mobile-row-bottom">
+                  <span class="email-sender">{{ email.sender }}</span>
+                  <span class="email-date">{{ formatDate(email.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="unread-count">
+            <base-button v-if="authStore.isAuthenticated" @click="handleLogout" variant="link-secondary" size="sm">Logout</base-button>
+          </div>
+        </base-tab>
+      </base-tabs>
     </main>
   </div>
 </template>
@@ -185,7 +417,7 @@
 import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Email } from '../api/client'
+import { api, type Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
 
@@ -193,9 +425,23 @@ const router = useRouter()
 const emailStore = useEmailStore()
 const authStore = useAuthStore()
 
+// Separate email lists for each mailbox
+const inboxEmails = ref<Email[]>([])
+const sentEmails = ref<Email[]>([])
+const archivedEmails = ref<Email[]>([])
+
+// Loading and error states for each mailbox
+const isLoadingInbox = ref(false)
+const isLoadingSent = ref(false)
+const isLoadingArchived = ref(false)
+const inboxError = ref<string | null>(null)
+const sentError = ref<string | null>(null)
+const archivedError = ref<string | null>(null)
+
 const showFiltersDropdown = ref(false)
 const isMobile = ref(window.innerWidth <= 768)
 const filtersDropdown = ref<BaseDrawer | null>(null)
+
 watch(
   showFiltersDropdown,
   (newVal) => {
@@ -208,6 +454,7 @@ watch(
     }
   }
 )
+
 const searchQuery = ref('')
 const filters = ref({
   sender: '',
@@ -216,23 +463,111 @@ const filters = ref({
   sortOrder: 'DESC' as 'ASC' | 'DESC',
 })
 
-const filteredEmails = computed(() => {
+// Filtered emails for each mailbox
+const filteredInboxEmails = computed(() => {
   if (!searchQuery.value.trim()) {
-    return emailStore.emails
+    return inboxEmails.value
   }
 
   const query = searchQuery.value.toLowerCase()
-  return emailStore.emails.filter(email =>
+  return inboxEmails.value.filter(email =>
     email.subject?.toLowerCase().includes(query)
   )
 })
 
-const filteredUnreadCount = computed(() => {
-  return filteredEmails.value.filter(email => !email.read).length
+const filteredSentEmails = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return sentEmails.value
+  }
+
+  const query = searchQuery.value.toLowerCase()
+  return sentEmails.value.filter(email =>
+    email.subject?.toLowerCase().includes(query)
+  )
 })
 
-function fetchEmails() {
-  emailStore.fetchEmails()
+const filteredArchivedEmails = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return archivedEmails.value
+  }
+
+  const query = searchQuery.value.toLowerCase()
+  return archivedEmails.value.filter(email =>
+    email.subject?.toLowerCase().includes(query)
+  )
+})
+
+const filteredInboxUnreadCount = computed(() => {
+  return filteredInboxEmails.value.filter(email => !email.read).length
+})
+
+// Fetch functions for each mailbox
+async function fetchInboxEmails() {
+  isLoadingInbox.value = true
+  inboxError.value = null
+  try {
+    const params: any = {
+      mailbox: 'inbox',
+      sortOrder: filters.value.sortOrder,
+    }
+    if (filters.value.sender) params.sender = filters.value.sender
+    if (filters.value.startDate) params.startDate = filters.value.startDate
+    if (filters.value.endDate) params.endDate = filters.value.endDate
+
+    const response = await api.emails.list(params)
+    inboxEmails.value = response.emails
+  } catch (err) {
+    inboxError.value = err instanceof Error ? err.message : 'Failed to fetch inbox emails'
+  } finally {
+    isLoadingInbox.value = false
+  }
+}
+
+async function fetchSentEmails() {
+  isLoadingSent.value = true
+  sentError.value = null
+  try {
+    const params: any = {
+      mailbox: 'sent',
+      sortOrder: filters.value.sortOrder,
+    }
+
+    const response = await api.emails.list(params)
+    sentEmails.value = response.emails
+  } catch (err) {
+    sentError.value = err instanceof Error ? err.message : 'Failed to fetch sent emails'
+  } finally {
+    isLoadingSent.value = false
+  }
+}
+
+async function fetchArchivedEmails() {
+  isLoadingArchived.value = true
+  archivedError.value = null
+  try {
+    const params: any = {
+      mailbox: 'archived',
+      sortOrder: filters.value.sortOrder,
+    }
+    if (filters.value.sender) params.sender = filters.value.sender
+    if (filters.value.startDate) params.startDate = filters.value.startDate
+    if (filters.value.endDate) params.endDate = filters.value.endDate
+
+    const response = await api.emails.list(params)
+    archivedEmails.value = response.emails
+  } catch (err) {
+    archivedError.value = err instanceof Error ? err.message : 'Failed to fetch archived emails'
+  } finally {
+    isLoadingArchived.value = false
+  }
+}
+
+async function fetchAllMailboxes() {
+  await Promise.all([
+    fetchInboxEmails(),
+    fetchSentEmails(),
+    fetchArchivedEmails()
+  ])
 }
 
 const fetchingInterval = ref<NodeJS.Timeout | null>(null)
@@ -240,18 +575,20 @@ const fetchingInterval = ref<NodeJS.Timeout | null>(null)
 function closeDrawer() {
   showFiltersDropdown.value = false
 }
+
 function onResize() {
   isMobile.value = window.innerWidth <= 768
 }
 
 onMounted(async () => {
   try {
-    await emailStore.fetchEmails()
+    await fetchAllMailboxes()
   } catch (error) {
     console.error('Failed to fetch emails:', error)
   }
-  // set up timer to fetch emails every 60 seconds
-  fetchingInterval.value = setInterval(fetchEmails, 60000)
+
+  // Set up timer to fetch emails every 60 seconds
+  fetchingInterval.value = setInterval(fetchAllMailboxes, 60000)
 
   await nextTick()
   filtersDropdown.value?.addEventListener('close-drawer', closeDrawer)
@@ -259,7 +596,6 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  // clear interval when component is unmounted
   if (fetchingInterval.value !== null) {
     clearInterval(fetchingInterval.value)
   }
@@ -278,22 +614,7 @@ async function handleLogout() {
 
 async function applyFilters() {
   try {
-    const params: any = {}
-
-    if (filters.value.sender) {
-      params.sender = filters.value.sender
-    }
-    if (filters.value.startDate) {
-      params.startDate = filters.value.startDate
-    }
-    if (filters.value.endDate) {
-      params.endDate = filters.value.endDate
-    }
-    if (filters.value.sortOrder) {
-      params.sortOrder = filters.value.sortOrder
-    }
-
-    await emailStore.fetchEmails(params)
+    await fetchAllMailboxes()
   } catch (error) {
     console.error('Failed to apply filters:', error)
   }
@@ -314,7 +635,7 @@ async function clearFilters() {
   showFiltersDropdown.value = false
 
   try {
-    await emailStore.fetchEmails()
+    await fetchAllMailboxes()
   } catch (error) {
     console.error('Failed to clear filters:', error)
   }
@@ -361,29 +682,11 @@ function formatDate(dateStr: string): string {
   flex: 1;
 }
 
-.filters-dropdown-container {
-  position: relative;
-  width: 100%;
-}
-
-.filters-dropdown {
-  position: absolute;
-  top: var(--space-2);
-  left: 0;
-  right: 0;
-  z-index: 100;
-  max-width: 100%;
-  overflow: visible;
-  background-color: var(--color-bg-muted);
-  border: 1px solid var(--color-border);
-}
-
 .filters-content {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-top: var(--space-4);
-  margin: var(--space-2);
+  margin: var(--space-4);
   overflow: visible;
 }
 
@@ -429,46 +732,6 @@ function formatDate(dateStr: string): string {
   transform: rotate(180deg);
 }
 
-.compose-button {
-  position: fixed;
-  bottom: var(--space-4);
-  right: var(--space-4);
-  z-index: var(--z-fixed);
-}
-
-.email-header {
-  margin-bottom: var(--space-6);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  padding-right: var(--space-12);
-}
-
-.inbox-title {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-semibold);
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.refresh-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.refresh-text {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  animation: pulse 2s ease-in-out infinite;
-}
 .email-list-item {
   padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--color-border);
@@ -482,15 +745,6 @@ function formatDate(dateStr: string): string {
 
 .email-list-item:last-child {
   border-bottom: none;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
 }
 
 .email-main {
@@ -521,11 +775,6 @@ function formatDate(dateStr: string): string {
 .empty-text {
   margin: 0 0 var(--space-4) 0;
   opacity: 0.7;
-}
-
-.email-list {
-  display: flex;
-  flex-direction: column;
 }
 
 .email-card-content {
