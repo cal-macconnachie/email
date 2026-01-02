@@ -20,9 +20,7 @@
         <p class="empty-text">No emails match your search</p>
       </div>
 
-      <base-card v-else
-          variant="elevated"
-          padding="sm"
+      <div v-else
           class="email-list-card">
         <div class="email-list-header">
           <div class="search-bar-wrapper">
@@ -169,7 +167,7 @@
             </div>
           </div>
         </div>
-      </base-card>
+      </div>
 
       <div v-if="filteredUnreadCount > 0" class="unread-count">
         {{ filteredUnreadCount }} unread email{{ filteredUnreadCount !== 1 ? 's' : '' }}
