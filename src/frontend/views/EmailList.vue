@@ -599,7 +599,40 @@ async function fetchAllMailboxes() {
   ])
 }
 
-const fetchingInterval = ref<NodeJS.Timeout | null>(null)
+// Handle messages from service worker
+async function handleServiceWorkerMessage(event: MessageEvent) {
+  if (event.data && event.data.type === 'NEW_EMAIL_NOTIFICATION') {
+    // Extract s3_key from notification data
+    const s3Key = event.data.data?.data?.s3_key
+
+    if (!s3Key) {
+      console.warn('No s3_key found in push notification data')
+      return
+    }
+
+    try {
+      // Fetch the specific new email
+      const newEmail = await api.emails.getDetail(s3Key)
+
+      // Check if email already exists in inbox (avoid duplicates)
+      const existingIndex = inboxEmails.value.findIndex(email => email.s3_key === s3Key)
+
+      if (existingIndex === -1) {
+        // Add to top of inbox if it doesn't exist
+        inboxEmails.value.unshift(newEmail)
+        console.log('Added new email to inbox:', newEmail.subject)
+      } else {
+        // Update existing email (in case of any changes)
+        inboxEmails.value[existingIndex] = newEmail
+        console.log('Updated existing email in inbox:', newEmail.subject)
+      }
+    } catch (error) {
+      console.error('Failed to fetch new email from notification:', error)
+      // Fallback to refetching inbox only if fetch fails
+      await fetchInboxEmails()
+    }
+  }
+}
 
 function closeDrawer() {
   showFiltersDropdown.value = false
@@ -617,19 +650,18 @@ onMounted(async () => {
   }
 
   // Set up timer to fetch emails every 60 seconds
-  fetchingInterval.value = setInterval(fetchAllMailboxes, 60000)
-
   await nextTick()
   filtersDropdown.value?.addEventListener('close-drawer', closeDrawer)
   window.addEventListener('resize', onResize)
+
+  // Listen for messages from service worker
+  navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage)
 })
 
 onBeforeUnmount(() => {
-  if (fetchingInterval.value !== null) {
-    clearInterval(fetchingInterval.value)
-  }
   filtersDropdown.value?.removeEventListener('close-drawer', closeDrawer)
   window.removeEventListener('resize', onResize)
+  navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage)
 })
 
 async function handleLogout() {

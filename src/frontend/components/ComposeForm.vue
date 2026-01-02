@@ -216,6 +216,10 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const toInput = ref<HTMLInputElement | null>(null)
 const showCcBcc = ref(false)
 
+// Track touch start position for scroll handling
+let touchStartY = 0
+let scrollStartTop = 0
+
 // Computed properties for better UX
 const hasUploadingAttachments = computed(() =>
   emailStore.attachments.some(a => a.uploading)
@@ -227,6 +231,38 @@ const isFormValid = computed(() => {
   const hasBody = emailStore.formData.body.trim().length > 0
   return hasTo && hasSubject && hasBody
 })
+
+// Handle touch events to prevent drawer close when scrolling
+function handleTouchStart(event: TouchEvent) {
+  if (composeContainer.value) {
+    touchStartY = event.touches[0].clientY
+    scrollStartTop = composeContainer.value.scrollTop
+  }
+}
+
+function handleTouchMove(event: TouchEvent) {
+  if (!composeContainer.value) return
+
+  const touchY = event.touches[0].clientY
+  const touchDelta = touchY - touchStartY
+  const scrollTop = composeContainer.value.scrollTop
+
+  // If user is scrolling within content (not at top, or scrolling down)
+  // prevent the event from bubbling to the drawer
+  if (scrollTop > 0 || touchDelta < 0) {
+    event.stopPropagation()
+  }
+
+  // If at top and trying to scroll up, allow drawer to close
+  // Otherwise, prevent drawer interaction
+  if (scrollTop === 0 && touchDelta > 0 && scrollStartTop === 0) {
+    // Allow drawer close gesture
+    return
+  } else if (scrollTop > 0 || touchDelta < 0) {
+    // Prevent drawer close, allow content scroll
+    event.stopPropagation()
+  }
+}
 
 onMounted(() => {
   // Pre-fill form if replying to an email
@@ -262,6 +298,20 @@ onMounted(() => {
       }
     }
   })
+
+  // Add touch event listeners to prevent drawer close when scrolling
+  if (composeContainer.value) {
+    composeContainer.value.addEventListener('touchstart', handleTouchStart, { passive: true })
+    composeContainer.value.addEventListener('touchmove', handleTouchMove, { passive: false })
+  }
+})
+
+onUnmounted(() => {
+  // Clean up touch event listeners
+  if (composeContainer.value) {
+    composeContainer.value.removeEventListener('touchstart', handleTouchStart)
+    composeContainer.value.removeEventListener('touchmove', handleTouchMove)
+  }
 })
 
 // Keyboard shortcuts

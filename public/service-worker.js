@@ -97,8 +97,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: body || '',
-    icon: icon || '/direct-market.svg',
-    badge: badge || '/direct-market.svg',
+    icon: icon || './direct-market.svg',
+    badge: badge || './direct-market.svg',
     tag: tag || 'email-notification',
     data: data || {},
     requireInteraction: requireInteraction || false,
@@ -117,6 +117,18 @@ self.addEventListener('push', (event) => {
 
   event.waitUntil(
     self.registration.showNotification(title || 'New Email', options)
+      .then(() => {
+        // Notify all clients (open tabs) to refresh email list
+        return clients.matchAll({ type: 'window', includeUncontrolled: true })
+      })
+      .then((clientList) => {
+        clientList.forEach((client) => {
+          client.postMessage({
+            type: 'NEW_EMAIL_NOTIFICATION',
+            data: notificationData
+          })
+        })
+      })
   )
 })
 
