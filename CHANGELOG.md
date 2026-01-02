@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.59](https://github.com/cal-macconnachie/email/compare/v0.0.58...v0.0.59) (2026-01-02)
+
+
+### Bug Fixes
+
+* nit ([2e8a490](https://github.com/cal-macconnachie/email/commit/2e8a490d1f3a1c9d7da950f30f11bb04d40e37db))
+
 ### [0.0.58](https://github.com/cal-macconnachie/email/compare/v0.0.57...v0.0.58) (2026-01-02)
 
 ### [0.0.57](https://github.com/cal-macconnachie/email/compare/v0.0.56...v0.0.57) (2026-01-02)
