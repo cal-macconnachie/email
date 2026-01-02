@@ -1,6 +1,6 @@
 # Local variables
 locals {
-  domain_names     = [var.domain_name, "www.${var.domain_name}"]
+  domain_names     = [var.domain_name]
   sanitized_domain = replace(var.domain_name, ".", "-")
 }
 
@@ -299,6 +299,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "ses_received_emails_lifecycle"
   rule {
     id     = "transition-to-glacier-ir"
     status = "Enabled"
+
+    filter {}
 
     transition {
       days          = 30
