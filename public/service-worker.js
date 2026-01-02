@@ -1,5 +1,5 @@
 /* eslint-env serviceworker */
-/* global self, caches, fetch, console */
+/* global self, caches, fetch, console, URL */
 
 // Service Worker for Email System PWA
 const CACHE_NAME = 'email-system-v1'
@@ -40,6 +40,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip API requests - always go to network
   if (event.request.url.includes('/api/')) {
+    return
+  }
+
+  // Skip non-http(s) requests (chrome-extension://, etc.)
+  const url = new URL(event.request.url)
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     return
   }
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="compose-container">
+  <div class="compose-container" ref="composeContainer" @touchstart="handleTouchStart" @touchmove="handleTouchMove">
     <form class="compose-form">
       <div class="form-field">
         <base-input
@@ -49,7 +49,7 @@
           id="body"
           v-model="emailStore.formData.body"
           label="Message"
-          :rows="12"
+          :rows="8"
           placeholder="Write your message..."
           required
         />
@@ -81,13 +81,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
 
 const router = useRouter()
 const route = useRoute()
 const emailStore = useEmailStore()
+const composeContainer = ref<HTMLElement | null>(null)
+
+let touchStartY = 0
+let scrollTopAtTouchStart = 0
 
 onMounted(() => {
   // Pre-fill form if replying to an email
@@ -109,6 +113,34 @@ onMounted(() => {
     }
   }
 })
+
+function handleTouchStart(event: TouchEvent) {
+  if (!composeContainer.value) return
+  touchStartY = event.touches[0].clientY
+  scrollTopAtTouchStart = composeContainer.value.scrollTop
+}
+
+function handleTouchMove(event: TouchEvent) {
+  if (!composeContainer.value) return
+
+  const touchY = event.touches[0].clientY
+  const touchDeltaY = touchY - touchStartY
+  const currentScrollTop = composeContainer.value.scrollTop
+
+  // If user is scrolling down (touchDeltaY > 0) and we're not at the top,
+  // or scrolling up (touchDeltaY < 0) and we're not at the bottom,
+  // then stop the event from propagating to prevent drawer close
+  const isScrollingDown = touchDeltaY > 0
+  const isAtTop = currentScrollTop === 0
+  const isAtBottom = currentScrollTop + composeContainer.value.clientHeight >= composeContainer.value.scrollHeight
+
+  // Prevent drawer close when:
+  // - Scrolling up (regardless of position)
+  // - Scrolling down when not at the top
+  if (!isScrollingDown || !isAtTop) {
+    event.stopPropagation()
+  }
+}
 
 async function handleSend() {
   try {
@@ -137,6 +169,9 @@ function handleCancel() {
 <style scoped>
 .compose-container {
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  height: 100%;
 }
 
 .header-content {
