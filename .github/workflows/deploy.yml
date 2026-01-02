@@ -45,8 +45,68 @@ jobs:
       - name: Run linter
         run: yarn lint
 
-      - name: Build Lambda functions
+      - name: Generate and store VAPID keys if not exists
+        run: |
+          # Check if VAPID keys already exist in SSM
+          if aws ssm get-parameter --name "/macconnachie.com/vapid/public-key" --region us-east-1 2>/dev/null; then
+            echo "VAPID keys already exist in SSM, skipping generation"
+          else
+            echo "Generating new VAPID keys..."
+
+            # Generate VAPID keys
+            node -e "
+              const webpush = require('web-push');
+              const keys = webpush.generateVAPIDKeys();
+              console.log('PUBLIC_KEY=' + keys.publicKey);
+              console.log('PRIVATE_KEY=' + keys.privateKey);
+            " > vapid_keys.txt
+
+            # Extract keys
+            PUBLIC_KEY=$(grep PUBLIC_KEY vapid_keys.txt | cut -d'=' -f2)
+            PRIVATE_KEY=$(grep PRIVATE_KEY vapid_keys.txt | cut -d'=' -f2)
+
+            # Store in SSM
+            echo "Storing VAPID keys in SSM Parameter Store..."
+            aws ssm put-parameter \
+              --name "/macconnachie.com/vapid/public-key" \
+              --value "$PUBLIC_KEY" \
+              --type "String" \
+              --description "VAPID public key for Web Push notifications" \
+              --region us-east-1
+
+            aws ssm put-parameter \
+              --name "/macconnachie.com/vapid/private-key" \
+              --value "$PRIVATE_KEY" \
+              --type "SecureString" \
+              --description "VAPID private key for Web Push notifications" \
+              --region us-east-1
+
+            aws ssm put-parameter \
+              --name "/macconnachie.com/vapid/subject" \
+              --value "mailto:cal.macconnachie@gmail.com" \
+              --type "String" \
+              --description "VAPID subject (mailto URL) for Web Push notifications" \
+              --region us-east-1
+
+            # Clean up temporary file
+            rm vapid_keys.txt
+
+            echo "VAPID keys generated and stored successfully"
+            echo "Public key: $PUBLIC_KEY"
+          fi
+
+      - name: Set VAPID public key environment variable
+        id: vapid-key
+        run: |
+          PUBLIC_KEY=$(aws ssm get-parameter --name "/macconnachie.com/vapid/public-key" --region us-east-1 --query "Parameter.Value" --output text)
+          echo "VITE_VAPID_PUBLIC_KEY=$PUBLIC_KEY" >> $GITHUB_ENV
+          echo "public_key=$PUBLIC_KEY" >> $GITHUB_OUTPUT
+          echo "VAPID public key loaded for frontend build"
+
+      - name: Build Lambda functions and frontend
         run: yarn build
+        env:
+          VITE_VAPID_PUBLIC_KEY: ${{ env.VITE_VAPID_PUBLIC_KEY }}
 
       - name: Terraform Validate
         run: terraform validate

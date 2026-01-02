@@ -185,6 +185,46 @@ locals {
       source_dir       = "${path.module}/dist/lambdas/auth/lambda-authorizer"
       environment_vars = {}
     }
+    # Push Notification Lambda Functions
+    subscribe_push = {
+      description = "Register push notification subscription for authenticated user"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/push/subscribe-push"
+      environment_vars = {
+        PUSH_SUBSCRIPTIONS_TABLE    = "${var.domain_name}-push-subscriptions"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+      }
+    }
+    unsubscribe_push = {
+      description = "Remove push notification subscription"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/push/unsubscribe-push"
+      environment_vars = {
+        PUSH_SUBSCRIPTIONS_TABLE    = "${var.domain_name}-push-subscriptions"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+      }
+    }
+    process_email_stream = {
+      description = "Process DynamoDB Stream events from emails table and send push notifications"
+      handler     = "index.handler"
+      runtime     = "nodejs22.x"
+      timeout     = 60
+      memory_size = 512
+      source_dir  = "${path.module}/dist/lambdas/push/process-email-stream"
+      environment_vars = {
+        PUSH_SUBSCRIPTIONS_TABLE    = "${var.domain_name}-push-subscriptions"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        VAPID_PUBLIC_KEY_PARAM      = "/${var.domain_name}/vapid/public-key"
+        VAPID_PRIVATE_KEY_PARAM     = "/${var.domain_name}/vapid/private-key"
+        VAPID_SUBJECT_PARAM         = "/${var.domain_name}/vapid/subject"
+      }
+    }
   }
 
   # Sanitized domain name for Lambda function names (replace dots with hyphens)
@@ -325,6 +365,40 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
         Resource = [
           "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations",
           "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-push-subscriptions",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-push-subscriptions/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:DescribeStream",
+          "dynamodb:ListStreams"
+        ]
+        Resource = "${aws_dynamodb_table.email_tracking.stream_arn}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters"
+        ]
+        Resource = [
+          "arn:aws:ssm:${var.aws_region}:*:parameter/${var.domain_name}/vapid/*"
         ]
       }
     ]
@@ -514,3 +588,27 @@ resource "aws_lambda_function" "lambda_authorizer" {
 #     max_age           = 86400
 #   }
 # }
+
+# Event Source Mapping: DynamoDB Stream -> process-email-stream Lambda
+resource "aws_lambda_event_source_mapping" "email_stream_to_push" {
+  event_source_arn  = aws_dynamodb_table.email_tracking.stream_arn
+  function_name     = aws_lambda_function.functions["process_email_stream"].arn
+  starting_position = "LATEST"
+  batch_size        = 10
+  maximum_batching_window_in_seconds = 1
+  parallelization_factor = 1
+
+  # Only process INSERT events (new emails)
+  filter_criteria {
+    filter {
+      pattern = jsonencode({
+        eventName = ["INSERT"]
+      })
+    }
+  }
+
+  depends_on = [
+    aws_lambda_function.functions,
+    aws_dynamodb_table.email_tracking
+  ]
+}

@@ -1,8 +1,8 @@
 /* eslint-env serviceworker */
-/* global self, caches, fetch, console, URL */
+/* global self, caches, fetch, console, URL, clients */
 
 // Service Worker for Email System PWA
-const CACHE_NAME = 'email-system-v1'
+const CACHE_NAME = 'email-system-v2' // Incremented for push notification support
 const urlsToCache = [
   '/',
   '/index.html',
@@ -73,5 +73,105 @@ self.addEventListener('fetch', (event) => {
         // If network request fails, try to serve from cache
         return caches.match(event.request)
       })
+  )
+})
+
+// Push notification event handler
+self.addEventListener('push', (event) => {
+  console.log('Push notification received:', event)
+
+  if (!event.data) {
+    console.warn('Push event has no data')
+    return
+  }
+
+  let notificationData
+  try {
+    notificationData = event.data.json()
+  } catch (error) {
+    console.error('Failed to parse push data:', error)
+    return
+  }
+
+  const { title, body, icon, badge, tag, data, requireInteraction } = notificationData
+
+  const options = {
+    body: body || '',
+    icon: icon || '/direct-market.svg',
+    badge: badge || '/direct-market.svg',
+    tag: tag || 'email-notification',
+    data: data || {},
+    requireInteraction: requireInteraction || false,
+    vibrate: [200, 100, 200],
+    actions: [
+      {
+        action: 'open',
+        title: 'Open Email'
+      },
+      {
+        action: 'dismiss',
+        title: 'Dismiss'
+      }
+    ]
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(title || 'New Email', options)
+  )
+})
+
+// Notification click event handler
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification clicked:', event)
+
+  event.notification.close()
+
+  // Handle action buttons
+  if (event.action === 'dismiss') {
+    return
+  }
+
+  // Open or focus app window
+  const urlToOpen = event.notification.data?.url
+    ? new URL(event.notification.data.url, self.location.origin).href
+    : self.location.origin
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Check if app is already open
+        for (const client of clientList) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus()
+          }
+        }
+
+        // Open new window if not already open
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen)
+        }
+      })
+  )
+})
+
+// Handle push subscription changes (browser revoked or changed endpoint)
+self.addEventListener('pushsubscriptionchange', (event) => {
+  console.log('Push subscription changed:', event)
+
+  event.waitUntil(
+    // Attempt to resubscribe with new subscription
+    self.registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: event.oldSubscription?.options?.applicationServerKey
+    })
+    .then((newSubscription) => {
+      // Note: Full re-subscription requires subscription_id from localStorage
+      // which is not accessible in service worker context
+      // User will need to re-enable notifications manually in the app
+      console.log('New subscription created (requires manual registration):', newSubscription)
+    })
+    .catch((error) => {
+      console.error('Failed to resubscribe:', error)
+    })
   )
 })

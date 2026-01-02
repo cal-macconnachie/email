@@ -131,6 +131,22 @@ resource "aws_apigatewayv2_integration" "get_attachment_upload_presign" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "subscribe_push" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.functions["subscribe_push"].invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_integration" "unsubscribe_push" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.functions["unsubscribe_push"].invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
 # Routes - Public (No Auth)
 resource "aws_apigatewayv2_route" "request_otp" {
   api_id    = aws_apigatewayv2_api.main.id
@@ -203,6 +219,22 @@ resource "aws_apigatewayv2_route" "get_attachment_upload_presign" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "POST /api/attachments/upload-url"
   target             = "integrations/${aws_apigatewayv2_integration.get_attachment_upload_presign.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
+}
+
+resource "aws_apigatewayv2_route" "subscribe_push" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /api/push/subscribe"
+  target             = "integrations/${aws_apigatewayv2_integration.subscribe_push.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
+}
+
+resource "aws_apigatewayv2_route" "unsubscribe_push" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /api/push/unsubscribe"
+  target             = "integrations/${aws_apigatewayv2_integration.unsubscribe_push.id}"
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
 }
@@ -284,6 +316,22 @@ resource "aws_lambda_permission" "api_gateway_get_attachment_upload_presign" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions["get_attachment_upload_presign"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_subscribe_push" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.functions["subscribe_push"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_unsubscribe_push" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.functions["unsubscribe_push"].function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }

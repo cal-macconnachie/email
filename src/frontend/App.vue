@@ -10,6 +10,7 @@
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
       <ComposeDrawer />
     </base-drawer>
+    <NotificationPrompt v-if="authStore.isAuthenticated" />
   </div>
 </template>
 
@@ -18,6 +19,8 @@ import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
 import ComposeDrawer from './components/ComposeForm.vue'
+import NotificationPrompt from './components/NotificationPrompt.vue'
+import { usePushNotifications } from './composables/usePushNotifications'
 import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'
 
@@ -25,6 +28,7 @@ const authStore = useAuthStore()
 const emailStore = useEmailStore()
 const { composing } = storeToRefs(emailStore)
 const composeDrawer = ref<BaseDrawer | null>(null)
+const { checkSubscription } = usePushNotifications()
 
 watch(
   composing,
@@ -39,9 +43,14 @@ watch(
   }
 )
 
-onMounted(() => {
+onMounted(async () => {
   // Check if user is already authenticated (has valid cookie)
   authStore.checkAuth()
+
+  // Check push notification subscription status after auth check
+  if (authStore.isAuthenticated) {
+    await checkSubscription()
+  }
 })
 </script>
 

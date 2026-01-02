@@ -9,6 +9,10 @@ resource "aws_dynamodb_table" "email_tracking" {
   hash_key     = "recipient"
   range_key    = "timestamp"
 
+  # Enable DynamoDB Streams for push notifications
+  stream_enabled   = true
+  stream_view_type = "NEW_IMAGE"
+
   attribute {
     name = "recipient"
     type = "S"
@@ -88,8 +92,56 @@ resource "aws_dynamodb_table" "phone_email_relations" {
     type = "S"
   }
 
+  attribute {
+    name = "email_prefix"
+    type = "S"
+  }
+
+  # GSI for reverse lookup: email_prefix -> phone_number
+  global_secondary_index {
+    name            = "EmailPrefixIndex"
+    hash_key        = "email_prefix"
+    projection_type = "ALL"
+  }
+
   tags = {
     Name        = "${var.domain_name}-phone-email-relations-table"
+    Environment = var.environment
+  }
+}
+
+# DynamoDB Table for push notification subscriptions
+resource "aws_dynamodb_table" "push_subscriptions" {
+  name         = "${var.domain_name}-push-subscriptions"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "phone_number"
+  range_key    = "subscription_id"
+
+  attribute {
+    name = "phone_number"
+    type = "S"
+  }
+
+  attribute {
+    name = "subscription_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
+  # GSI for querying active subscriptions efficiently
+  global_secondary_index {
+    name            = "StatusIndex"
+    hash_key        = "phone_number"
+    range_key       = "status"
+    projection_type = "ALL"
+  }
+
+  tags = {
+    Name        = "${var.domain_name}-push-subscriptions-table"
     Environment = var.environment
   }
 }

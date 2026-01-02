@@ -178,6 +178,37 @@ export const api = {
       return response.json()
     },
   },
+
+  push: {
+    async subscribe(data: {
+      subscription_id: string
+      endpoint: string
+      keys: { p256dh: string; auth: string }
+      user_agent?: string
+    }): Promise<{ message: string; subscription_id: string }> {
+      const response = await fetch(`${API_BASE}/push/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      })
+      if (!response.ok) throw new Error('Failed to subscribe to push notifications')
+      return response.json()
+    },
+
+    async unsubscribe(data: {
+      subscription_id: string
+    }): Promise<{ message: string; subscription_id: string }> {
+      const response = await fetch(`${API_BASE}/push/unsubscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      })
+      if (!response.ok) throw new Error('Failed to unsubscribe from push notifications')
+      return response.json()
+    }
+  },
 }
 
 export type { Email, ListEmailsResponse }
