@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.60](https://github.com/cal-macconnachie/email/compare/v0.0.59...v0.0.60) (2026-01-02)
+
+
+### Bug Fixes
+
+* lifecycle and attachements ([ceb5ba3](https://github.com/cal-macconnachie/email/commit/ceb5ba3b8955c96f2f566ec2718548c426a3185c))
+
 ### [0.0.59](https://github.com/cal-macconnachie/email/compare/v0.0.58...v0.0.59) (2026-01-02)
 
 
