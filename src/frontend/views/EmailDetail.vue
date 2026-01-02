@@ -198,6 +198,18 @@ onMounted(async () => {
           threadEmails.value = await emailStore.fetchThread(emailStore.currentEmail.thread_id, false)
         }
 
+        // Ensure the current email is in the thread (in case it wasn't included)
+        if (!threadEmails.value.some(e => e.s3_key === emailStore.currentEmail?.s3_key)) {
+          threadEmails.value.push(emailStore.currentEmail)
+          threadEmails.value.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        } else {
+          // Update the existing entry with the full body if needed
+          const index = threadEmails.value.findIndex(e => e.s3_key === emailStore.currentEmail?.s3_key)
+          if (index !== -1 && emailStore.currentEmail.body) {
+            threadEmails.value[index] = emailStore.currentEmail
+          }
+        }
+
         // Fetch bodies for thread emails that don't have them yet
         const emailsWithoutBodies = threadEmails.value.filter(email => !email.body)
         await Promise.all(

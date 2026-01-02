@@ -57,19 +57,19 @@ onMounted(async () => {
 <style>
   .compose-button {
     position: fixed;
-    bottom: 1rem;
+    bottom: 2rem;
     right: 1rem;
-    width: 30px;
-    height: 30px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    background-color: var(--color-bg-muted);
+    background-color: var(--color-bg-inverse-muted);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   .compose-plus {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     line-height: 1;
     padding: 0;
     margin: 0;
@@ -78,7 +78,7 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
   .theme-toggle {
     position: fixed;
