@@ -643,7 +643,7 @@ onBeforeUnmount(() => {
 
 async function handleLogout() {
   try {
-    await authStore.logout()
+    authStore.logout()
     router.push('/login')
   } catch (error) {
     console.error('Logout failed:', error)

@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { BaseInput } from '@cal.macconnachie/web-components'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -91,7 +91,15 @@ function handleEnterKey(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  phoneNumberInput.value?.focus()
+  // Focus phone input on mount
+  nextTick(() => {
+    if (phoneNumberInput.value) {
+      const inputElement = phoneNumberInput.value as any
+      if (inputElement.$el?.querySelector('input')) {
+        inputElement.$el.querySelector('input').focus()
+      }
+    }
+  })
   // listener for enter key to submit forms
   window.addEventListener('keydown', handleEnterKey)
 })
@@ -103,11 +111,24 @@ onBeforeUnmount(() => {
 watch (
   () => authStore.otpRequested,
   (newVal: boolean) => {
-    if (newVal) {
-      otpInput.value?.focus()
-    } else {
-      phoneNumberInput.value?.focus()
-    }
+    // Wait for DOM to update before focusing
+    nextTick(() => {
+      if (newVal) {
+        if (otpInput.value) {
+          const inputElement = otpInput.value as any
+          if (inputElement.$el?.querySelector('input')) {
+            inputElement.$el.querySelector('input').focus()
+          }
+        }
+      } else {
+        if (phoneNumberInput.value) {
+          const inputElement = phoneNumberInput.value as any
+          if (inputElement.$el?.querySelector('input')) {
+            inputElement.$el.querySelector('input').focus()
+          }
+        }
+      }
+    })
   }
 )
 

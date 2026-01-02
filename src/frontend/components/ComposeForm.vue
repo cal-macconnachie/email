@@ -1,37 +1,58 @@
 <template>
-  <div class="compose-container" ref="composeContainer" @touchstart="handleTouchStart" @touchmove="handleTouchMove">
-    <form class="compose-form">
+  <div class="compose-container" ref="composeContainer">
+    <form class="compose-form" @keydown="handleKeydown">
       <div class="form-field">
         <base-input
+          ref="toInput"
           id="to"
           v-model="emailStore.formData.to"
           type="email"
           label="To"
           placeholder="recipient@example.com"
           required
+          :disabled="emailStore.isLoading"
           hint="For multiple recipients, separate with commas"
         />
       </div>
 
-      <div class="form-field">
-        <base-input
-          id="cc"
-          v-model="emailStore.formData.cc"
-          type="text"
-          label="CC (optional)"
-          placeholder="cc@example.com"
-        />
+      <!-- CC/BCC Toggle Button -->
+      <div v-if="!showCcBcc && !emailStore.formData.cc && !emailStore.formData.bcc" class="form-field">
+        <button
+          type="button"
+          @click="showCcBcc = true"
+          class="cc-bcc-toggle"
+          :disabled="emailStore.isLoading"
+        >
+          <span>+ CC/BCC</span>
+        </button>
       </div>
 
-      <div class="form-field">
-        <base-input
-          id="bcc"
-          v-model="emailStore.formData.bcc"
-          type="text"
-          label="BCC (optional)"
-          placeholder="bcc@example.com"
-        />
-      </div>
+      <!-- CC/BCC Fields (collapsible) -->
+      <transition name="slide-fade">
+        <div v-if="showCcBcc || emailStore.formData.cc || emailStore.formData.bcc" class="cc-bcc-container">
+          <div class="form-field">
+            <base-input
+              id="cc"
+              v-model="emailStore.formData.cc"
+              type="text"
+              label="CC (optional)"
+              placeholder="cc@example.com"
+              :disabled="emailStore.isLoading"
+            />
+          </div>
+
+          <div class="form-field">
+            <base-input
+              id="bcc"
+              v-model="emailStore.formData.bcc"
+              type="text"
+              label="BCC (optional)"
+              placeholder="bcc@example.com"
+              :disabled="emailStore.isLoading"
+            />
+          </div>
+        </div>
+      </transition>
 
       <div class="form-field">
         <base-input
@@ -41,6 +62,7 @@
           label="Subject"
           placeholder="Email subject"
           required
+          :disabled="emailStore.isLoading"
         />
       </div>
 
@@ -52,6 +74,7 @@
           :rows="8"
           placeholder="Write your message..."
           required
+          :disabled="emailStore.isLoading"
         />
       </div>
 
@@ -63,6 +86,7 @@
           multiple
           @change="handleFileSelect"
           class="file-input"
+          :disabled="emailStore.isLoading"
           style="display: none;"
         />
         <base-button
@@ -70,6 +94,7 @@
           variant="ghost-secondary"
           size="sm"
           @click="fileInput?.click()"
+          :disabled="emailStore.isLoading || hasUploadingAttachments"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -86,11 +111,12 @@
           Add Attachments
         </base-button>
 
-        <div v-if="emailStore.attachments.length > 0" class="attachments-list">
+        <transition-group name="list" tag="div" v-if="emailStore.attachments.length > 0" class="attachments-list">
           <div
             v-for="attachment in emailStore.attachments"
             :key="attachment.key"
             class="attachment-item"
+            :class="{ 'attachment-uploading': attachment.uploading }"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -106,12 +132,16 @@
             </svg>
             <span class="attachment-name">{{ attachment.filename }}</span>
             <span class="attachment-size">({{ formatFileSize(attachment.size) }})</span>
-            <span v-if="attachment.uploading" class="attachment-status">Uploading...</span>
+            <span v-if="attachment.uploading" class="attachment-status">
+              <span class="uploading-spinner"></span>
+              Uploading...
+            </span>
             <button
               v-else
               type="button"
               @click="handleRemoveAttachment(attachment.key)"
               class="remove-button"
+              :disabled="emailStore.isLoading"
               title="Remove attachment"
             >
               <svg
@@ -128,10 +158,24 @@
               </svg>
             </button>
           </div>
-        </div>
+        </transition-group>
       </div>
 
-      <div v-if="emailStore.error" class="error-message">
+      <div v-if="emailStore.error" class="error-message" role="alert">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="16"
+          width="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          style="margin-right: 8px; flex-shrink: 0;"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
         {{ emailStore.error }}
       </div>
 
@@ -140,13 +184,15 @@
           type="button"
           variant="ghost-secondary"
           @click="handleCancel"
+          :disabled="emailStore.isLoading"
         >
           Cancel
         </base-button>
 
         <base-button
+          type="button"
           variant="ghost-primary"
-          :disabled="emailStore.isLoading"
+          :disabled="emailStore.isLoading || hasUploadingAttachments || !isFormValid"
           @click="handleSend"
         >
           {{ emailStore.isLoading ? 'Sending...' : 'Send' }}
@@ -157,7 +203,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
 import { api } from '../api/client'
@@ -167,9 +213,20 @@ const route = useRoute()
 const emailStore = useEmailStore()
 const composeContainer = ref<HTMLElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+const toInput = ref<HTMLInputElement | null>(null)
+const showCcBcc = ref(false)
 
-let touchStartY = 0
-let scrollTopAtTouchStart = 0
+// Computed properties for better UX
+const hasUploadingAttachments = computed(() =>
+  emailStore.attachments.some(a => a.uploading)
+)
+
+const isFormValid = computed(() => {
+  const hasTo = emailStore.formData.to.trim().length > 0
+  const hasSubject = emailStore.formData.subject.trim().length > 0
+  const hasBody = emailStore.formData.body.trim().length > 0
+  return hasTo && hasSubject && hasBody
+})
 
 onMounted(() => {
   // Pre-fill form if replying to an email
@@ -190,37 +247,49 @@ onMounted(() => {
       emailStore.replyData.references.push(emailStore.replyData.inReplyTo)
     }
   }
+
+  // Show CC/BCC if they have values (e.g., from query params)
+  if (emailStore.formData.cc || emailStore.formData.bcc) {
+    showCcBcc.value = true
+  }
+
+  // Focus the To field for better UX
+  nextTick(() => {
+    if (toInput.value && !emailStore.formData.to) {
+      const inputElement = toInput.value as any
+      if (inputElement.$el?.querySelector('input')) {
+        inputElement.$el.querySelector('input').focus()
+      }
+    }
+  })
 })
 
-function handleTouchStart(event: TouchEvent) {
-  if (!composeContainer.value) return
-  touchStartY = event.touches[0].clientY
-  scrollTopAtTouchStart = composeContainer.value.scrollTop
-}
+// Keyboard shortcuts
+function handleKeydown(event: KeyboardEvent) {
+  // Cmd/Ctrl + Enter to send
+  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    event.preventDefault()
+    if (!emailStore.isLoading && !hasUploadingAttachments.value && isFormValid.value) {
+      handleSend()
+    }
+  }
 
-function handleTouchMove(event: TouchEvent) {
-  if (!composeContainer.value) return
-
-  const touchY = event.touches[0].clientY
-  const touchDeltaY = touchY - touchStartY
-  const currentScrollTop = composeContainer.value.scrollTop
-
-  // If user is scrolling down (touchDeltaY > 0) and we're not at the top,
-  // or scrolling up (touchDeltaY < 0) and we're not at the bottom,
-  // then stop the event from propagating to prevent drawer close
-  const isScrollingDown = touchDeltaY > 0
-  const isAtTop = currentScrollTop === 0
-  const isAtBottom = currentScrollTop + composeContainer.value.clientHeight >= composeContainer.value.scrollHeight
-
-  // Prevent drawer close when:
-  // - Scrolling up (regardless of position)
-  // - Scrolling down when not at the top
-  if (!isScrollingDown || !isAtTop) {
-    event.stopPropagation()
+  // Escape to close
+  if (event.key === 'Escape' && !emailStore.isLoading) {
+    event.preventDefault()
+    handleCancel()
   }
 }
 
 async function handleSend() {
+  // Prevent sending if already loading or uploading
+  if (emailStore.isLoading || hasUploadingAttachments.value) {
+    return
+  }
+
+  // Clear any previous errors
+  emailStore.error = null
+
   try {
     const emailData = {
       to: emailStore.formData.to.split(',').map(e => e.trim()).filter(e => e),
@@ -234,14 +303,23 @@ async function handleSend() {
     }
 
     await emailStore.sendEmail(emailData)
+
+    // Reset form and close drawer after successful send
+    emailStore.resetCompose()
+    showCcBcc.value = false
+
+    // Navigate to emails list
     router.push('/emails')
   } catch (error) {
     console.error('Failed to send email:', error)
+    // Error is already set in the store by sendEmail
   }
 }
 
 function handleCancel() {
+  // Reset form and close drawer
   emailStore.resetCompose()
+  showCcBcc.value = false
 }
 
 async function handleFileSelect(event: Event) {
@@ -305,7 +383,7 @@ function formatFileSize(bytes: number): string {
 .compose-container {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
   height: 100%;
   margin: var(--space-4);
 }
@@ -350,12 +428,92 @@ function formatFileSize(bytes: number): string {
   margin-bottom: var(--space-2);
 }
 
+/* CC/BCC Toggle Button */
+.cc-bcc-toggle {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.cc-bcc-toggle:hover:not(:disabled) {
+  color: var(--color-text);
+}
+
+.cc-bcc-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cc-bcc-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Slide fade transition for CC/BCC */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.slide-fade-enter-from {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+/* List transitions for attachments */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.list-move {
+  transition: transform 0.3s ease;
+}
+
 .error-message {
+  display: flex;
+  align-items: center;
   padding: var(--space-3);
   background-color: var(--color-error-bg);
   color: var(--color-error);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-error-border);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-actions {
@@ -364,6 +522,7 @@ function formatFileSize(bytes: number): string {
   justify-content: space-between;
   align-items: center;
   padding-top: var(--space-4);
+  gap: var(--space-3);
 }
 
 .attachment-label {
@@ -385,9 +544,15 @@ function formatFileSize(bytes: number): string {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--color-bg-muted);
   border-radius: var(--radius-md);
+  transition: background-color 0.2s ease;
+}
+
+.attachment-item.attachment-uploading {
+  opacity: 0.7;
+  background-color: var(--color-bg-secondary);
 }
 
 .attachment-icon {
@@ -401,6 +566,7 @@ function formatFileSize(bytes: number): string {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .attachment-size {
@@ -414,6 +580,25 @@ function formatFileSize(bytes: number): string {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.uploading-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-text-secondary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .remove-button {
@@ -430,9 +615,14 @@ function formatFileSize(bytes: number): string {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.remove-button:hover {
+.remove-button:hover:not(:disabled) {
   background-color: var(--color-bg-tertiary);
   color: var(--color-error);
+}
+
+.remove-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

@@ -63,9 +63,13 @@
                 @click="handleToggleArchive(email)"
                 variant="ghost-secondary"
                 size="sm"
-                :title="email.archived ? 'Unarchive' : 'Archive'"
+                :disabled="isArchiving"
+                :title="isArchiving ? (email.archived ? 'Unarchiving...' : 'Archiving...') : (email.archived ? 'Unarchive' : 'Archive')"
               >
+                <!-- Loading spinner -->
                 <svg
+                  v-if="isArchiving"
+                  class="archive-spinner"
                   xmlns="http://www.w3.org/2000/svg"
                   height="16"
                   width="16"
@@ -76,11 +80,41 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="M3 6h18"/>
-                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
-                  <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                  <path d="M10 11v6"/>
-                  <path d="M14 11v6"/>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <!-- Archive icon (box with down arrow) -->
+                <svg
+                  v-else-if="!email.archived"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                  <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>
+                <!-- Unarchive icon (box with up arrow) -->
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="16"
+                  width="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <rect x="1" y="3" width="22" height="5"></rect>
+                  <polyline points="10 12 12 10 14 12"></polyline>
                 </svg>
               </base-button>
             </div>
@@ -155,6 +189,7 @@ const router = useRouter()
 const emailStore = useEmailStore()
 const threadEmails = ref<Email[]>([])
 const targetEmailCard = ref<HTMLElement[]>([])
+const isArchiving = ref(false)
 
 onMounted(async () => {
   try {
@@ -246,6 +281,9 @@ onMounted(async () => {
 })
 
 async function handleToggleArchive(email: Email) {
+  if (isArchiving.value) return
+
+  isArchiving.value = true
   try {
     await emailStore.toggleArchived(email.timestamp)
     // Update the local thread emails
@@ -255,6 +293,8 @@ async function handleToggleArchive(email: Email) {
     }
   } catch (error) {
     console.error('Failed to toggle archive:', error)
+  } finally {
+    isArchiving.value = false
   }
 }
 
@@ -551,6 +591,16 @@ function decodeQuotedPrintable(text: string): string {
 .download-icon {
   flex-shrink: 0;
   color: var(--color-text-secondary);
+}
+
+.archive-spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
