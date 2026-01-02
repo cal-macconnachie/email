@@ -4,7 +4,6 @@
       <base-tabs
         active-tab="inbox"
         sync-with-hash
-        force-expanded
       >
         <!-- Sidebar Header with Filter Button -->
         <div
@@ -925,5 +924,12 @@ function formatDate(dateStr: string): string {
   gap: var(--space-2);
   font-size: var(--font-size-sm);
   opacity: 0.7;
+}
+@media (max-width: 768px) {
+  .sidebar-header-content {
+    /* alight to the left */
+    justify-content: flex-start;
+    padding-left: var(--space-2);
+  }
 }
 </style>
