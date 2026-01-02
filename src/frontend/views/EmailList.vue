@@ -286,7 +286,7 @@
 
           <div class="tab-footer">
             <div class="unread-count" style="visibility: hidden;">
-              0 unread emails
+              &nbsp;
             </div>
           </div>
         </base-tab>
@@ -401,7 +401,7 @@
 
           <div class="tab-footer">
             <div class="unread-count" style="visibility: hidden;">
-              0 unread emails
+              &nbsp;
             </div>
           </div>
         </base-tab>

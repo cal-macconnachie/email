@@ -965,10 +965,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.28.5"
 
-"@cal.macconnachie/web-components@^2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@cal.macconnachie/web-components/-/web-components-2.0.4.tgz#70e4a0917bcbdadb51024cd93cb3399bf48fafa5"
-  integrity sha512-Kc3Qw67ovYqLOXuKLmcaukqCT11ZVCxcK2IeHuRHyNULZ8RNaH3hLGLhqEztt4eD79nHAad8MpvqDv1QSxpygw==
+"@cal.macconnachie/web-components@^2.0.5":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@cal.macconnachie/web-components/-/web-components-2.0.5.tgz#24b971b3fa8603242cb637e978b76bb1ffd87b61"
+  integrity sha512-GdjRB64wPL4y5h6TWcWsCz4E/zt28+R6xly9cljgzS38MyC/F9cuUiU9rjQVA4sJvd44spTasbxjqLTthajMyg==
   dependencies:
     axios "^1.13.2"
     lit "^3.3.1"
