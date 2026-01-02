@@ -74,16 +74,24 @@ export async function update<T>({
     UpdateExpression += 'REMOVE ' + removeExpr.join(', ')
   }
 
+  // Add condition to prevent creating new items
+  const keyAttributeNames = Object.keys(key).reduce((acc, k, i) => ({ ...acc, [`#keyExists${i}`]: k }), {})
+  const ConditionExpression = Object.keys(key).map((_, i) => `attribute_exists(#keyExists${i})`).join(' AND ')
+
   const command = new UpdateItemCommand({
     TableName: tableName,
     Key: marshall(key, { removeUndefinedValues: true }),
     UpdateExpression,
-    ExpressionAttributeNames,
+    ExpressionAttributeNames: {
+      ...ExpressionAttributeNames,
+      ...keyAttributeNames
+    },
     ExpressionAttributeValues:
       Object.keys(ExpressionAttributeValues).length > 0
         ? marshall(ExpressionAttributeValues, { removeUndefinedValues: true })
         : undefined,
-    ReturnValues: returnUpdated ? 'ALL_NEW' : undefined
+    ReturnValues: returnUpdated ? 'ALL_NEW' : undefined,
+    ConditionExpression
   })
   const result = await dynamo.send(command)
   if (returnUpdated && result.Attributes) {

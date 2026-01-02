@@ -77,19 +77,7 @@ export const handler = async (
       updates.archived = archived
     }
 
-    // Update DynamoDB
-    await update({
-      tableName,
-      key: {
-        recipient,
-        timestamp,
-      },
-      updates,
-    })
-
-    // Also update the S3 JSON file to keep it in sync
-    // First, get the s3_key from DynamoDB response or construct it
-    // We need to get the email record to get the s3_key
+    // Update DynamoDB and get the updated record
     const updatedEmail = await update<{ s3_key: string; read?: boolean; archived?: boolean }>({
       tableName,
       key: {

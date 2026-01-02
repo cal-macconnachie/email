@@ -136,7 +136,7 @@ async function processNewEmail(
 
   // Prepare notification payload
   const notificationPayload = {
-    title: `New email from ${email.sender}`,
+    title: `${email.sender}`,
     body: email.subject || '(No subject)',
     icon: './direct-market.svg',
     badge: './direct-market.svg',

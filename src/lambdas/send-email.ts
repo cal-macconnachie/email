@@ -186,6 +186,10 @@ export const handler = async (
     const isoTimestamp = timestamp.toISOString()
     const date = isoTimestamp.split('T')[0] // YYYY-MM-DD format
     const id = v4()
+    // Generate message ID once for all recipients (must be consistent for threading)
+    const generatedMessageId = sesResponse.MessageId
+      ? `<${sesResponse.MessageId}@email.amazonses.com>`
+      : `<${messageId}@macconnachie.com>`
 
     // Process each recipient
     for (const recipient of to) {
@@ -222,7 +226,6 @@ export const handler = async (
 
       // Create email object
       const emailKey = `${sanitizedRecipient}/${date}/${messageId}.json`
-      const generatedMessageId = sesResponse.MessageId ? `<${sesResponse.MessageId}@email.amazonses.com>` : `<${v4()}@macconnachie.com>`
       const { thread_id } = await determineThreadId(
         generatedMessageId,
         inReplyTo,
@@ -311,6 +314,31 @@ export const handler = async (
 
       console.log(`Successfully stored sent email for ${recipient}`)
     }
+
+    // Also add thread relations for the sender so they see their sent emails in threads
+    // (We don't duplicate the email record, just the thread relation)
+    const { thread_id } = await determineThreadId(
+      generatedMessageId,
+      inReplyTo,
+      references,
+      from,
+      threadRelationsTableName
+    )
+
+    await create({
+      tableName: threadRelationsTableName,
+      key: {
+        thread_id,
+        timestamp: `${isoTimestamp}#${id}`,
+      },
+      record: {
+        message_id: generatedMessageId,
+        recipient: from,
+        subject,
+      },
+    })
+
+    console.log(`Successfully stored thread relation for sender: ${from}`)
 
     return {
       statusCode: 200,
