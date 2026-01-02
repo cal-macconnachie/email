@@ -40,6 +40,7 @@
     "@aws-sdk/client-ses": "^3.958.0",
     "@aws-sdk/client-sesv2": "^3.958.0",
     "@aws-sdk/client-sns": "^3.958.0",
+    "@aws-sdk/client-ssm": "^3.958.0",
     "@aws-sdk/s3-request-presigner": "^3.958.0",
     "@aws-sdk/util-dynamodb": "^3.958.0",
     "@cal.macconnachie/web-components": "^2.0.3",
