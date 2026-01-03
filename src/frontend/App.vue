@@ -127,4 +127,11 @@ onMounted(async () => {
     min-height: 100dvh;
     max-height: 100dvh;
   }
+
+  @media (max-width: 768px) {
+    .min-h-screen {
+      height: 100dvh;
+      overflow: hidden;
+    }
+  }
 </style>

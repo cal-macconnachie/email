@@ -1094,8 +1094,14 @@ function formatDate(dateStr: string): string {
   .email-list-container {
     padding: var(--space-4);
     padding-top: var(--space-10);
-    margin-top: var(--space-6);
-    max-height: 95dvh;
+    margin-top: var(--space-8);
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .email-list-scrollable {
+    max-height: calc(100dvh - 250px);
   }
 }
 </style>

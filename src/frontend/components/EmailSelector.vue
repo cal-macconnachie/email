@@ -234,6 +234,7 @@ onBeforeUnmount(() => {
   height: 36px;
   border-radius: 50%;
   background-color: var(--color-bg-muted);
+  color: inherit;
   display: flex;
   align-items: center;
   justify-content: center;

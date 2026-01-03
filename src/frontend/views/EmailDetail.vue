@@ -604,8 +604,23 @@ function decodeQuotedPrintable(text: string): string {
 }
 
 @media (max-width: 768px) {
+  .email-detail-container {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .email-detail-header {
+    flex-shrink: 0;
+  }
+
   .email-detail-main {
     padding: var(--space-4);
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .header-content {
