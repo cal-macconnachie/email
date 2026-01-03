@@ -10,6 +10,13 @@
           slot="sidebar-header"
           class="sidebar-header-content"
         >
+        <div class="row">
+          <base-select
+            ref="emailSelect"
+            placeholder="Select an email"
+            size="sm"
+            @change="setSelectedEmail"
+          ></base-select>
           <base-button
             variant="ghost"
             size="sm"
@@ -30,6 +37,7 @@
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
           </base-button>
+          </div>
         </div>
 
         <!-- Sidebar Footer with Logout Button -->
@@ -506,7 +514,7 @@
 </template>
 
 <script setup lang="ts">
-import { BaseDrawer } from '@cal.macconnachie/web-components'
+import { BaseDrawer, BaseSelect } from '@cal.macconnachie/web-components'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { api, type Email } from '../api/client'
@@ -529,6 +537,7 @@ const pullThreshold = 80
 const inboxListRef = ref<HTMLElement | null>(null)
 const sentListRef = ref<HTMLElement | null>(null)
 const archivedListRef = ref<HTMLElement | null>(null)
+const emailSelect = ref<BaseSelect | null>(null)
 
 watch(
   showFiltersDropdown,
@@ -605,6 +614,37 @@ const filteredArchivedEmails = computed(() => {
 const filteredInboxUnreadCount = computed(() => {
   return filteredInboxEmails.value.filter(email => !email.read).length
 })
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    if (!isAuthenticated) {
+      // Reset selected recipient on logout
+      authStore.setSelectedRecipient(null)
+      // Redirect to login page
+      router.push({ name: 'login' })
+    } else {
+      // On login, set options for email select
+      if (emailSelect.value != null) {
+        emailSelect.value.options = authStore.recipients.map((email) => ({
+          label: email,
+          value: email,
+        }))
+        emailSelect.value.value = authStore.defaultRecipient ?? ''
+
+        // Set selectedRecipient to defaultRecipient on login if not already set
+        if (!authStore.selectedRecipient && authStore.defaultRecipient) {
+          authStore.setSelectedRecipient(authStore.defaultRecipient)
+        }
+      }
+    }
+  },
+  { immediate: true }
+)
+
+function setSelectedEmail(event: CustomEvent) {
+  authStore.setSelectedRecipient(event.detail.value)
+}
 
 // Fetch functions for each mailbox
 async function fetchAllMailboxes() {
@@ -718,6 +758,19 @@ async function refreshMailbox(mailboxType: 'inbox' | 'sent' | 'archived') {
 }
 
 onMounted(async () => {
+  await nextTick()
+  if (emailSelect.value != null) {
+    emailSelect.value.options = authStore.recipients.map((email) => ({
+      label: email,
+      value: email,
+    }))
+    emailSelect.value.value = authStore.defaultRecipient ?? ''
+
+    // Set selectedRecipient to defaultRecipient on initial load if not already set
+    if (!authStore.selectedRecipient && authStore.defaultRecipient) {
+      authStore.setSelectedRecipient(authStore.defaultRecipient)
+    }
+  }
   try {
     await fetchAllMailboxes()
   } catch (error) {
@@ -1065,5 +1118,11 @@ function formatDate(dateStr: string): string {
   overflow-y: auto;
   max-height: calc(100vh - 300px);
   -webkit-overflow-scrolling: touch;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
 }
 </style>

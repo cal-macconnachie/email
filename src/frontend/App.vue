@@ -4,13 +4,6 @@
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="theme-toggle">
-      <base-select
-        ref="emailSelect"
-        label="Email"
-        placeholder="Select an email"
-        size="md"
-        @change="setSelectedEmail"
-      ></base-select>
       <theme-toggle size="sm"/>
     </div>
     <router-view />
@@ -22,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { BaseDrawer, BaseSelect } from '@cal.macconnachie/web-components'
+import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -37,7 +30,6 @@ const authStore = useAuthStore()
 const emailStore = useEmailStore()
 const { composing } = storeToRefs(emailStore)
 const composeDrawer = ref<BaseDrawer | null>(null)
-const emailSelect = ref<BaseSelect | null>(null)
 const { checkSubscription } = usePushNotifications()
 
 watch(
@@ -67,29 +59,12 @@ watch(
   }
 )
 
-function setSelectedEmail(event: CustomEvent) {
-  authStore.setSelectedRecipient(event.detail.value)
-}
-
 // Check session immediately when app loads (before mount)
 const sessionCheckPromise = authStore.checkSession()
 
 onMounted(async () => {
   // Wait for session check to complete if it hasn't already
   await sessionCheckPromise
-
-  if (emailSelect.value != null) {
-    emailSelect.value.options = authStore.recipients.map((email) => ({
-      label: email,
-      value: email,
-    }))
-    emailSelect.value.value = authStore.defaultRecipient ?? ''
-
-    // Set selectedRecipient to defaultRecipient on initial load if not already set
-    if (!authStore.selectedRecipient && authStore.defaultRecipient) {
-      authStore.setSelectedRecipient(authStore.defaultRecipient)
-    }
-  }
   // Check push notification subscription status after auth check
   if (authStore.isAuthenticated) {
     await checkSubscription()

@@ -127,8 +127,8 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
   }
 
-  function setSelectedRecipient(recipient: string) {
-    if (!recipients.value.includes(recipient)) {
+  function setSelectedRecipient(recipient: string | null) {
+    if (recipient !== null && !recipients.value.includes(recipient)) {
       throw new Error('Recipient not in list')
     }
     selectedRecipient.value = recipient
