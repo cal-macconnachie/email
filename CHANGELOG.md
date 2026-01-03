@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.5](https://github.com/cal-macconnachie/email/compare/v1.3.4...v1.3.5) (2026-01-03)
+
+
+### Bug Fixes
+
+* mobile scrolling ([3f5381e](https://github.com/cal-macconnachie/email/commit/3f5381e99d7a8d28eb0ac6a4175bd189625f0330))
+* oops ([727cd92](https://github.com/cal-macconnachie/email/commit/727cd9217f87c4c780dee676dd217866b069ed66))
+
 ### [1.3.4](https://github.com/cal-macconnachie/email/compare/v1.3.3...v1.3.4) (2026-01-03)
 
 
