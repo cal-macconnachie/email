@@ -5,6 +5,7 @@ import {
   registerBaseDateTimePicker,
   registerBaseDrawer,
   registerBaseInput,
+  registerBaseSelect,
   registerBaseTab,
   registerBaseTabs,
   registerBaseTextarea,
@@ -29,6 +30,7 @@ registerBaseDatePicker()
 registerBaseTimePicker()
 registerBaseTab()
 registerBaseTabs()
+registerBaseSelect()
 
 const app = createApp(App)
 const pinia = createPinia()
