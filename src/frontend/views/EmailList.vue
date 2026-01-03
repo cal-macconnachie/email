@@ -1,18 +1,22 @@
 <template>
   <div class="email-list-container">
     <main class="email-main">
+      <div class="select-top-box">
           <base-select
             ref="emailSelect"
             placeholder="Select an email"
             size="sm"
             @change="setSelectedEmail"
           ></base-select>
+        
+      </div>
       <base-tabs
         active-tab="inbox"
         sync-with-hash
       >
         <!-- Sidebar Header with Filter Button -->
         <div
+          v-if="!isMobile"
           slot="sidebar-header"
           class="sidebar-header-content"
         >
@@ -40,6 +44,7 @@
 
         <!-- Sidebar Footer with Logout Button -->
         <div
+          v-if="!isMobile"
           slot="sidebar-footer"
           class="portfolio-footer-slot"
         >
@@ -1080,6 +1085,11 @@ function formatDate(dateStr: string): string {
     justify-content: flex-start;
     padding-left: var(--space-2);
   }
+}
+
+.select-top-box {
+  margin-left: var(--space-4);
+  margin-right: var(--space-4);
 }
 
 /* Pull to refresh styles */
