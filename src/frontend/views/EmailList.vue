@@ -1102,6 +1102,7 @@ function formatDate(dateStr: string): string {
 
   .email-list-scrollable {
     max-height: calc(100dvh - 250px);
+    padding-bottom: var(--space-6);
   }
 }
 </style>

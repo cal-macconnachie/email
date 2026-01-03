@@ -618,6 +618,7 @@ function decodeQuotedPrintable(text: string): string {
 
   .email-detail-main {
     padding: var(--space-4);
+    padding-bottom: var(--space-8);
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
