@@ -6,9 +6,6 @@
     <div class="top-right-controls">
         <theme-toggle size="sm"/>
       <email-selector v-if="authStore.isAuthenticated" />
-      <!-- <div class="theme-toggle">
-        <theme-toggle size="sm"/>
-      </div> -->
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
