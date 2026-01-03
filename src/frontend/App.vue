@@ -71,9 +71,13 @@ function setSelectedEmail(event: CustomEvent) {
   authStore.setSelectedRecipient(event.detail.value)
 }
 
+// Check session immediately when app loads (before mount)
+const sessionCheckPromise = authStore.checkSession()
+
 onMounted(async () => {
-  // Check if user is already authenticated (has valid cookie)
-  await authStore.checkSession()
+  // Wait for session check to complete if it hasn't already
+  await sessionCheckPromise
+
   if (emailSelect.value != null) {
     emailSelect.value.options = authStore.recipients.map((email) => ({
       label: email,
