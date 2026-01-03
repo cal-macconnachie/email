@@ -62,6 +62,7 @@ export const handler = async (
         limit: event.queryStringParameters.limit ? parseInt(event.queryStringParameters.limit) : undefined,
         sortOrder: event.queryStringParameters.sortOrder as 'ASC' | 'DESC' | undefined,
         mailbox: event.queryStringParameters.mailbox as 'inbox' | 'sent' | 'archived' | undefined,
+        recipient: event.queryStringParameters.recipient,
       }
     } else if (event.body) {
       request = JSON.parse(event.body) as ListEmailsRequest

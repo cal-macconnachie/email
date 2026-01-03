@@ -8,22 +8,6 @@
       <div class="email-avatar">
         {{ emailInitials }}
       </div>
-      <svg
-        v-if="!isMobile"
-        class="chevron"
-        :class="{ 'chevron-open': isOpen }"
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
     </button>
 
     <!-- Desktop Dropdown -->
@@ -171,25 +155,27 @@ onBeforeUnmount(() => {
 }
 
 .selector-button {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  background: var(--color-bg-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.selector-button:hover {
-  background: var(--color-bg-hover);
-  border-color: var(--color-border-hover);
+.selector-button:hover .email-avatar {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
 }
 
 .email-avatar {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: var(--color-bg-muted);
   color: var(--color-text);
@@ -198,15 +184,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-}
-
-.chevron {
-  transition: transform 0.2s;
-  opacity: 0.6;
-}
-
-.chevron-open {
-  transform: rotate(180deg);
+  transition: all 0.2s;
 }
 
 /* Dropdown Menu */
@@ -222,6 +200,7 @@ onBeforeUnmount(() => {
   max-width: 320px;
   z-index: 1001;
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .dropdown-content {

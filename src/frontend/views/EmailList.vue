@@ -824,6 +824,7 @@ function formatDate(dateStr: string): string {
   padding: var(--space-6);
   padding-top: var(--space-12);
   gap: var(--space-4);
+  max-height: 100dvh;
 }
 
 .search-bar-wrapper {
