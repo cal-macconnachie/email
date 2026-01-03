@@ -4,10 +4,11 @@
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="top-right-controls">
-      <email-selector v-if="authStore.isAuthenticated" />
-      <div class="theme-toggle">
         <theme-toggle size="sm"/>
-      </div>
+      <email-selector v-if="authStore.isAuthenticated" />
+      <!-- <div class="theme-toggle">
+        <theme-toggle size="sm"/>
+      </div> -->
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
@@ -56,8 +57,13 @@ watch(
     // Only trigger if the recipient actually changed
     if (newRecipient !== oldRecipient && oldRecipient !== null) {
       // Redirect to list page if not already there
-      if (router.currentRoute.value.name !== 'email-list') {
-        await router.push({ name: 'email-list' })
+      if (router.currentRoute.value.name !== 'emails') {
+        try {
+          await router.push({ name: 'emails' })
+        } catch (err) {
+          // Ignore navigation errors (e.g., navigating to the same location)
+          console.debug('Navigation skipped:', err)
+        }
       }
     }
   }
