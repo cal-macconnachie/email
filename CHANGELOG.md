@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/cal-macconnachie/email/compare/v1.2.7...v1.3.0) (2026-01-03)
+
+
+### Features
+
+* better email selection ([26e8d1d](https://github.com/cal-macconnachie/email/commit/26e8d1de726ebab2dc12a8c60f833471d629e55d))
+
 ### [1.2.7](https://github.com/cal-macconnachie/email/compare/v1.2.6...v1.2.7) (2026-01-03)
 
 
