@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { api, type Email } from '../api/client'
+import { useAuthStore } from './auth'
 
 export const useEmailStore = defineStore('email', () => {
   const emails = ref<Email[]>([])
@@ -10,6 +11,19 @@ export const useEmailStore = defineStore('email', () => {
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
   const lastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
+
+  // Separate email lists for each mailbox
+  const inboxEmails = ref<Email[]>([])
+  const sentEmails = ref<Email[]>([])
+  const archivedEmails = ref<Email[]>([])
+
+  // Loading and error states for each mailbox
+  const isLoadingInbox = ref(false)
+  const isLoadingSent = ref(false)
+  const isLoadingArchived = ref(false)
+  const inboxError = ref<string | null>(null)
+  const sentError = ref<string | null>(null)
+  const archivedError = ref<string | null>(null)
 
   const formData = ref({
     to: '',
@@ -75,6 +89,74 @@ export const useEmailStore = defineStore('email', () => {
     }
   }
 
+  async function fetchInboxEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+    isLoadingInbox.value = true
+    inboxError.value = null
+    try {
+      const authStore = useAuthStore()
+      const recipient = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.list({
+        ...params,
+        mailbox: 'inbox',
+        recipient: recipient || undefined,
+      })
+      inboxEmails.value = response.emails
+    } catch (err) {
+      inboxError.value = err instanceof Error ? err.message : 'Failed to fetch inbox emails'
+      throw err
+    } finally {
+      isLoadingInbox.value = false
+    }
+  }
+
+  async function fetchSentEmails(params?: { sortOrder?: 'ASC' | 'DESC' }) {
+    isLoadingSent.value = true
+    sentError.value = null
+    try {
+      const authStore = useAuthStore()
+      const recipient = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.list({
+        ...params,
+        mailbox: 'sent',
+        recipient: recipient || undefined,
+      })
+      sentEmails.value = response.emails
+    } catch (err) {
+      sentError.value = err instanceof Error ? err.message : 'Failed to fetch sent emails'
+      throw err
+    } finally {
+      isLoadingSent.value = false
+    }
+  }
+
+  async function fetchArchivedEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+    isLoadingArchived.value = true
+    archivedError.value = null
+    try {
+      const authStore = useAuthStore()
+      const recipient = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.list({
+        ...params,
+        mailbox: 'archived',
+        recipient: recipient || undefined,
+      })
+      archivedEmails.value = response.emails
+    } catch (err) {
+      archivedError.value = err instanceof Error ? err.message : 'Failed to fetch archived emails'
+      throw err
+    } finally {
+      isLoadingArchived.value = false
+    }
+  }
+
+  async function fetchAllMailboxes(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+    await Promise.all([
+      fetchInboxEmails(params),
+      fetchSentEmails({ sortOrder: params?.sortOrder }),
+      fetchArchivedEmails(params)
+    ])
+  }
+
   async function fetchEmailDetail(s3Key: string) {
     isLoading.value = true
     error.value = null
@@ -133,7 +215,12 @@ export const useEmailStore = defineStore('email', () => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await api.emails.send(email)
+      const authStore = useAuthStore()
+      const sendFrom = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.send({
+        ...email,
+        sendFrom: sendFrom || undefined,
+      })
       // Refresh email list after sending
       await fetchEmails()
       return response
@@ -243,6 +330,23 @@ export const useEmailStore = defineStore('email', () => {
     composing.value = true
   }
 
+  function addOrUpdateInboxEmail(email: Email) {
+    const existingIndex = inboxEmails.value.findIndex(e => e.s3_key === email.s3_key)
+    if (existingIndex === -1) {
+      inboxEmails.value.unshift(email)
+    } else {
+      inboxEmails.value[existingIndex] = email
+    }
+  }
+
+  function clearAllEmails() {
+    inboxEmails.value = []
+    sentEmails.value = []
+    archivedEmails.value = []
+    emails.value = []
+    currentEmail.value = null
+  }
+
   return {
     emails,
     currentEmail,
@@ -255,7 +359,22 @@ export const useEmailStore = defineStore('email', () => {
     replyData,
     attachments,
     composing,
+    // Mailbox-specific state
+    inboxEmails,
+    sentEmails,
+    archivedEmails,
+    isLoadingInbox,
+    isLoadingSent,
+    isLoadingArchived,
+    inboxError,
+    sentError,
+    archivedError,
+    // Functions
     fetchEmails,
+    fetchInboxEmails,
+    fetchSentEmails,
+    fetchArchivedEmails,
+    fetchAllMailboxes,
     fetchEmailDetail,
     sendEmail,
     markAsRead,
@@ -267,5 +386,7 @@ export const useEmailStore = defineStore('email', () => {
     addAttachment,
     removeAttachment,
     setAttachmentUploading,
+    addOrUpdateInboxEmail,
+    clearAllEmails,
   }
 })

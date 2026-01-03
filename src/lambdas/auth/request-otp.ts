@@ -5,7 +5,7 @@ import {
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
-import { get } from '../helpers/dynamo-helpers/get'
+import { query } from '../helpers/dynamo-helpers/query'
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION })
 
@@ -131,13 +131,20 @@ async function checkPhoneNumberAuthorized(
   phoneNumber: string
 ): Promise<boolean> {
   try {
-    const mapping = await get<{ phone_number: string; email_prefix: string }>({
+    const mapping = await query<{ phone_number: string; email_prefix: string }>({
       tableName,
-      key: { phone_number: phoneNumber },
+      keyConditionExpression: 'phone_number = :phone and attribute_exists(email_prefix)',
+      expressionAttributeValues: {
+        ':phone': phoneNumber,
+      },
+      limit: 1,
     })
 
-    // Return true if mapping exists with an email_prefix
-    return !!(mapping && mapping.email_prefix)
+    // If no items found, not authorized
+    if (!mapping.items || mapping.items.length === 0) {
+      return false
+    }
+    return true
   } catch (error) {
     console.error('Error checking phone number authorization:', error)
     return false

@@ -95,9 +95,10 @@ resource "aws_dynamodb_table" "thread_relations" {
 
 # DynamoDB Table for phone-email mapping (authentication)
 resource "aws_dynamodb_table" "phone_email_relations" {
-  name         = "${var.domain_name}-phone-email-relations"
+  name         = "${var.domain_name}-phone-email-relations-v2"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "phone_number"
+  range_key    = "email_prefix"
 
   attribute {
     name = "phone_number"
@@ -113,11 +114,12 @@ resource "aws_dynamodb_table" "phone_email_relations" {
   global_secondary_index {
     name            = "EmailPrefixIndex"
     hash_key        = "email_prefix"
+    range_key       = "phone_number"
     projection_type = "ALL"
   }
 
   tags = {
-    Name        = "${var.domain_name}-phone-email-relations-table"
+    Name        = "${var.domain_name}-phone-email-relations-table-v2"
     Environment = var.environment
   }
 }

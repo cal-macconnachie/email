@@ -27,7 +27,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/get-attachment-upload-presign"
       environment_vars = {
         S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     send_email = {
@@ -41,7 +41,7 @@ locals {
         S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
         DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
         THREAD_RELATIONS_TABLE_NAME = "${var.domain_name}-thread-relations"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     get_full_email = {
@@ -53,7 +53,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/get-full-email"
       environment_vars = {
         S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     list_emails = {
@@ -65,7 +65,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/list-emails"
       environment_vars = {
         DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     update_email = {
@@ -78,7 +78,7 @@ locals {
       environment_vars = {
         S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
         DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     get_thread_emails = {
@@ -92,7 +92,7 @@ locals {
         S3_BUCKET_NAME              = "${var.domain_name}-ses-emails"
         DYNAMODB_TABLE_NAME         = "${var.domain_name}-emails"
         THREAD_RELATIONS_TABLE_NAME = "${var.domain_name}-thread-relations"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     # Auth Lambda Functions - Cognito Triggers
@@ -142,7 +142,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/auth/request-otp"
       environment_vars = {
         # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     verify_otp = {
@@ -176,6 +176,18 @@ locals {
         # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
       }
     }
+    check_session = {
+      description = "Check current session and return user info"
+      handler     = "index.checkSession"
+      runtime     = "nodejs22.x"
+      timeout     = 30
+      memory_size = 256
+      source_dir  = "${path.module}/dist/lambdas/check-session"
+      environment_vars = {
+        # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
+      }
+    }
     lambda_authorizer = {
       description      = "Lambda authorizer to validate JWT from cookies"
       handler          = "index.handler"
@@ -195,7 +207,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/push/subscribe-push"
       environment_vars = {
         PUSH_SUBSCRIPTIONS_TABLE    = "${var.domain_name}-push-subscriptions"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     unsubscribe_push = {
@@ -207,7 +219,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/push/unsubscribe-push"
       environment_vars = {
         PUSH_SUBSCRIPTIONS_TABLE    = "${var.domain_name}-push-subscriptions"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     process_email_stream = {
@@ -219,7 +231,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/push/process-email-stream"
       environment_vars = {
         PUSH_SUBSCRIPTIONS_TABLE    = "${var.domain_name}-push-subscriptions"
-        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations"
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
         VAPID_PUBLIC_KEY_PARAM      = "/${var.domain_name}/vapid/public-key"
         VAPID_PRIVATE_KEY_PARAM     = "/${var.domain_name}/vapid/private-key"
         VAPID_SUBJECT_PARAM         = "/${var.domain_name}/vapid/subject"
@@ -363,8 +375,8 @@ resource "aws_iam_role_policy" "lambda_custom_policy" {
           "dynamodb:UpdateItem"
         ]
         Resource = [
-          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations",
-          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations/index/*"
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations-v2",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.domain_name}-phone-email-relations-v2/index/*"
         ]
       },
       {

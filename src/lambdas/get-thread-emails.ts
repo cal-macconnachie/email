@@ -37,7 +37,6 @@ export const handler = async (
         body: JSON.stringify({ error: authResult.error }),
       }
     }
-    const recipient = authResult.recipient
 
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {
@@ -70,10 +69,8 @@ export const handler = async (
     const threadRelationsResult = await query<ThreadRelation>({
       tableName: threadRelationsTableName,
       keyConditionExpression: 'thread_id = :threadId',
-      filterExpression: 'recipient = :recipient',
       expressionAttributeValues: {
         ':threadId': threadId,
-        ':recipient': recipient,
       },
     })
 

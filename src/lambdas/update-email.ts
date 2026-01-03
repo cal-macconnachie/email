@@ -10,6 +10,7 @@ interface UpdateEmailRequest {
   timestamp: string
   read?: boolean
   archived?: boolean
+  recipient?: string
 }
 
 export const handler = async (
@@ -26,7 +27,7 @@ export const handler = async (
         body: JSON.stringify({ error: authResult.error }),
       }
     }
-    const recipient = authResult.recipient
+    let recipient = authResult.defaultRecipient
 
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {
@@ -48,7 +49,19 @@ export const handler = async (
     }
 
     const request = JSON.parse(event.body) as UpdateEmailRequest
-    const { timestamp, read, archived } = request
+    const { timestamp, read, archived, recipient: requestRecipient } = request
+
+    if (requestRecipient != null) {
+      if (authResult.recipients.indexOf(requestRecipient) === -1) {
+        return {
+          statusCode: 403,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: `Forbidden - You are not authorized to send from: ${requestRecipient}` }),
+        }
+      } else {
+        recipient = requestRecipient
+      }
+    }
 
     // Validate required fields
     if (!timestamp) {

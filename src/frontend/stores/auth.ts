@@ -5,6 +5,9 @@ import { api } from '../api/client'
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false)
   const phoneNumber = ref<string | null>(null)
+  const recipients = ref<string[]>([])
+  const defaultRecipient = ref<string | null>(null)
+  const selectedRecipient = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -105,10 +108,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function checkSession() {
+    try {
+      const { recipients: apiRecipients, default_recipient } = await api.auth.getSession()
+      recipients.value = apiRecipients
+      defaultRecipient.value = default_recipient
+      isAuthenticated.value = true
+      return true
+    } catch {
+      isAuthenticated.value = false
+      return false
+    }
+  }
+
   function resetOtpFlow() {
     otpRequested.value = false
     otpSession.value = null
     error.value = null
+  }
+
+  function setSelectedRecipient(recipient: string) {
+    if (!recipients.value.includes(recipient)) {
+      throw new Error('Recipient not in list')
+    }
+    selectedRecipient.value = recipient
   }
 
   return {
@@ -117,11 +140,16 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     error,
     otpRequested,
+    recipients,
+    defaultRecipient,
     requestOtp,
     verifyOtp,
     logout,
     checkAuth,
     refreshToken,
     resetOtpFlow,
+    checkSession,
+    selectedRecipient,
+    setSelectedRecipient,
   }
 })

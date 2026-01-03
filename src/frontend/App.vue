@@ -4,6 +4,13 @@
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="theme-toggle">
+      <base-select
+        ref="emailSelect"
+        label="Email"
+        placeholder="Select an email"
+        size="md"
+        @change="setSelectedEmail"
+      ></base-select>
       <theme-toggle size="sm"/>
     </div>
     <router-view />
@@ -15,19 +22,22 @@
 </template>
 
 <script setup lang="ts">
-import { BaseDrawer } from '@cal.macconnachie/web-components'
+import { BaseDrawer, BaseSelect } from '@cal.macconnachie/web-components'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import ComposeDrawer from './components/ComposeForm.vue'
 import NotificationPrompt from './components/NotificationPrompt.vue'
 import { usePushNotifications } from './composables/usePushNotifications'
 import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const emailStore = useEmailStore()
 const { composing } = storeToRefs(emailStore)
 const composeDrawer = ref<BaseDrawer | null>(null)
+const emailSelect = ref<BaseSelect | null>(null)
 const { checkSubscription } = usePushNotifications()
 
 watch(
@@ -43,10 +53,39 @@ watch(
   }
 )
 
+// Watch for selectedRecipient changes and redirect to list if not already there
+watch(
+  () => authStore.selectedRecipient,
+  async (newRecipient, oldRecipient) => {
+    // Only trigger if the recipient actually changed
+    if (newRecipient !== oldRecipient && oldRecipient !== null) {
+      // Redirect to list page if not already there
+      if (router.currentRoute.value.name !== 'email-list') {
+        await router.push({ name: 'email-list' })
+      }
+    }
+  }
+)
+
+function setSelectedEmail(event: CustomEvent) {
+  authStore.setSelectedRecipient(event.detail.value)
+}
+
 onMounted(async () => {
   // Check if user is already authenticated (has valid cookie)
-  authStore.checkAuth()
+  await authStore.checkSession()
+  if (emailSelect.value != null) {
+    emailSelect.value.options = authStore.recipients.map((email) => ({
+      label: email,
+      value: email,
+    }))
+    emailSelect.value.value = authStore.defaultRecipient ?? ''
 
+    // Set selectedRecipient to defaultRecipient on initial load if not already set
+    if (!authStore.selectedRecipient && authStore.defaultRecipient) {
+      authStore.setSelectedRecipient(authStore.defaultRecipient)
+    }
+  }
   // Check push notification subscription status after auth check
   if (authStore.isAuthenticated) {
     await checkSubscription()

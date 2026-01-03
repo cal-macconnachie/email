@@ -69,9 +69,23 @@
         >
 
           <div class="email-list-card">
-            <div v-if="inboxError" class="error-card">
+            <!-- Pull to refresh indicator -->
+            <div
+              v-if="isPulling && pullDistance > 0"
+              class="pull-refresh-indicator"
+              :style="{ height: `${pullDistance}px` }"
+            >
+              <div class="refresh-icon" :class="{ 'spin': pullDistance >= pullThreshold }">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+              </div>
+            </div>
+
+            <div v-if="emailStore.inboxError" class="error-card">
               <base-card variant="elevated" padding="md">
-                {{ inboxError }}
+                {{ emailStore.inboxError }}
               </base-card>
             </div>
             <div class="email-list-header">
@@ -104,10 +118,17 @@
               </base-button>
             </div>
 
-            <div v-if="isLoadingInbox && inboxEmails.length === 0" class="loading-state">
+            <div v-if="emailStore.isLoadingInbox && emailStore.inboxEmails.length === 0" class="loading-state">
               <p class="loading-text">Loading emails...</p>
             </div>
-            <div v-else>
+            <div
+              v-else
+              ref="inboxListRef"
+              class="email-list-scrollable"
+              @touchstart="handleTouchStart($event, inboxListRef)"
+              @touchmove="handleTouchMove($event, inboxListRef)"
+              @touchend="handleTouchEnd(inboxListRef, 'inbox')"
+            >
 
             <div
               v-for="email in filteredInboxEmails"
@@ -180,6 +201,20 @@
         >
 
           <div class="email-list-card">
+            <!-- Pull to refresh indicator -->
+            <div
+              v-if="isPulling && pullDistance > 0"
+              class="pull-refresh-indicator"
+              :style="{ height: `${pullDistance}px` }"
+            >
+              <div class="refresh-icon" :class="{ 'spin': pullDistance >= pullThreshold }">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+              </div>
+            </div>
+
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -211,13 +246,20 @@
             </div>
 
 
-          <base-card v-if="sentError" variant="elevated" padding="md" class="error-card">
-            {{ sentError }}
+          <base-card v-if="emailStore.sentError" variant="elevated" padding="md" class="error-card">
+            {{ emailStore.sentError }}
           </base-card>
-          <div v-if="isLoadingSent && sentEmails.length === 0" class="loading-state">
+          <div v-if="emailStore.isLoadingSent && emailStore.sentEmails.length === 0" class="loading-state">
             <p class="loading-text">Loading sent emails...</p>
           </div>
-          <div v-else>
+          <div
+            v-else
+            ref="sentListRef"
+            class="email-list-scrollable"
+            @touchstart="handleTouchStart($event, sentListRef)"
+            @touchmove="handleTouchMove($event, sentListRef)"
+            @touchend="handleTouchEnd(sentListRef, 'sent')"
+          >
 
             <div
               v-for="email in filteredSentEmails"
@@ -287,6 +329,20 @@
           icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><polyline points=&quot;21 8 21 21 3 21 3 8&quot;/><rect x=&quot;1&quot; y=&quot;3&quot; width=&quot;22&quot; height=&quot;5&quot;/><line x1=&quot;10&quot; y1=&quot;12&quot; x2=&quot;14&quot; y2=&quot;12&quot;/></svg>"
         >
           <div class="email-list-card">
+            <!-- Pull to refresh indicator -->
+            <div
+              v-if="isPulling && pullDistance > 0"
+              class="pull-refresh-indicator"
+              :style="{ height: `${pullDistance}px` }"
+            >
+              <div class="refresh-icon" :class="{ 'spin': pullDistance >= pullThreshold }">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+              </div>
+            </div>
+
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -317,21 +373,28 @@
               </base-button>
             </div>
 
-          <base-card v-if="archivedError" variant="elevated" padding="md" class="error-card">
-            {{ archivedError }}
+          <base-card v-if="emailStore.archivedError" variant="elevated" padding="md" class="error-card">
+            {{ emailStore.archivedError }}
           </base-card>
-<div v-if="isLoadingArchived && archivedEmails.length === 0" class="loading-state">
+<div v-if="emailStore.isLoadingArchived && emailStore.archivedEmails.length === 0" class="loading-state">
             <p class="loading-text">Loading archived emails...</p>
           </div>
 
-          <div v-else-if="archivedEmails.length === 0" class="empty-state">
+          <div v-else-if="emailStore.archivedEmails.length === 0" class="empty-state">
             <p class="empty-text">No archived emails</p>
           </div>
 
           <div v-else-if="filteredArchivedEmails.length === 0" class="empty-state">
             <p class="empty-text">No emails match your search</p>
           </div>
-          <div v-else>
+          <div
+            v-else
+            ref="archivedListRef"
+            class="email-list-scrollable"
+            @touchstart="handleTouchStart($event, archivedListRef)"
+            @touchmove="handleTouchMove($event, archivedListRef)"
+            @touchend="handleTouchEnd(archivedListRef, 'archived')"
+          >
 
             <div
               v-for="email in filteredArchivedEmails"
@@ -454,22 +517,18 @@ const router = useRouter()
 const emailStore = useEmailStore()
 const authStore = useAuthStore()
 
-// Separate email lists for each mailbox
-const inboxEmails = ref<Email[]>([])
-const sentEmails = ref<Email[]>([])
-const archivedEmails = ref<Email[]>([])
-
-// Loading and error states for each mailbox
-const isLoadingInbox = ref(false)
-const isLoadingSent = ref(false)
-const isLoadingArchived = ref(false)
-const inboxError = ref<string | null>(null)
-const sentError = ref<string | null>(null)
-const archivedError = ref<string | null>(null)
-
 const showFiltersDropdown = ref(false)
 const isMobile = ref(window.innerWidth <= 768)
 const filtersDropdown = ref<BaseDrawer | null>(null)
+
+// Pull to refresh state
+const isPulling = ref(false)
+const pullDistance = ref(0)
+const pullStartY = ref(0)
+const pullThreshold = 80
+const inboxListRef = ref<HTMLElement | null>(null)
+const sentListRef = ref<HTMLElement | null>(null)
+const archivedListRef = ref<HTMLElement | null>(null)
 
 watch(
   showFiltersDropdown,
@@ -479,6 +538,23 @@ watch(
         filtersDropdown.value.openDrawer()
       } else {
         filtersDropdown.value.closeDrawer()
+      }
+    }
+  }
+)
+
+// Watch for selectedRecipient changes
+watch(
+  () => authStore.selectedRecipient,
+  async (newRecipient, oldRecipient) => {
+    // Only trigger if the recipient actually changed
+    if (newRecipient !== oldRecipient && oldRecipient !== null) {
+      // Clear all email lists
+      emailStore.clearAllEmails()
+      try {
+        await fetchAllMailboxes()
+      } catch (error) {
+        console.error('Failed to fetch emails after recipient change:', error)
       }
     }
   }
@@ -495,33 +571,33 @@ const filters = ref({
 // Filtered emails for each mailbox
 const filteredInboxEmails = computed(() => {
   if (!searchQuery.value.trim()) {
-    return inboxEmails.value
+    return emailStore.inboxEmails
   }
 
   const query = searchQuery.value.toLowerCase()
-  return inboxEmails.value.filter(email =>
+  return emailStore.inboxEmails.filter(email =>
     email.subject?.toLowerCase().includes(query)
   )
 })
 
 const filteredSentEmails = computed(() => {
   if (!searchQuery.value.trim()) {
-    return sentEmails.value
+    return emailStore.sentEmails
   }
 
   const query = searchQuery.value.toLowerCase()
-  return sentEmails.value.filter(email =>
+  return emailStore.sentEmails.filter(email =>
     email.subject?.toLowerCase().includes(query)
   )
 })
 
 const filteredArchivedEmails = computed(() => {
   if (!searchQuery.value.trim()) {
-    return archivedEmails.value
+    return emailStore.archivedEmails
   }
 
   const query = searchQuery.value.toLowerCase()
-  return archivedEmails.value.filter(email =>
+  return emailStore.archivedEmails.filter(email =>
     email.subject?.toLowerCase().includes(query)
   )
 })
@@ -531,72 +607,15 @@ const filteredInboxUnreadCount = computed(() => {
 })
 
 // Fetch functions for each mailbox
-async function fetchInboxEmails() {
-  isLoadingInbox.value = true
-  inboxError.value = null
-  try {
-    const params: any = {
-      mailbox: 'inbox',
-      sortOrder: filters.value.sortOrder,
-    }
-    if (filters.value.sender) params.sender = filters.value.sender
-    if (filters.value.startDate) params.startDate = filters.value.startDate
-    if (filters.value.endDate) params.endDate = filters.value.endDate
-
-    const response = await api.emails.list(params)
-    inboxEmails.value = response.emails
-  } catch (err) {
-    inboxError.value = err instanceof Error ? err.message : 'Failed to fetch inbox emails'
-  } finally {
-    isLoadingInbox.value = false
-  }
-}
-
-async function fetchSentEmails() {
-  isLoadingSent.value = true
-  sentError.value = null
-  try {
-    const params: any = {
-      mailbox: 'sent',
-      sortOrder: filters.value.sortOrder,
-    }
-
-    const response = await api.emails.list(params)
-    sentEmails.value = response.emails
-  } catch (err) {
-    sentError.value = err instanceof Error ? err.message : 'Failed to fetch sent emails'
-  } finally {
-    isLoadingSent.value = false
-  }
-}
-
-async function fetchArchivedEmails() {
-  isLoadingArchived.value = true
-  archivedError.value = null
-  try {
-    const params: any = {
-      mailbox: 'archived',
-      sortOrder: filters.value.sortOrder,
-    }
-    if (filters.value.sender) params.sender = filters.value.sender
-    if (filters.value.startDate) params.startDate = filters.value.startDate
-    if (filters.value.endDate) params.endDate = filters.value.endDate
-
-    const response = await api.emails.list(params)
-    archivedEmails.value = response.emails
-  } catch (err) {
-    archivedError.value = err instanceof Error ? err.message : 'Failed to fetch archived emails'
-  } finally {
-    isLoadingArchived.value = false
-  }
-}
-
 async function fetchAllMailboxes() {
-  await Promise.all([
-    fetchInboxEmails(),
-    fetchSentEmails(),
-    fetchArchivedEmails()
-  ])
+  const params: any = {
+    sortOrder: filters.value.sortOrder,
+  }
+  if (filters.value.sender) params.sender = filters.value.sender
+  if (filters.value.startDate) params.startDate = filters.value.startDate
+  if (filters.value.endDate) params.endDate = filters.value.endDate
+
+  await emailStore.fetchAllMailboxes(params)
 }
 
 // Handle messages from service worker
@@ -614,22 +633,18 @@ async function handleServiceWorkerMessage(event: MessageEvent) {
       // Fetch the specific new email
       const newEmail = await api.emails.getDetail(s3Key)
 
-      // Check if email already exists in inbox (avoid duplicates)
-      const existingIndex = inboxEmails.value.findIndex(email => email.s3_key === s3Key)
-
-      if (existingIndex === -1) {
-        // Add to top of inbox if it doesn't exist
-        inboxEmails.value.unshift(newEmail)
-        console.log('Added new email to inbox:', newEmail.subject)
-      } else {
-        // Update existing email (in case of any changes)
-        inboxEmails.value[existingIndex] = newEmail
-        console.log('Updated existing email in inbox:', newEmail.subject)
-      }
+      // Add or update email in inbox store
+      emailStore.addOrUpdateInboxEmail(newEmail)
     } catch (error) {
       console.error('Failed to fetch new email from notification:', error)
       // Fallback to refetching inbox only if fetch fails
-      await fetchInboxEmails()
+      const params: any = {
+        sortOrder: filters.value.sortOrder,
+      }
+      if (filters.value.sender) params.sender = filters.value.sender
+      if (filters.value.startDate) params.startDate = filters.value.startDate
+      if (filters.value.endDate) params.endDate = filters.value.endDate
+      await emailStore.fetchInboxEmails(params)
     }
   }
 }
@@ -640,6 +655,66 @@ function closeDrawer() {
 
 function onResize() {
   isMobile.value = window.innerWidth <= 768
+}
+
+// Pull to refresh handlers
+function handleTouchStart(event: TouchEvent, listRef: HTMLElement | null) {
+  if (!listRef) return
+
+  const scrollTop = listRef.scrollTop
+  if (scrollTop === 0) {
+    pullStartY.value = event.touches[0].clientY
+    isPulling.value = true
+  }
+}
+
+function handleTouchMove(event: TouchEvent, listRef: HTMLElement | null) {
+  if (!isPulling.value || !listRef) return
+
+  const currentY = event.touches[0].clientY
+  const distance = currentY - pullStartY.value
+
+  if (distance > 0 && listRef.scrollTop === 0) {
+    event.preventDefault()
+    pullDistance.value = Math.min(distance, pullThreshold * 1.5)
+  } else {
+    isPulling.value = false
+    pullDistance.value = 0
+  }
+}
+
+async function handleTouchEnd(listRef: HTMLElement | null, mailboxType: 'inbox' | 'sent' | 'archived') {
+  if (!isPulling.value) return
+
+  if (pullDistance.value >= pullThreshold) {
+    // Trigger refresh
+    await refreshMailbox(mailboxType)
+  }
+
+  isPulling.value = false
+  pullDistance.value = 0
+  pullStartY.value = 0
+}
+
+async function refreshMailbox(mailboxType: 'inbox' | 'sent' | 'archived') {
+  const params: any = {
+    sortOrder: filters.value.sortOrder,
+  }
+  if (filters.value.sender) params.sender = filters.value.sender
+  if (filters.value.startDate) params.startDate = filters.value.startDate
+  if (filters.value.endDate) params.endDate = filters.value.endDate
+
+  try {
+    if (mailboxType === 'inbox') {
+      await emailStore.fetchInboxEmails(params)
+    } else if (mailboxType === 'sent') {
+      await emailStore.fetchSentEmails({ sortOrder: params.sortOrder })
+    } else if (mailboxType === 'archived') {
+      await emailStore.fetchArchivedEmails(params)
+    }
+  } catch (error) {
+    console.error(`Failed to refresh ${mailboxType}:`, error)
+  }
 }
 
 onMounted(async () => {
@@ -954,5 +1029,41 @@ function formatDate(dateStr: string): string {
     justify-content: flex-start;
     padding-left: var(--space-2);
   }
+}
+
+/* Pull to refresh styles */
+.pull-refresh-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+
+.refresh-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: transform 0.3s ease;
+}
+
+.refresh-icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.email-list-scrollable {
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+  -webkit-overflow-scrolling: touch;
 }
 </style>

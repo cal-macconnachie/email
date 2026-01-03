@@ -31,7 +31,7 @@ export const handler = async (
         body: JSON.stringify({ error: authResult.error }),
       }
     }
-    const recipient = authResult.recipient
+    const recipient = authResult.defaultRecipient
 
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {

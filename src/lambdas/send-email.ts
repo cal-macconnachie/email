@@ -20,6 +20,7 @@ interface SendEmailRequest {
   attachmentKeys?: string[]
   inReplyTo?: string
   references?: string[]
+  sendFrom?: string
 }
 
 export const handler = async (
@@ -36,7 +37,7 @@ export const handler = async (
         body: JSON.stringify({ error: authResult.error }),
       }
     }
-    const authenticatedRecipient = authResult.recipient
+    let authenticatedRecipient = authResult.defaultRecipient
 
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {
@@ -60,8 +61,18 @@ export const handler = async (
     }
 
     const emailRequest = JSON.parse(event.body) as SendEmailRequest
-    const { to, subject, body, cc, bcc, replyTo, attachmentKeys, inReplyTo, references } = emailRequest
-
+    const { to, subject, body, cc, bcc, replyTo, attachmentKeys, inReplyTo, references, sendFrom } = emailRequest
+    if (sendFrom != null) {
+      if (authResult.recipients.indexOf(sendFrom) === -1) {
+        return {
+          statusCode: 403,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: `Forbidden - You are not authorized to send from: ${sendFrom}` }),
+        }
+      } else {
+        authenticatedRecipient = sendFrom
+      }
+    }
     // Validate inputs
     if (!to || to.length === 0 || !subject || !body) {
       return {

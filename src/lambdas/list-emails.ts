@@ -10,6 +10,7 @@ interface ListEmailsRequest {
   lastEvaluatedKey?: Record<string, unknown>
   sortOrder?: 'ASC' | 'DESC'
   mailbox?: 'inbox' | 'sent' | 'archived'
+  recipient?: string
 }
 
 interface EmailMetadata {
@@ -43,7 +44,7 @@ export const handler = async (
         body: JSON.stringify({ error: authResult.error }),
       }
     }
-    const recipient = authResult.recipient
+    let recipient = authResult.defaultRecipient
 
     const tableName = process.env.DYNAMODB_TABLE_NAME
     if (!tableName) {
@@ -68,7 +69,19 @@ export const handler = async (
       request = {}
     }
 
-    const { sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder, mailbox } = request
+    const { sender, startDate, endDate, limit, lastEvaluatedKey, sortOrder, mailbox, recipient: requestRecipient } = request
+
+    if (requestRecipient != null) {
+      if (authResult.recipients.indexOf(requestRecipient) === -1) {
+        return {
+          statusCode: 403,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: `Forbidden - You are not authorized to send from: ${requestRecipient}` }),
+        }
+      } else {
+        recipient = requestRecipient
+      }
+    }
 
     // Build query parameters
     let keyConditionExpression: string

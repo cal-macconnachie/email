@@ -95,10 +95,24 @@ export const api = {
       if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Token refresh failed')
       return json
     },
+
+    async getSession(): Promise<{
+      message: string
+      phone_number: string
+      recipients: string[]
+      default_recipient: string
+    }> {
+      const response = await fetch(`${API_BASE}/auth/session`, {
+        credentials: 'include',
+      })
+      const json = await response.json()
+      if (!response.ok) throw new Error((json.message ?? json.error) ?? 'Failed to get session')
+      return json
+    }
   },
 
   emails: {
-    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC'; mailbox?: 'inbox' | 'sent' | 'archived' }): Promise<ListEmailsResponse> {
+    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC'; mailbox?: 'inbox' | 'sent' | 'archived'; recipient?: string }): Promise<ListEmailsResponse> {
       const queryParams = new URLSearchParams()
       if (params?.sender) queryParams.append('sender', params.sender)
       if (params?.startDate) queryParams.append('startDate', params.startDate)
@@ -106,6 +120,7 @@ export const api = {
       if (params?.limit) queryParams.append('limit', params.limit.toString())
       if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
       if (params?.mailbox) queryParams.append('mailbox', params.mailbox)
+      if (params?.recipient) queryParams.append('recipient', params.recipient)
 
       const response = await fetch(`${API_BASE}/emails/list?${queryParams}`, {
         credentials: 'include',
@@ -132,6 +147,7 @@ export const api = {
       inReplyTo?: string
       references?: string[]
       attachmentKeys?: string[]
+      sendFrom?: string
     }): Promise<{ message: string; messageId: string; recipients: string[] }> {
       const response = await fetch(`${API_BASE}/emails/send`, {
         method: 'POST',
@@ -139,7 +155,6 @@ export const api = {
         credentials: 'include',
         body: JSON.stringify({
           to: email.to,
-          from: '', // Will be injected by auth middleware
           subject: email.subject,
           body: email.body,
           cc: email.cc,
@@ -148,6 +163,7 @@ export const api = {
           inReplyTo: email.inReplyTo,
           references: email.references,
           attachmentKeys: email.attachmentKeys,
+          sendFrom: email.sendFrom,
         }),
       })
       if (!response.ok) throw new Error('Failed to send email')

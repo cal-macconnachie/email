@@ -2,8 +2,8 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { query } from './helpers/dynamo-helpers/query'
 import { Email } from './helpers/parse-email'
-import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 import { generateAttachmentUrls } from './helpers/s3-presigned-url'
+import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -25,7 +25,7 @@ export const handler = async (
         body: JSON.stringify({ error: authResult.error }),
       }
     }
-    const recipient = authResult.recipient
+    const validRecipients = authResult.recipients
 
     const bucketName = process.env.S3_BUCKET_NAME
     if (!bucketName) {
@@ -73,7 +73,7 @@ export const handler = async (
     const email = JSON.parse(emailContent) as Email
 
     // Validate that the authenticated user is either the recipient or sender
-    if (email.recipient !== recipient && email.sender !== recipient) {
+    if (validRecipients.indexOf(email.recipient) === -1 && validRecipients.indexOf(email.sender) === -1) {
       return {
         statusCode: 403,
         headers: { 'Content-Type': 'application/json' },
@@ -100,7 +100,7 @@ export const handler = async (
           filterExpression: 'recipient = :recipient',
           expressionAttributeValues: {
             ':threadId': email.thread_id,
-            ':recipient': recipient,
+            ':recipient': email.recipient,
           },
         })
 

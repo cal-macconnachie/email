@@ -110,114 +110,115 @@ async function processNewEmail(
     return
   }
 
-  const phoneNumber = phoneMappingResults.items[0].phone_number
-  console.log(`Found phone mapping: ${emailPrefix} -> ${phoneNumber}`)
+  const phoneNumbers = phoneMappingResults.items.map(item => item.phone_number)
 
   // Query active subscriptions for this user using StatusIndex GSI
-  const subscriptionResults = await query<PushSubscription>({
-    tableName: pushSubscriptionsTable,
-    indexName: 'StatusIndex',
-    keyConditionExpression: 'phone_number = :phone AND #status = :status',
-    expressionAttributeNames: {
-      '#status': 'status',
-    },
-    expressionAttributeValues: {
-      ':phone': phoneNumber,
-      ':status': 'active',
-    },
-  })
-
-  if (!subscriptionResults.items || subscriptionResults.items.length === 0) {
-    console.log(`No active subscriptions found for ${phoneNumber}`)
-    return
-  }
-
-  console.log(`Found ${subscriptionResults.items.length} active subscription(s) for ${phoneNumber}`)
-
-  // Prepare notification payload
-  const notificationPayload = {
-    title: `${email.sender}`,
-    body: email.subject || '(No subject)',
-    icon: './direct-market.svg',
-    badge: './direct-market.svg',
-    tag: email.s3_key, // Prevents duplicate notifications
-    data: {
-      url: `/emails/${encodeURIComponent(email.s3_key)}`,
-      s3_key: email.s3_key,
-      timestamp: email.timestamp,
-      recipient: email.recipient,
-    },
-    requireInteraction: false,
-  }
-
-  // Send push notification to each subscription
-  const sendResults = await Promise.allSettled(
-    subscriptionResults.items.map(async (subscription) => {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: {
-              p256dh: subscription.keys.p256dh,
-              auth: subscription.keys.auth,
-            },
-          },
-          JSON.stringify(notificationPayload),
-          {
-            vapidDetails: {
-              subject: vapidKeys.subject,
-              publicKey: vapidKeys.publicKey,
-              privateKey: vapidKeys.privateKey,
-            },
-            TTL: 86400, // 24 hours
-          }
-        )
-
-        console.log(`Push sent successfully to subscription ${subscription.subscription_id}`)
-
-        // Update last_used timestamp
-        await update({
-          tableName: pushSubscriptionsTable,
-          key: {
-            phone_number: phoneNumber,
-            subscription_id: subscription.subscription_id,
-          },
-          updates: {
-            last_used: new Date().toISOString(),
-          },
-        })
-      } catch (error: unknown) {
-        // Handle subscription errors
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-          const statusCode = (error as { statusCode: number }).statusCode
-
-          // 410 Gone or 404 Not Found = subscription no longer valid
-          if (statusCode === 410 || statusCode === 404) {
-            console.log(`Subscription expired (${statusCode}): ${subscription.subscription_id}`)
-            await update({
-              tableName: pushSubscriptionsTable,
-              key: {
-                phone_number: phoneNumber,
-                subscription_id: subscription.subscription_id,
-              },
-              updates: {
-                status: 'expired',
-              },
-            })
-            return
-          }
-        }
-
-        console.error(`Push failed for subscription ${subscription.subscription_id}:`, error)
-        throw error
-      }
+  for (const phoneNumber of phoneNumbers) {
+    const subscriptionResults = await query<PushSubscription>({
+      tableName: pushSubscriptionsTable,
+      indexName: 'StatusIndex',
+      keyConditionExpression: 'phone_number = :phone AND #status = :status',
+      expressionAttributeNames: {
+        '#status': 'status',
+      },
+      expressionAttributeValues: {
+        ':phone': phoneNumber,
+        ':status': 'active',
+      },
     })
-  )
 
-  // Log results
-  const successCount = sendResults.filter((r) => r.status === 'fulfilled').length
-  const failureCount = sendResults.filter((r) => r.status === 'rejected').length
-  console.log(
-    `Push notifications sent: ${successCount} succeeded, ${failureCount} failed (out of ${sendResults.length} total)`
-  )
+    if (!subscriptionResults.items || subscriptionResults.items.length === 0) {
+      console.log(`No active subscriptions found for ${phoneNumber}`)
+      return
+    }
+
+    console.log(`Found ${subscriptionResults.items.length} active subscription(s) for ${phoneNumber}`)
+
+    // Prepare notification payload
+    const notificationPayload = {
+      title: `${email.sender}`,
+      body: email.subject || '(No subject)',
+      icon: './direct-market.svg',
+      badge: './direct-market.svg',
+      tag: email.s3_key, // Prevents duplicate notifications
+      data: {
+        url: `/emails/${encodeURIComponent(email.s3_key)}`,
+        s3_key: email.s3_key,
+        timestamp: email.timestamp,
+        recipient: email.recipient,
+      },
+      requireInteraction: false,
+    }
+
+    // Send push notification to each subscription
+    const sendResults = await Promise.allSettled(
+      subscriptionResults.items.map(async (subscription) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: subscription.endpoint,
+              keys: {
+                p256dh: subscription.keys.p256dh,
+                auth: subscription.keys.auth,
+              },
+            },
+            JSON.stringify(notificationPayload),
+            {
+              vapidDetails: {
+                subject: vapidKeys.subject,
+                publicKey: vapidKeys.publicKey,
+                privateKey: vapidKeys.privateKey,
+              },
+              TTL: 86400, // 24 hours
+            }
+          )
+
+          console.log(`Push sent successfully to subscription ${subscription.subscription_id}`)
+
+          // Update last_used timestamp
+          await update({
+            tableName: pushSubscriptionsTable,
+            key: {
+              phone_number: phoneNumber,
+              subscription_id: subscription.subscription_id,
+            },
+            updates: {
+              last_used: new Date().toISOString(),
+            },
+          })
+        } catch (error: unknown) {
+          // Handle subscription errors
+          if (error && typeof error === 'object' && 'statusCode' in error) {
+            const statusCode = (error as { statusCode: number }).statusCode
+
+            // 410 Gone or 404 Not Found = subscription no longer valid
+            if (statusCode === 410 || statusCode === 404) {
+              console.log(`Subscription expired (${statusCode}): ${subscription.subscription_id}`)
+              await update({
+                tableName: pushSubscriptionsTable,
+                key: {
+                  phone_number: phoneNumber,
+                  subscription_id: subscription.subscription_id,
+                },
+                updates: {
+                  status: 'expired',
+                },
+              })
+              return
+            }
+          }
+
+          console.error(`Push failed for subscription ${subscription.subscription_id}:`, error)
+          throw error
+        }
+      })
+    )
+
+    // Log results
+    const successCount = sendResults.filter((r) => r.status === 'fulfilled').length
+    const failureCount = sendResults.filter((r) => r.status === 'rejected').length
+    console.log(
+      `Push notifications sent: ${successCount} succeeded, ${failureCount} failed (out of ${sendResults.length} total)`
+    )
+  }
 }

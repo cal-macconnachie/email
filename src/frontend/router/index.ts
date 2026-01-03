@@ -39,8 +39,6 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth !== false
 
-  // checkAuth doesn't overwrite existing auth state - it's safe to call
-  authStore.checkAuth()
   // Now check if authentication is required
   if (requiresAuth && !authStore.isAuthenticated) {
     const refreshed = await authStore.refreshToken()

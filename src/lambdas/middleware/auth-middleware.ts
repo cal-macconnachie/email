@@ -1,9 +1,10 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { get } from '../helpers/dynamo-helpers/get'
+import { queryAll } from '../helpers/dynamo-helpers/query'
 
 interface AuthResult {
   success: true
-  recipient: string
+  recipients: string[]
+  defaultRecipient: string
   phoneNumber: string
 }
 
@@ -12,6 +13,10 @@ interface AuthError {
   statusCode: number
   error: string
 }
+
+type AuthResponse = AuthResult | AuthError
+
+const cachedResults: Record<string, AuthResponse> = {}
 
 /**
  * Authentication Middleware
@@ -27,7 +32,7 @@ interface AuthError {
  */
 export async function getAuthenticatedRecipient(
   event: APIGatewayProxyEvent
-): Promise<AuthResult | AuthError> {
+): Promise<AuthResponse> {
   try {
     // Extract claims from Lambda authorizer context
     // Lambda authorizer puts context in event.requestContext.authorizer.lambda
@@ -54,6 +59,9 @@ export async function getAuthenticatedRecipient(
         error: 'Unauthorized - Invalid token',
       }
     }
+    if (cachedResults[phoneNumber]) {
+      return cachedResults[phoneNumber]
+    }
 
     console.log(`Authenticated user: ${phoneNumber}`)
 
@@ -65,31 +73,39 @@ export async function getAuthenticatedRecipient(
     }
 
     // Look up email mapping
-    const mapping = await get<{ phone_number: string; email_prefix: string }>({
+    const mappings = await queryAll<{ phone_number: string; email_prefix: string; is_default?: boolean }>({
       tableName,
-      key: { phone_number: phoneNumber },
+      keyConditionExpression: 'phone_number = :phone',
+      expressionAttributeValues: {
+        ':phone': phoneNumber,
+      },
     })
 
     // If no mapping exists, return 403
-    if (!mapping || !mapping.email_prefix) {
+    if (!mappings || mappings.length === 0) {
       console.error(`No email mapping found for phone number: ${phoneNumber}`)
-      return {
+      cachedResults[phoneNumber] = {
         success: false,
         statusCode: 403,
         error: 'Forbidden - No email account associated with this phone number',
       }
+      return cachedResults[phoneNumber]
     }
 
     // Construct recipient email
-    const recipient = `${mapping.email_prefix}@macconnachie.com`
+    const recipients = mappings.map(mapping => `${mapping.email_prefix}@macconnachie.com`)
+    const defaultMapping = mappings.find(mapping => mapping.is_default)
+    const defaultRecipient = defaultMapping ? `${defaultMapping.email_prefix}@macconnachie.com` : recipients[0]
 
-    console.log(`Mapped ${phoneNumber} → ${recipient}`)
-
-    return {
+    const result: AuthResult = {
       success: true,
-      recipient,
+      recipients,
+      defaultRecipient,
       phoneNumber,
     }
+    cachedResults[phoneNumber] = result
+
+    return result
   } catch (error) {
     console.error('Error in auth middleware:', error)
     return {

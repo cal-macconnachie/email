@@ -14,7 +14,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache')
         return cache.addAll(urlsToCache)
       })
   )
@@ -27,7 +26,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName)
             return caches.delete(cacheName)
           }
         })
@@ -78,8 +76,6 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification event handler
 self.addEventListener('push', (event) => {
-  console.log('Push notification received:', event)
-
   if (!event.data) {
     console.warn('Push event has no data')
     return
@@ -134,8 +130,6 @@ self.addEventListener('push', (event) => {
 
 // Notification click event handler
 self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked:', event)
-
   event.notification.close()
 
   // Handle action buttons
@@ -168,21 +162,12 @@ self.addEventListener('notificationclick', (event) => {
 
 // Handle push subscription changes (browser revoked or changed endpoint)
 self.addEventListener('pushsubscriptionchange', (event) => {
-  console.log('Push subscription changed:', event)
-
   event.waitUntil(
     // Attempt to resubscribe with new subscription
     self.registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: event.oldSubscription?.options?.applicationServerKey
-    })
-    .then((newSubscription) => {
-      // Note: Full re-subscription requires subscription_id from localStorage
-      // which is not accessible in service worker context
-      // User will need to re-enable notifications manually in the app
-      console.log('New subscription created (requires manual registration):', newSubscription)
-    })
-    .catch((error) => {
+    }).catch((error) => {
       console.error('Failed to resubscribe:', error)
     })
   )
