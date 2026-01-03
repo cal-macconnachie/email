@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/cal-macconnachie/email/compare/v1.1.6...v1.2.0) (2026-01-03)
+
+
+### Features
+
+* allow multiple phone to email relations ([6c7b89f](https://github.com/cal-macconnachie/email/commit/6c7b89f6f35923cae6be57229e50252875ad3c55))
+
 ### [1.1.6](https://github.com/cal-macconnachie/email/compare/v1.1.5...v1.1.6) (2026-01-02)
 
 
