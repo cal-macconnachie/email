@@ -178,7 +178,6 @@ onBeforeUnmount(() => {
   height: 40px;
   border-radius: 50%;
   background-color: var(--color-bg-muted);
-  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,6 +215,7 @@ onBeforeUnmount(() => {
   width: 100%;
   border: none;
   background: transparent;
+  color: inherit;
   cursor: pointer;
   transition: background-color 0.2s;
   text-align: left;

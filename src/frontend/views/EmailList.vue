@@ -1088,4 +1088,14 @@ function formatDate(dateStr: string): string {
   align-items: center;
   gap: var(--space-2);
 }
+
+/* mobile */
+@media (max-width: 768px) {
+  .email-list-container {
+    padding: var(--space-4);
+    padding-top: var(--space-10);
+    margin-top: var(--space-6);
+    max-height: 95dvh;
+  }
+}
 </style>
