@@ -131,9 +131,10 @@ async function checkPhoneNumberAuthorized(
   phoneNumber: string
 ): Promise<boolean> {
   try {
+    console.log(`Checking authorization for phone number: ${phoneNumber} on table: ${tableName}`)
     const mapping = await query<{ phone_number: string; email_prefix: string }>({
       tableName,
-      keyConditionExpression: 'phone_number = :phone and attribute_exists(email_prefix)',
+      keyConditionExpression: 'phone_number = :phone',
       expressionAttributeValues: {
         ':phone': phoneNumber,
       },
