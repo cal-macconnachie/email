@@ -66,6 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
       await api.auth.logout()
       isAuthenticated.value = false
       phoneNumber.value = null
+      selectedRecipient.value = null
       otpSession.value = null
       otpRequested.value = false
     } catch (err) {
@@ -113,6 +114,10 @@ export const useAuthStore = defineStore('auth', () => {
       const { recipients: apiRecipients, default_recipient } = await api.auth.getSession()
       recipients.value = apiRecipients
       defaultRecipient.value = default_recipient
+      // Initialize selectedRecipient to defaultRecipient if not already set
+      if (!selectedRecipient.value && default_recipient) {
+        selectedRecipient.value = default_recipient
+      }
       isAuthenticated.value = true
       return true
     } catch {

@@ -3,8 +3,11 @@
     <div v-if="authStore.isAuthenticated" class="compose-button">
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
-    <div class="theme-toggle">
-      <theme-toggle size="sm"/>
+    <div class="top-right-controls">
+      <email-selector v-if="authStore.isAuthenticated" />
+      <div class="theme-toggle">
+        <theme-toggle size="sm"/>
+      </div>
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
@@ -20,6 +23,7 @@ import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ComposeDrawer from './components/ComposeForm.vue'
+import EmailSelector from './components/EmailSelector.vue'
 import NotificationPrompt from './components/NotificationPrompt.vue'
 import { usePushNotifications } from './composables/usePushNotifications'
 import { useAuthStore } from './stores/auth'
@@ -99,10 +103,18 @@ onMounted(async () => {
     justify-content: center;
     transform: translateY(-1px);
   }
-  .theme-toggle {
+  .top-right-controls {
     position: fixed;
     top: 1rem;
     right: 1rem;
     z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
   }
 </style>
