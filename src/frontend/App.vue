@@ -82,7 +82,7 @@ onMounted(async () => {
 })
 </script>
 
-<style>
+<style scoped>
   .compose-button {
     position: fixed;
     bottom: 2rem;
@@ -122,5 +122,9 @@ onMounted(async () => {
   .theme-toggle {
     display: flex;
     align-items: center;
+  }
+  .min-h-screen {
+    min-height: 100dvh;
+    max-height: 100dvh;
   }
 </style>
