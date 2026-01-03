@@ -71,7 +71,7 @@ export const handler = async (
     if (!isAuthorized) {
       console.log(`Unauthorized phone number attempted OTP request: ${phone_number}`)
       return {
-        statusCode: 403,
+        statusCode: 401,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           error: 'Access denied. This phone number is not authorized to access the system.',
