@@ -1,6 +1,12 @@
 <template>
   <div class="email-list-container">
     <main class="email-main">
+          <base-select
+            ref="emailSelect"
+            placeholder="Select an email"
+            size="sm"
+            @change="setSelectedEmail"
+          ></base-select>
       <base-tabs
         active-tab="inbox"
         sync-with-hash
@@ -10,13 +16,6 @@
           slot="sidebar-header"
           class="sidebar-header-content"
         >
-        <div class="row">
-          <base-select
-            ref="emailSelect"
-            placeholder="Select an email"
-            size="sm"
-            @change="setSelectedEmail"
-          ></base-select>
           <base-button
             variant="ghost"
             size="sm"
@@ -37,7 +36,6 @@
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
           </base-button>
-          </div>
         </div>
 
         <!-- Sidebar Footer with Logout Button -->

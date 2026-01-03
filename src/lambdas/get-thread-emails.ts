@@ -90,10 +90,13 @@ export const handler = async (
 
     // Fetch email metadata from emails table using batch get
     // Use email_recipient field (stores the actual emails table recipient)
-    const emailKeys = threadRelationsResult.items.map((item) => ({
-      recipient: item.email_recipient,
-      timestamp: item.timestamp,
-    }))
+    // Filter out items with undefined email_recipient to avoid DynamoDB errors
+    const emailKeys = threadRelationsResult.items
+      .filter((item) => item.email_recipient && item.timestamp)
+      .map((item) => ({
+        recipient: item.email_recipient,
+        timestamp: item.timestamp,
+      }))
 
     const emailMetadataList = await batchGet<Email>({
       tableName,
