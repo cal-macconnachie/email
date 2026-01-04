@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.24](https://github.com/cal-macconnachie/email/compare/v1.3.23...v1.3.24) (2026-01-04)
+
+
+### Bug Fixes
+
+* stop thread cascade ([b8c5377](https://github.com/cal-macconnachie/email/commit/b8c537717839e12077016b2a25b5279ba98edeb1))
+
 ### [1.3.23](https://github.com/cal-macconnachie/email/compare/v1.3.22...v1.3.23) (2026-01-04)
 
 
