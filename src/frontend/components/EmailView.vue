@@ -28,7 +28,7 @@
           </svg>
         </base-button>
         <base-button
-          v-if="email.s3_key === decodeURIComponent(s3Key)"
+          v-if="email.s3_key === decodedS3Key"
           @click="handleToggleArchive(email)"
           variant="ghost-secondary"
           size="sm"
@@ -155,16 +155,17 @@ const isLoadingBody = ref(false)
 const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
 const email = ref<Email | null>(null)
+const decodedS3Key = decodeURIComponent(props.s3Key)
 
 // Fetch email body once on mount
 onMounted(async () => {
   // Only fetch if we don't have a body
-  email.value = emailStore.emails.find(e => e.s3_key === decodeURIComponent(props.s3Key)) || null
+  email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
   if (!email.value?.body) {
     isLoadingBody.value = true
     try {
-      await emailStore.fetchEmailDetail(props.s3Key)
-      email.value = emailStore.emails.find(e => e.s3_key === decodeURIComponent(props.s3Key)) || null
+      await emailStore.fetchEmailDetail(decodedS3Key)
+      email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
     } catch (error) {
       console.error('Failed to fetch email body:', error)
     } finally {
