@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.1](https://github.com/cal-macconnachie/email/compare/v1.4.0...v1.4.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* attempt to update email detail fetching ([49b183e](https://github.com/cal-macconnachie/email/commit/49b183e6d6ffb5379db5a84f7c89ec62eb58a146))
+
 ## [1.4.0](https://github.com/cal-macconnachie/email/compare/v1.3.33...v1.4.0) (2026-01-04)
 
 
