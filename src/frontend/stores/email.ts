@@ -4,7 +4,6 @@ import { api, type Email } from '../api/client'
 import { useAuthStore } from './auth'
 
 export const useEmailStore = defineStore('email', () => {
-  const emails = ref<Email[]>([])
   const currentEmail = ref<Email | null>(null)
   const currentUserEmail = ref<string | null>(null)
   const isLoading = ref(false)
@@ -16,6 +15,8 @@ export const useEmailStore = defineStore('email', () => {
   const inboxEmails = ref<Email[]>([])
   const sentEmails = ref<Email[]>([])
   const archivedEmails = ref<Email[]>([])
+
+  const emails = computed(() => [...inboxEmails.value, ...sentEmails.value, ...archivedEmails.value])
 
   // Loading and error states for each mailbox
   const isLoadingInbox = ref(false)
@@ -73,7 +74,6 @@ export const useEmailStore = defineStore('email', () => {
 
     try {
       const response = await api.emails.list(params)
-      emails.value = response.emails
       lastEvaluatedKey.value = response.lastEvaluatedKey
 
       // Set current user email from first email's recipient (if not already set)
@@ -332,7 +332,6 @@ export const useEmailStore = defineStore('email', () => {
     inboxEmails.value = []
     sentEmails.value = []
     archivedEmails.value = []
-    emails.value = []
     currentEmail.value = null
   }
 
