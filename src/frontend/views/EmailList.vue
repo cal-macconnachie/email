@@ -510,7 +510,7 @@
 import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { api, type Email } from '../api/client'
+import { type Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
 
@@ -637,7 +637,7 @@ async function handleServiceWorkerMessage(event: MessageEvent) {
 
     try {
       // Fetch the specific new email
-      const newEmail = await api.emails.getDetail(s3Key)
+      const newEmail = await emailStore.fetchEmailDetail(s3Key)
 
       // Add or update email in inbox store
       emailStore.addOrUpdateInboxEmail(newEmail)

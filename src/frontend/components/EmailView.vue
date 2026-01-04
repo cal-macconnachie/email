@@ -145,7 +145,7 @@
 </template>
 <script setup lang="ts">
 import PostalMime from 'postal-mime'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
@@ -172,7 +172,7 @@ function isUserReceivedEmail(): boolean {
 // Fetch email body once on mount
 onMounted(async () => {
   // Only fetch if we don't have a body
-  console.log('EmailView mounted for s3Key:', decodedS3Key)
+  await nextTick()
   email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
   if (!email.value?.body) {
     isLoadingBody.value = true

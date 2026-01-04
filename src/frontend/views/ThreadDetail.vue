@@ -75,7 +75,7 @@ onMounted(async () => {
 
     // Fetch ONLY the thread list (metadata only, no bodies) and WAIT
     if (targetEmail.thread_id) {
-      threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, false)
+      threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, true)
       threadEmails.value.sort((a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       )
@@ -174,15 +174,14 @@ onMounted(async () => {
 .thread-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-2);
 }
 
 .thread-email-card {
   scroll-margin-top: var(--space-20);
   padding: var(--space-4);
-  margin-bottom: var(--space-2);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--color-bg-primary);
   transition: all 0.3s ease;
 }
 

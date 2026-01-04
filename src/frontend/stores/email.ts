@@ -10,6 +10,7 @@ export const useEmailStore = defineStore('email', () => {
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
   const lastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
+  const fetchedThreads = ref<Set<string>>(new Set())
 
   // Separate email lists for each mailbox
   const inboxEmails = ref<Email[]>([])
@@ -249,9 +250,14 @@ export const useEmailStore = defineStore('email', () => {
   async function fetchThread(threadId: string, includeBody = false) {
     isLoading.value = true
     error.value = null
+    if (fetchedThreads.value.has(threadId)) {
+      isLoading.value = false
+      return emails.value.filter(email => email.thread_id === threadId)
+    }
     try {
       const response = await api.emails.getThread(threadId, includeBody)
       addEmailsToStore(response.emails)
+      fetchedThreads.value.add(threadId)
       return response.emails
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch thread'
