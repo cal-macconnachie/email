@@ -899,6 +899,7 @@ function formatDate(dateStr: string): string {
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1 1 0;
+  max-width: 35%;
   min-width: 0;
 }
 
@@ -908,7 +909,8 @@ function formatDate(dateStr: string): string {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1 1 0;
+  flex: 0 1 auto;
+  max-width: 25%;
   min-width: 0;
 }
 
@@ -946,7 +948,7 @@ function formatDate(dateStr: string): string {
   font-size: var(--font-size-sm);
   opacity: 0.6;
   white-space: nowrap;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   margin-left: auto;
 }
 
