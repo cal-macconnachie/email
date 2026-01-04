@@ -5,34 +5,6 @@
         active-tab="inbox"
         sync-with-hash
       >
-        <!-- Sidebar Header with Filter Button -->
-        <div
-          v-if="!isMobile"
-          slot="sidebar-header"
-          class="sidebar-header-content"
-        >
-          <base-button
-            variant="ghost"
-            size="sm"
-            @click="showFiltersDropdown = !showFiltersDropdown"
-            title="Filters"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-          </base-button>
-        </div>
-
         <!-- Sidebar Footer with Logout Button -->
         <div
           v-if="!isMobile"
@@ -100,6 +72,26 @@
               <base-button
                 variant="ghost"
                 size="sm"
+                @click="showFiltersDropdown = !showFiltersDropdown"
+                title="Filters"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+              </base-button>
+              <base-button
+                variant="ghost"
+                size="sm"
                 @click="toggleSortOrder"
                 class="sort-button"
               >
@@ -123,6 +115,15 @@
             <div v-if="emailStore.isLoadingInbox && emailStore.inboxEmails.length === 0" class="loading-state">
               <p class="loading-text">Loading emails...</p>
             </div>
+
+            <div v-else-if="emailStore.inboxEmails.length === 0" class="empty-state">
+              <p class="empty-text">No inbox emails</p>
+            </div>
+
+            <div v-else-if="filteredInboxEmails.length === 0" class="empty-state">
+              <p class="empty-text">No emails match your search</p>
+            </div>
+
             <div
               v-else
               ref="inboxListRef"
@@ -227,6 +228,26 @@
               <base-button
                 variant="ghost"
                 size="sm"
+                @click="showFiltersDropdown = !showFiltersDropdown"
+                title="Filters"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+              </base-button>
+              <base-button
+                variant="ghost"
+                size="sm"
                 @click="toggleSortOrder"
                 class="sort-button"
               >
@@ -254,6 +275,15 @@
           <div v-if="emailStore.isLoadingSent && emailStore.sentEmails.length === 0" class="loading-state">
             <p class="loading-text">Loading sent emails...</p>
           </div>
+
+          <div v-else-if="emailStore.sentEmails.length === 0" class="empty-state">
+            <p class="empty-text">No sent emails</p>
+          </div>
+
+          <div v-else-if="filteredSentEmails.length === 0" class="empty-state">
+            <p class="empty-text">No emails match your search</p>
+          </div>
+
           <div
             v-else
             ref="sentListRef"
@@ -352,6 +382,26 @@
                   placeholder="Search emails..."
                 />
               </div>
+              <base-button
+                variant="ghost"
+                size="sm"
+                @click="showFiltersDropdown = !showFiltersDropdown"
+                title="Filters"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+              </base-button>
               <base-button
                 variant="ghost"
                 size="sm"
@@ -681,11 +731,24 @@ function handleTouchStart(event: TouchEvent, listRef: HTMLElement | null) {
   if (scrollTop === 0) {
     pullStartY.value = event.touches[0].clientY
     isPulling.value = true
+  } else {
+    // Explicitly reset if not at top to prevent stuck state
+    isPulling.value = false
+    pullDistance.value = 0
   }
 }
 
 function handleTouchMove(event: TouchEvent, listRef: HTMLElement | null) {
-  if (!isPulling.value || !listRef) return
+  if (!listRef) return
+
+  // If we're not at the top anymore, always reset pulling state
+  if (listRef.scrollTop > 0) {
+    isPulling.value = false
+    pullDistance.value = 0
+    return
+  }
+
+  if (!isPulling.value) return
 
   const currentY = event.touches[0].clientY
   const distance = currentY - pullStartY.value

@@ -247,21 +247,21 @@ function handleTouchMove(event: TouchEvent) {
   const touchDelta = touchY - touchStartY
   const scrollTop = composeContainer.value.scrollTop
 
-  // If user is scrolling within content (not at top, or scrolling down)
-  // prevent the event from bubbling to the drawer
-  if (scrollTop > 0 || touchDelta < 0) {
-    event.stopPropagation()
+  // Only allow drawer close gesture if:
+  // 1. Currently at the top (scrollTop === 0)
+  // 2. Touch started at the top (scrollStartTop === 0)
+  // 3. User is pulling down (touchDelta > 0)
+  if (scrollTop === 0 && touchDelta > 0 && scrollStartTop === 0) {
+    // Allow drawer close gesture - don't stop propagation
+    return
   }
 
-  // If at top and trying to scroll up, allow drawer to close
-  // Otherwise, prevent drawer interaction
-  if (scrollTop === 0 && touchDelta > 0 && scrollStartTop === 0) {
-    // Allow drawer close gesture
-    return
-  } else if (scrollTop > 0 || touchDelta < 0) {
-    // Prevent drawer close, allow content scroll
-    event.stopPropagation()
-  }
+  // In all other cases, prevent the drawer from receiving the event
+  // This includes:
+  // - Scrolling within content (scrollTop > 0)
+  // - Scrolling down (touchDelta < 0)
+  // - At top but touch didn't start at top (scrollStartTop > 0)
+  event.stopPropagation()
 }
 
 onMounted(() => {
