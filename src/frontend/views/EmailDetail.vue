@@ -58,11 +58,15 @@ onMounted(async () => {
 
     // Find the target email in the store (from inbox)
     // It has metadata (including thread_id) but NO body
-    const targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
+    let targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
 
     if (!targetEmail) {
-      emailStore.error = 'Email not found. Please navigate from inbox.'
-      return
+      await emailStore.fetchEmailDetail(decodedKey)
+      targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
+      if (!targetEmail) {
+        emailStore.error = 'Email not found'
+        return
+      }
     }
 
     emailStore.currentEmail = targetEmail
@@ -159,7 +163,6 @@ onMounted(async () => {
 
 .email-detail-main {
   max-width: 1600px;
-  margin: 0 auto;
   padding: var(--space-6);
   flex: 1;
   overflow-y: auto;
