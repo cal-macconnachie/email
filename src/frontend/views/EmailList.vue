@@ -898,8 +898,7 @@ function formatDate(dateStr: string): string {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1;
-  flex-shrink: 0;
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -909,6 +908,8 @@ function formatDate(dateStr: string): string {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .email-badges {
