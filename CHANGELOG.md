@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.9](https://github.com/cal-macconnachie/email/compare/v1.4.8...v1.4.9) (2026-01-04)
+
+
+### Bug Fixes
+
+* dumb ai ([6d608dc](https://github.com/cal-macconnachie/email/commit/6d608dc79d6371e6102370d4045268b0da6ef045))
+
 ### [1.4.8](https://github.com/cal-macconnachie/email/compare/v1.4.7...v1.4.8) (2026-01-04)
 
 
