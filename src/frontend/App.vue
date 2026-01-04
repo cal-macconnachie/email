@@ -128,4 +128,11 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
   }
+  /* mobile top right needs to take into account env(safe-area-inset-top) */
+  @media (max-width: 640px) {
+    .top-right-controls {
+      top: calc(0.5rem + env(safe-area-inset-top));
+      right: calc(0.5rem + env(safe-area-inset-right));
+    }
+  }
 </style>
