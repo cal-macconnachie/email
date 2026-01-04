@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.16](https://github.com/cal-macconnachie/email/compare/v1.3.15...v1.3.16) (2026-01-04)
+
+
+### Bug Fixes
+
+* dumb bull that wont wokr ([3eff0a7](https://github.com/cal-macconnachie/email/commit/3eff0a77de9a1e989c41cca919eba780cbf334a1))
+
 ### [1.3.15](https://github.com/cal-macconnachie/email/compare/v1.3.14...v1.3.15) (2026-01-04)
 
 
