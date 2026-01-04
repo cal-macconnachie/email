@@ -403,8 +403,16 @@ function decodeQuotedPrintable(text: string): string {
 
 <style scoped>
 .email-detail-container {
-  min-height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background-color: var(--color-bg-secondary);
+}
+
+.email-detail-header {
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -457,6 +465,9 @@ function decodeQuotedPrintable(text: string): string {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-6);
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .thread-container {
@@ -604,24 +615,9 @@ function decodeQuotedPrintable(text: string): string {
 }
 
 @media (max-width: 768px) {
-  .email-detail-container {
-    height: 100dvh;
-    max-height: 100dvh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .email-detail-header {
-    flex-shrink: 0;
-  }
-
   .email-detail-main {
     padding: var(--space-4);
     padding-bottom: var(--space-8);
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .header-content {

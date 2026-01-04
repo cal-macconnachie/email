@@ -824,7 +824,9 @@ function formatDate(dateStr: string): string {
   padding: var(--space-6);
   padding-top: var(--space-12);
   gap: var(--space-4);
+  height: 100dvh;
   max-height: 100dvh;
+  overflow: hidden;
 }
 
 .search-bar-wrapper {
@@ -863,7 +865,11 @@ function formatDate(dateStr: string): string {
 
 .email-list-card {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 
@@ -917,8 +923,10 @@ function formatDate(dateStr: string): string {
 .email-main {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   gap: var(--space-3);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .loading-state {
@@ -1079,7 +1087,8 @@ function formatDate(dateStr: string): string {
 
 .email-list-scrollable {
   overflow-y: auto;
-  max-height: 100dvh;
+  flex: 1;
+  min-height: 0;
   -webkit-overflow-scrolling: touch;
 }
 .row {
@@ -1095,14 +1104,6 @@ function formatDate(dateStr: string): string {
     padding: var(--space-4);
     padding-top: var(--space-10);
     margin-top: var(--space-8);
-    height: 100dvh;
-    max-height: 100dvh;
-    overflow: hidden;
-  }
-
-  .email-list-scrollable {
-    max-height: calc(100dvh - 250px);
-    padding-bottom: var(--space-6);
   }
 }
 </style>

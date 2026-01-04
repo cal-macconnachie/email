@@ -122,14 +122,10 @@ onMounted(async () => {
     align-items: center;
   }
   .min-h-screen {
-    min-height: 100dvh;
+    height: 100dvh;
     max-height: 100dvh;
-  }
-
-  @media (max-width: 768px) {
-    .min-h-screen {
-      height: 100dvh;
-      overflow: hidden;
-    }
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 </style>
