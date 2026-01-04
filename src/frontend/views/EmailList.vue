@@ -43,20 +43,6 @@
         >
 
           <div class="email-list-card">
-            <!-- Pull to refresh indicator -->
-            <div
-              v-if="isPulling && pullDistance > 0"
-              class="pull-refresh-indicator"
-              :style="{ height: `${pullDistance}px` }"
-            >
-              <div class="refresh-icon" :class="{ 'spin': pullDistance >= pullThreshold }">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                </svg>
-              </div>
-            </div>
-
             <div v-if="emailStore.inboxError" class="error-card">
               <base-card variant="elevated" padding="md">
                 {{ emailStore.inboxError }}
@@ -128,9 +114,6 @@
               v-else
               ref="inboxListRef"
               class="email-list-scrollable"
-              @touchstart="handleTouchStart($event, inboxListRef)"
-              @touchmove="handleTouchMove($event, inboxListRef)"
-              @touchend="handleTouchEnd(inboxListRef, 'inbox')"
             >
 
             <div
@@ -204,20 +187,6 @@
         >
 
           <div class="email-list-card">
-            <!-- Pull to refresh indicator -->
-            <div
-              v-if="isPulling && pullDistance > 0"
-              class="pull-refresh-indicator"
-              :style="{ height: `${pullDistance}px` }"
-            >
-              <div class="refresh-icon" :class="{ 'spin': pullDistance >= pullThreshold }">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                </svg>
-              </div>
-            </div>
-
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -288,9 +257,6 @@
             v-else
             ref="sentListRef"
             class="email-list-scrollable"
-            @touchstart="handleTouchStart($event, sentListRef)"
-            @touchmove="handleTouchMove($event, sentListRef)"
-            @touchend="handleTouchEnd(sentListRef, 'sent')"
           >
 
             <div
@@ -361,20 +327,6 @@
           icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><polyline points=&quot;21 8 21 21 3 21 3 8&quot;/><rect x=&quot;1&quot; y=&quot;3&quot; width=&quot;22&quot; height=&quot;5&quot;/><line x1=&quot;10&quot; y1=&quot;12&quot; x2=&quot;14&quot; y2=&quot;12&quot;/></svg>"
         >
           <div class="email-list-card">
-            <!-- Pull to refresh indicator -->
-            <div
-              v-if="isPulling && pullDistance > 0"
-              class="pull-refresh-indicator"
-              :style="{ height: `${pullDistance}px` }"
-            >
-              <div class="refresh-icon" :class="{ 'spin': pullDistance >= pullThreshold }">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                </svg>
-              </div>
-            </div>
-
             <div class="email-list-header">
               <div class="search-bar-wrapper">
                 <base-input
@@ -443,9 +395,6 @@
             v-else
             ref="archivedListRef"
             class="email-list-scrollable"
-            @touchstart="handleTouchStart($event, archivedListRef)"
-            @touchmove="handleTouchMove($event, archivedListRef)"
-            @touchend="handleTouchEnd(archivedListRef, 'archived')"
           >
 
             <div
@@ -572,15 +521,6 @@ const authStore = useAuthStore()
 const showFiltersDropdown = ref(false)
 const isMobile = ref(window.innerWidth <= 768)
 const filtersDropdown = ref<BaseDrawer | null>(null)
-
-// Pull to refresh state
-const isPulling = ref(false)
-const pullDistance = ref(0)
-const pullStartY = ref(0)
-const pullThreshold = 80
-const inboxListRef = ref<HTMLElement | null>(null)
-const sentListRef = ref<HTMLElement | null>(null)
-const archivedListRef = ref<HTMLElement | null>(null)
 
 watch(
   showFiltersDropdown,
@@ -721,66 +661,6 @@ function closeDrawer() {
 
 function onResize() {
   isMobile.value = window.innerWidth <= 768
-}
-
-// Pull to refresh handlers
-function handleTouchStart(event: TouchEvent, listRef: HTMLElement | null) {
-  if (!listRef) return
-
-  const scrollTop = listRef.scrollTop
-  if (scrollTop === 0) {
-    pullStartY.value = event.touches[0].clientY
-    isPulling.value = true
-  }
-}
-
-function handleTouchMove(event: TouchEvent, listRef: HTMLElement | null) {
-  if (!isPulling.value || !listRef) return
-
-  const currentY = event.touches[0].clientY
-  const distance = currentY - pullStartY.value
-
-  if (distance > 0 && listRef.scrollTop === 0) {
-    event.preventDefault()
-    pullDistance.value = Math.min(distance, pullThreshold * 1.5)
-  } else {
-    isPulling.value = false
-    pullDistance.value = 0
-  }
-}
-
-async function handleTouchEnd(listRef: HTMLElement | null, mailboxType: 'inbox' | 'sent' | 'archived') {
-  if (!isPulling.value) return
-
-  if (pullDistance.value >= pullThreshold) {
-    // Trigger refresh
-    await refreshMailbox(mailboxType)
-  }
-
-  isPulling.value = false
-  pullDistance.value = 0
-  pullStartY.value = 0
-}
-
-async function refreshMailbox(mailboxType: 'inbox' | 'sent' | 'archived') {
-  const params: any = {
-    sortOrder: filters.value.sortOrder,
-  }
-  if (filters.value.sender) params.sender = filters.value.sender
-  if (filters.value.startDate) params.startDate = filters.value.startDate
-  if (filters.value.endDate) params.endDate = filters.value.endDate
-
-  try {
-    if (mailboxType === 'inbox') {
-      await emailStore.fetchInboxEmails(params)
-    } else if (mailboxType === 'sent') {
-      await emailStore.fetchSentEmails({ sortOrder: params.sortOrder })
-    } else if (mailboxType === 'archived') {
-      await emailStore.fetchArchivedEmails(params)
-    }
-  } catch (error) {
-    console.error(`Failed to refresh ${mailboxType}:`, error)
-  }
 }
 
 onMounted(async () => {
@@ -1103,36 +983,6 @@ function formatDate(dateStr: string): string {
     /* alight to the left */
     justify-content: flex-start;
     padding-left: var(--space-2);
-  }
-}
-
-/* Pull to refresh styles */
-.pull-refresh-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: height 0.2s ease;
-}
-
-.refresh-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-  transition: transform 0.3s ease;
-}
-
-.refresh-icon.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }
 
