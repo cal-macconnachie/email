@@ -22,17 +22,15 @@
       </base-card>
 
       <div v-else-if="threadEmails.length > 0" class="thread-container">
-        <base-card
+        <div
           v-for="email in threadEmails"
           :key="email.id"
           :ref="email.s3_key === props.s3Key ? 'targetEmailCard' : undefined"
-          variant="elevated"
-          padding="lg"
           class="thread-email-card"
           :class="{ 'thread-email-active': email.s3_key === decodeURIComponent(props.s3Key) }"
         >
           <email-view :email="email" :s3-key="props.s3Key" />
-        </base-card>
+      </div>
       </div>
     </main>
   </div>
@@ -42,8 +40,8 @@
 import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Email } from '../api/client'
-import { useEmailStore } from '../stores/email'
 import EmailView from '../components/EmailView.vue'
+import { useEmailStore } from '../stores/email'
 
 const props = defineProps<{
   s3Key: string
@@ -58,61 +56,35 @@ onMounted(async () => {
   try {
     const decodedKey = decodeURIComponent(props.s3Key)
 
-    // Check if we already have this email cached with body
-    const cachedEmail = emailStore.currentEmail?.s3_key === decodedKey && emailStore.currentEmail?.body
-      ? emailStore.currentEmail
-      : emailStore.emails.find(e => e.s3_key === decodedKey && e.body)
+    // Find the target email in the store (from inbox/list view)
+    let targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
 
-    if (cachedEmail) {
-      // Use cached email
-      emailStore.currentEmail = cachedEmail
-    } else {
-      // Fetch from API if not cached (this will also fetch thread relations)
+    if (!targetEmail) {
+      // If not in store, fetch just the metadata to get thread_id
+      // This should NOT fetch the body, only metadata
       await emailStore.fetchEmailDetail(decodedKey)
+      targetEmail = emailStore.currentEmail || undefined
+    } else {
+      emailStore.currentEmail = targetEmail
     }
 
-    if (emailStore.currentEmail) {
-      // Load thread emails from the response or the store
-      if (emailStore.currentEmail.thread_id) {
-        if (emailStore.currentEmail.threadEmails && emailStore.currentEmail.threadEmails.length > 0) {
-          // Use thread emails from the detail response, enhanced with cached data from store
-          threadEmails.value = emailStore.currentEmail.threadEmails.map(threadEmail => {
-            // Check if this is the current email being viewed (which has the body)
-            if (emailStore.currentEmail && threadEmail.s3_key === emailStore.currentEmail.s3_key && emailStore.currentEmail.body) {
-              return emailStore.currentEmail
-            }
-            // Check if we have a cached version with body
-            const cachedVersion = emailStore.emails.find(e => e.s3_key === threadEmail.s3_key && e.body)
-            return cachedVersion || threadEmail
-          })
-        } else {
-          // Fallback to fetching thread separately if not included in response
-          threadEmails.value = await emailStore.fetchThread(emailStore.currentEmail.thread_id, false)
-        }
+    if (targetEmail) {
+      // Load thread emails (metadata only, no bodies)
+      if (targetEmail.thread_id) {
+        // Fetch the full thread list (metadata only)
+        // The false parameter should indicate "don't fetch bodies"
+        threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, false)
 
-        // Ensure the current email is in the thread (in case it wasn't included)
-        if (!threadEmails.value.some(e => e.s3_key === emailStore.currentEmail?.s3_key)) {
-          threadEmails.value.push(emailStore.currentEmail)
-          threadEmails.value.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        } else {
-          // Update the existing entry with the full body if needed
-          const index = threadEmails.value.findIndex(e => e.s3_key === emailStore.currentEmail?.s3_key)
-          if (index !== -1 && emailStore.currentEmail.body) {
-            threadEmails.value[index] = emailStore.currentEmail
-          }
-        }
-
-        // Note: EmailView component will handle fetching bodies for emails that don't have them
+        // Ensure the thread is sorted by date
+        threadEmails.value.sort((a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
       } else {
         // Single email, not part of a thread
-        threadEmails.value = [emailStore.currentEmail]
+        threadEmails.value = [targetEmail]
       }
 
-      // Mark the target email as read
-      const targetEmail = threadEmails.value.find(e => e.s3_key === decodedKey)
-      if (targetEmail && !targetEmail.read) {
-        await emailStore.markAsRead(targetEmail.timestamp)
-      }
+      // Note: EmailView component will mark emails as read when they enter the viewport
 
       // Scroll to the target email after rendering and content loading
       // We need to wait for EmailView components to fetch and render their bodies

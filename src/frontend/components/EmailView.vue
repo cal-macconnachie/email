@@ -1,5 +1,5 @@
 <template>
-  <div class="email-container">
+  <div ref="emailContainer" class="email-container">
     <div class="thread-email-header">
       <div class="thread-email-meta">
         <p class="thread-email-sender"><strong>From:</strong> {{ displayEmail.sender }}</p>
@@ -141,7 +141,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Email } from '../api/client'
 import { useEmailStore } from '../stores/email'
 
@@ -154,6 +154,9 @@ const emailStore = useEmailStore()
 const isArchiving = ref(false)
 const isLoadingBody = ref(false)
 const localEmail = ref<Email>(props.email)
+const hasFetchedBody = ref(false)
+const emailContainer = ref<HTMLElement | null>(null)
+let intersectionObserver: IntersectionObserver | null = null
 
 // Computed property to get the latest email data from store or local
 const displayEmail = computed(() => {
@@ -164,7 +167,18 @@ const displayEmail = computed(() => {
 
 // Fetch email body if missing
 onMounted(async () => {
-  if (!displayEmail.value.body) {
+  // Check if body exists in store first
+  const storeEmail = emailStore.emails.find(e => e.s3_key === props.email.s3_key && e.body)
+
+  if (storeEmail) {
+    // Body exists in store, use it
+    localEmail.value = storeEmail
+    return
+  }
+
+  // Only fetch if we haven't tried before and body doesn't exist
+  if (!displayEmail.value.body && !hasFetchedBody.value && !isLoadingBody.value) {
+    hasFetchedBody.value = true
     isLoadingBody.value = true
     try {
       await emailStore.fetchEmailDetail(props.email.s3_key)
@@ -178,6 +192,36 @@ onMounted(async () => {
     } finally {
       isLoadingBody.value = false
     }
+  }
+
+  // Set up intersection observer to mark as read when in viewport
+  if (emailContainer.value) {
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // If email is in viewport and is unread, mark as read
+          if (entry.isIntersecting && displayEmail.value && !displayEmail.value.read) {
+            emailStore.markAsRead(displayEmail.value.timestamp)
+          }
+        })
+      },
+      {
+        // Trigger when at least 50% of the email is visible
+        threshold: 0.5,
+        // Add some margin to trigger slightly before fully in viewport
+        rootMargin: '0px'
+      }
+    )
+
+    intersectionObserver.observe(emailContainer.value)
+  }
+})
+
+// Clean up intersection observer
+onUnmounted(() => {
+  if (intersectionObserver && emailContainer.value) {
+    intersectionObserver.unobserve(emailContainer.value)
+    intersectionObserver.disconnect()
   }
 })
 
