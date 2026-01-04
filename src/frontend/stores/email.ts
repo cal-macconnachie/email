@@ -162,34 +162,23 @@ export const useEmailStore = defineStore('email', () => {
     error.value = null
     try {
       const email = await api.emails.getDetail(s3Key)
-      currentEmail.value = email
 
-      // Set current user email if not already set
-      if (!currentUserEmail.value) {
-        currentUserEmail.value = email.recipient
+      // Update in the inbox emails list if it exists
+      const inboxIndex = inboxEmails.value.findIndex(e => e.s3_key === s3Key)
+      if (inboxIndex !== -1) {
+        inboxEmails.value[inboxIndex] = email
       }
 
-      // Update in the emails list if it exists
-      const index = emails.value.findIndex(e => e.s3_key === s3Key)
-      if (index !== -1) {
-        emails.value[index] = email
+      // Update in the sent emails list if it exists
+      const sentIndex = sentEmails.value.findIndex(e => e.s3_key === s3Key)
+      if (sentIndex !== -1) {
+        sentEmails.value[sentIndex] = email
       }
 
-      // If threadEmails are provided, merge them with existing emails in the store
-      if (email.threadEmails && email.threadEmails.length > 0) {
-        email.threadEmails.forEach(threadEmail => {
-          const existingIndex = emails.value.findIndex(e => e.s3_key === threadEmail.s3_key)
-          if (existingIndex !== -1) {
-            // Update existing email with thread email data, but preserve body if it exists
-            emails.value[existingIndex] = {
-              ...threadEmail,
-              body: emails.value[existingIndex].body || threadEmail.body,
-            }
-          } else {
-            // Add new thread email to the list
-            emails.value.push(threadEmail)
-          }
-        })
+      // Update in the archived emails list if it exists
+      const archivedIndex = archivedEmails.value.findIndex(e => e.s3_key === s3Key)
+      if (archivedIndex !== -1) {
+        archivedEmails.value[archivedIndex] = email
       }
 
       return email

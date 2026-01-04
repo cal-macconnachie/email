@@ -56,38 +56,30 @@ onMounted(async () => {
   try {
     const decodedKey = decodeURIComponent(props.s3Key)
 
-    // Find the target email in the store (from inbox/list view)
-    // Email will have metadata but probably NO body
-    let targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
+    // Find the target email in the store (from inbox)
+    // It has metadata (including thread_id) but NO body
+    const targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
 
-    // If not in store, fetch metadata (not body) to get thread_id
     if (!targetEmail) {
-      await emailStore.fetchEmailDetail(decodedKey)
-      targetEmail = emailStore.currentEmail || undefined
-      if (!targetEmail) {
-        emailStore.error = 'Failed to load email'
-        return
-      }
+      emailStore.error = 'Email not found. Please navigate from inbox.'
+      return
     }
 
     emailStore.currentEmail = targetEmail
 
-    // Fetch ONLY the thread list (metadata only, no bodies) and WAIT for it to complete
+    // Fetch ONLY the thread list (metadata only, no bodies) and WAIT
     if (targetEmail.thread_id) {
       threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, false)
-
-      // Sort by date
       threadEmails.value.sort((a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       )
     } else {
-      // Single email, not part of a thread
       threadEmails.value = [targetEmail]
     }
 
-    // Thread is now loaded. EmailView components will mount and fetch their own bodies
+    // Thread loaded. Now EmailView components will mount and each fetch their own body
 
-    // Scroll to the target email after thread is loaded
+    // Scroll to target
     await nextTick()
     setTimeout(() => {
       if (targetEmailCard.value && targetEmailCard.value.length > 0) {

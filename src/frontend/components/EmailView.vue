@@ -1,6 +1,6 @@
 <template>
   <div ref="emailContainer" class="email-container">
-    <div class="thread-email-header">
+    <div v-if="email != null" class="thread-email-header">
       <div class="thread-email-meta">
         <p class="thread-email-sender"><strong>From:</strong> {{ email.sender }}</p>
         <p class="thread-email-date">{{ formatFullDate(email.created_at) }}</p>
@@ -89,16 +89,16 @@
       </div>
     </div>
 
-    <div v-if="email.cc && email.cc.length > 0" class="cc-info">
+    <div v-if="email?.cc && email.cc.length > 0" class="cc-info">
       <p class="cc-text"><strong>CC:</strong> {{ email.cc.join(', ') }}</p>
     </div>
 
-    <div v-if="emailBody" class="email-body" v-html="parseEmailBody(emailBody, email.attachments).content"></div>
+    <div v-if="email?.body" class="email-body" v-html="parseEmailBody(email.body, email.attachments).content"></div>
     <div v-else class="email-body-loading">
       <p>{{ isLoadingBody ? 'Loading email content...' : 'No content available' }}</p>
     </div>
 
-    <div v-if="email.attachments && email.attachments.length > 0" class="attachments-section">
+    <div v-if="email?.attachments && email.attachments.length > 0" class="attachments-section">
       <h3 class="section-title">Attachments ({{ email.attachments.length }})</h3>
       <div class="attachments-list">
         <a
@@ -141,32 +141,30 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
 import { useEmailStore } from '../stores/email'
 
 const props = defineProps<{
-  email: Email
   s3Key: string
 }>()
 
 const emailStore = useEmailStore()
 const isArchiving = ref(false)
 const isLoadingBody = ref(false)
-const emailBody = ref(props.email.body || '')
 const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
+const email = ref<Email | null>(null)
 
 // Fetch email body once on mount
 onMounted(async () => {
   // Only fetch if we don't have a body
-  if (!emailBody.value) {
+  email.value = emailStore.emails.find(e => e.s3_key === decodeURIComponent(props.s3Key)) || null
+  if (!email.value?.body) {
     isLoadingBody.value = true
     try {
-      const response = await emailStore.fetchEmailDetail(props.email.s3_key)
-      if (response && response.body) {
-        emailBody.value = response.body
-      }
+      await emailStore.fetchEmailDetail(props.s3Key)
+      email.value = emailStore.emails.find(e => e.s3_key === decodeURIComponent(props.s3Key)) || null
     } catch (error) {
       console.error('Failed to fetch email body:', error)
     } finally {
@@ -180,8 +178,8 @@ onMounted(async () => {
       (entries) => {
         entries.forEach((entry) => {
           // If email is in viewport and is unread, mark as read
-          if (entry.isIntersecting && props.email && !props.email.read) {
-            emailStore.markAsRead(props.email.timestamp)
+          if (entry.isIntersecting && email.value && !email.value.read ) {
+            emailStore.markAsRead(email.value.timestamp)
           }
         })
       },
