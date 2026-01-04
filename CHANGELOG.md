@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.27](https://github.com/cal-macconnachie/email/compare/v1.3.26...v1.3.27) (2026-01-04)
+
+
+### Bug Fixes
+
+* attempt to simplify ai garbage ([354fa6a](https://github.com/cal-macconnachie/email/commit/354fa6a6b35a5f73e3d65cb911c2c1e0d1e26528))
+
 ### [1.3.26](https://github.com/cal-macconnachie/email/compare/v1.3.25...v1.3.26) (2026-01-04)
 
 
