@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import EmailDetail from '../views/EmailDetail.vue'
 import EmailList from '../views/EmailList.vue'
 import Login from '../views/Login.vue'
+import ThreadDetail from '../views/ThreadDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,7 +27,7 @@ const router = createRouter({
     {
       path: '/emails/:s3Key',
       name: 'email-detail',
-      component: EmailDetail,
+      component: ThreadDetail,
       meta: { requiresAuth: true },
       props: true,
     }

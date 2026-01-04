@@ -93,7 +93,10 @@
       <p class="cc-text"><strong>CC:</strong> {{ email.cc.join(', ') }}</p>
     </div>
 
-    <div v-if="email?.body" class="email-body" v-html="parseEmailBody(email.body, email.attachments).content"></div>
+    <div v-if="parsedContent.html || parsedContent.text" class="email-body">
+      <div v-if="parsedContent.html" v-html="parsedContent.html"></div>
+      <div v-else-if="parsedContent.text" v-html="parsedContent.text.replace(/\n/g, '<br>')"></div>
+    </div>
     <div v-else class="email-body-loading">
       <p>{{ isLoadingBody ? 'Loading email content...' : 'No content available' }}</p>
     </div>
@@ -145,6 +148,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
+import PostalMime from 'postal-mime'
 
 const props = defineProps<{
   s3Key: string
@@ -158,6 +162,7 @@ const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
 const email = ref<Email | null>(null)
 const decodedS3Key = decodeURIComponent(props.s3Key)
+const parsedContent = ref<{ html?: string; text?: string }>({ html: undefined, text: undefined })
 
 function isUserReceivedEmail(): boolean {
   if (!email.value) return false
@@ -177,6 +182,53 @@ onMounted(async () => {
       console.error('Failed to fetch email body:', error)
     } finally {
       isLoadingBody.value = false
+    }
+  }
+
+  // Parse email body with postal-mime
+  if (email.value?.body) {
+    try {
+      const parser = new PostalMime()
+      const parsed = await parser.parse(email.value.body)
+
+      // Extract HTML or text content
+      let htmlContent = parsed.html || ''
+      const textContent = parsed.text || ''
+
+      // If we have inline attachments, replace cid: references with presigned URLs
+      if (parsed.attachments && parsed.attachments.length > 0 && email.value.attachments) {
+        // Map postal-mime attachments to our attachment URLs using contentId
+        parsed.attachments.forEach(parsedAtt => {
+          if (parsedAtt.contentId && parsedAtt.related) {
+            // Find matching attachment in our email.attachments by contentId
+            const matchingAtt = email.value?.attachments?.find(att => {
+              // Try to match by contentId (removing < > brackets if present)
+              const cleanContentId = parsedAtt.contentId?.replace(/^<|>$/g, '') || ''
+              return att.contentId === cleanContentId ||
+                     att.contentId === parsedAtt.contentId ||
+                     att.filename === parsedAtt.filename
+            })
+
+            if (matchingAtt && htmlContent) {
+              // Replace cid: references with presigned URLs
+              const cidPattern = new RegExp(`cid:${parsedAtt.contentId.replace(/^<|>$/g, '')}`, 'gi')
+              htmlContent = htmlContent.replace(cidPattern, matchingAtt.viewUrl)
+            }
+          }
+        })
+      }
+
+      // Store parsed content
+      parsedContent.value = {
+        html: htmlContent || undefined,
+        text: textContent || undefined
+      }
+    } catch (error) {
+      console.error('Failed to parse email with postal-mime:', error)
+      // Fallback: treat body as plain text
+      parsedContent.value = {
+        text: email.value.body
+      }
     }
   }
 
@@ -218,70 +270,6 @@ function formatFullDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString()
 }
 
-function parseEmailBody(rawBody: string, attachments?: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string; contentId?: string }>): { isHtml: boolean; content: string } {
-  if (!rawBody) return { isHtml: false, content: '' }
-
-  // Check if the body contains MIME headers
-  const headerEndIndex = rawBody.search(/\r?\n\r?\n/)
-
-  if (headerEndIndex === -1) {
-    // No headers found, treat as plain text or HTML based on content
-    const isHtml = /<[a-z][\s\S]*>/i.test(rawBody)
-    let content = isHtml ? rawBody : rawBody.replace(/\r?\n/g, '<br>')
-
-    // Replace inline attachment references with actual URLs
-    if (attachments && attachments.length > 0) {
-      content = replaceInlineAttachments(content, attachments)
-    }
-
-    return { isHtml, content }
-  }
-
-  // Extract headers and body
-  const headerSection = rawBody.substring(0, headerEndIndex)
-  let bodyContent = rawBody.substring(headerEndIndex).trim()
-
-  // Parse headers
-  const headers: Record<string, string> = {}
-  const headerLines = headerSection.split(/\r?\n/)
-
-  for (const line of headerLines) {
-    const colonIndex = line.indexOf(':')
-    if (colonIndex > 0) {
-      const key = line.substring(0, colonIndex).trim().toLowerCase()
-      const value = line.substring(colonIndex + 1).trim()
-      headers[key] = value
-    }
-  }
-
-  // Get content type and encoding
-  const contentType = headers['content-type'] || ''
-  const transferEncoding = headers['content-transfer-encoding'] || ''
-  const isHtml = contentType.toLowerCase().includes('text/html')
-
-  // Decode based on Content-Transfer-Encoding
-  if (transferEncoding.toLowerCase() === 'quoted-printable') {
-    bodyContent = decodeQuotedPrintable(bodyContent)
-  } else if (transferEncoding.toLowerCase() === 'base64') {
-    try {
-      bodyContent = atob(bodyContent.replace(/\s/g, ''))
-    } catch (e) {
-      console.error('Failed to decode base64:', e)
-    }
-  }
-
-  // If it's plain text, convert newlines to <br>
-  if (!isHtml) {
-    bodyContent = bodyContent.replace(/\r?\n/g, '<br>')
-  }
-
-  // Replace inline attachment references with actual URLs
-  if (attachments && attachments.length > 0) {
-    bodyContent = replaceInlineAttachments(bodyContent, attachments)
-  }
-
-  return { isHtml, content: bodyContent }
-}
 async function handleToggleArchive(email: Email) {
   if (isArchiving.value) return
 
@@ -294,35 +282,6 @@ async function handleToggleArchive(email: Email) {
   } finally {
     isArchiving.value = false
   }
-}
-
-function replaceInlineAttachments(content: string, attachments: Array<{ key: string; filename: string; viewUrl: string; downloadUrl: string; contentId?: string }>): string {
-  // Replace cid: references with actual presigned URLs
-  // Pattern: src="cid:filename" or src='cid:filename'
-  return content.replace(/src=["']cid:([^"']+)["']/gi, (match, cid) => {
-    // Try to find the attachment by matching the Content-ID first
-    const attachment = attachments.find(att => {
-      // First try to match by Content-ID (most reliable)
-      if (att.contentId === cid) {
-        return true
-      }
-      // Fallback: try matching against filename or key
-      return att.filename === cid || att.key.includes(cid)
-    })
-
-    if (attachment) {
-      return `src="${attachment.viewUrl}"`
-    }
-
-    // If no match found, return original
-    return match
-  })
-}
-
-function decodeQuotedPrintable(text: string): string {
-  return text
-    .replace(/=\r?\n/g, '') // Remove soft line breaks
-    .replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
 }
 </script>
 

@@ -13,13 +13,12 @@
     </header>
 
     <main class="email-detail-main">
+      <base-card v-if="emailStore.error" variant="elevated" padding="md" class="error-card">
+        {{ emailStore.error }}
+      </base-card>
       <div v-if="emailStore.isLoading" class="loading-state">
         <p class="loading-text">Loading email...</p>
       </div>
-
-      <base-card v-else-if="emailStore.error" variant="elevated" padding="md" class="error-card">
-        {{ emailStore.error }}
-      </base-card>
 
       <div v-else-if="threadEmails.length > 0" class="thread-container">
         <div
@@ -27,7 +26,10 @@
           :key="email.id"
           :ref="email.s3_key === props.s3Key ? 'targetEmailCard' : undefined"
           class="thread-email-card"
-          :class="{ 'thread-email-active': email.s3_key === decodeURIComponent(props.s3Key) }"
+          :class="{
+            'thread-email-active': email.s3_key === decodeURIComponent(props.s3Key),
+            'odd-numbered-email': threadEmails.indexOf(email) % 2 === 1
+            }"
         >
           <email-view :email="email" :s3-key="email.s3_key" />
       </div>
@@ -193,6 +195,10 @@ onMounted(async () => {
 .error-card {
   background-color: var(--color-error-bg);
   color: var(--color-error);
+}
+
+.odd-numbered-email {
+  background-color: var(--color-bg-muted);
 }
 
 @media (max-width: 768px) {
