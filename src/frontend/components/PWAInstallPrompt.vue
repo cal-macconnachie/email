@@ -15,29 +15,37 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { usePWAInstall } from '../composables/usePWAInstall'
 
 const { isInstallable, isMobile, isStandalone, promptInstall } = usePWAInstall()
 
-const showPrompt = ref(false)
+const dismissed = ref(localStorage.getItem('pwa_install_prompt_dismissed'))
+const hasWaited = ref(false)
 
+// Small delay to let the app settle before showing prompt
 onMounted(() => {
-  // Small delay to let the app settle before showing prompt
   setTimeout(() => {
-    // Show prompt if:
-    // - App is installable (beforeinstallprompt fired)
-    // - User is on mobile
-    // - App is not already installed
-    // - User hasn't dismissed this prompt before
-    const dismissed = localStorage.getItem('pwa_install_prompt_dismissed')
+    hasWaited.value = true
+  }, 2000)
+})
 
-    showPrompt.value =
-      isInstallable.value &&
-      isMobile() &&
-      !isStandalone() &&
-      !dismissed
-  }, 2000) // Wait 2 seconds before showing
+// Reactive computed property that re-evaluates when conditions change
+const showPrompt = computed(() => {
+  // Don't show until we've waited for the app to settle
+  if (!hasWaited.value) return false
+
+  // Show prompt if:
+  // - App is installable (beforeinstallprompt fired)
+  // - User is on mobile
+  // - App is not already installed
+  // - User hasn't dismissed this prompt before
+  return (
+    isInstallable.value &&
+    isMobile() &&
+    !isStandalone() &&
+    !dismissed.value
+  )
 })
 
 async function handleInstall() {
@@ -46,11 +54,13 @@ async function handleInstall() {
 
     if (result.outcome === 'accepted') {
       console.log('User accepted the install prompt')
+      localStorage.setItem('pwa_install_prompt_dismissed', 'true')
+      dismissed.value = 'true'
     } else {
       console.log('User dismissed the install prompt')
+      localStorage.setItem('pwa_install_prompt_dismissed', 'true')
+      dismissed.value = 'true'
     }
-
-    showPrompt.value = false
   } catch (error) {
     console.error('Failed to prompt for install:', error)
     // Keep prompt visible on error so user can retry
@@ -60,7 +70,7 @@ async function handleInstall() {
 function handleDismiss() {
   // Remember that user dismissed the prompt
   localStorage.setItem('pwa_install_prompt_dismissed', 'true')
-  showPrompt.value = false
+  dismissed.value = 'true'
 }
 </script>
 

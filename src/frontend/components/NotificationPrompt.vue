@@ -15,30 +15,30 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { usePushNotifications } from '../composables/usePushNotifications'
 
 const { isSupported, permission, requestPermission } = usePushNotifications()
 
-const showPrompt = ref(false)
+const dismissed = ref(localStorage.getItem('notification_prompt_dismissed'))
 
-onMounted(() => {
+// Reactive computed property that re-evaluates when conditions change
+const showPrompt = computed(() => {
   // Show prompt if:
   // - Push notifications are supported
   // - Permission hasn't been decided yet ('default')
   // - User hasn't dismissed this prompt before
-  const dismissed = localStorage.getItem('notification_prompt_dismissed')
-
-  showPrompt.value =
+  return (
     isSupported.value &&
     permission.value === 'default' &&
-    !dismissed
+    !dismissed.value
+  )
 })
 
 async function handleEnable() {
   try {
     await requestPermission()
-    showPrompt.value = false
+    // The prompt will hide automatically when permission changes from 'default'
   } catch (error) {
     console.error('Failed to enable notifications:', error)
     // Keep prompt visible on error so user can retry
@@ -48,7 +48,7 @@ async function handleEnable() {
 function handleDismiss() {
   // Remember that user dismissed the prompt
   localStorage.setItem('notification_prompt_dismissed', 'true')
-  showPrompt.value = false
+  dismissed.value = 'true'
 }
 </script>
 
