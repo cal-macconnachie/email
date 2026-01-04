@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.14](https://github.com/cal-macconnachie/email/compare/v1.3.13...v1.3.14) (2026-01-04)
+
+
+### Bug Fixes
+
+* attempt to get safe areas respected ([9d52a60](https://github.com/cal-macconnachie/email/commit/9d52a607a3edc8ea284680996cafcfeb24e76898))
+
 ### [1.3.13](https://github.com/cal-macconnachie/email/compare/v1.3.12...v1.3.13) (2026-01-04)
 
 
