@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.10](https://github.com/cal-macconnachie/email/compare/v1.3.9...v1.3.10) (2026-01-04)
+
+
+### Bug Fixes
+
+* attempt at some scroll fixes ([612a91a](https://github.com/cal-macconnachie/email/commit/612a91af7e12307280d93ff31e0efe973955d4b0))
+
 ### [1.3.9](https://github.com/cal-macconnachie/email/compare/v1.3.8...v1.3.9) (2026-01-04)
 
 
