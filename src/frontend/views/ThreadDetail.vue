@@ -107,7 +107,9 @@ onMounted(async () => {
 .email-detail-container {
   height: 100dvh;
   max-height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   background-color: var(--color-bg-secondary);
@@ -167,14 +169,13 @@ onMounted(async () => {
   max-width: 1600px;
   padding: var(--space-6);
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .thread-container {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .thread-email-card {

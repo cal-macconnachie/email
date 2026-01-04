@@ -186,53 +186,83 @@ onMounted(async () => {
     }
   }
 
-  // Parse email body with postal-mime
+  // Parse email body
   if (email.value?.body) {
     try {
-      const parser = new PostalMime()
-      const parsed = await parser.parse(email.value.body)
+      // Check if body is already HTML or raw MIME
+      const isAlreadyHtml = email.value.body.trim().startsWith('<')
 
-      // Extract HTML or text content
-      let htmlContent = parsed.html || ''
-      const textContent = parsed.text || ''
+      if (isAlreadyHtml) {
+        // Body is already HTML, directly replace cid: references
+        let htmlContent = email.value.body
 
-      // If we have inline attachments, replace cid: references with presigned URLs
-      if (parsed.attachments && parsed.attachments.length > 0 && email.value.attachments) {
-        // Map postal-mime attachments to our attachment URLs using contentId
-        parsed.attachments.forEach(parsedAtt => {
-          if (parsedAtt.contentId && parsedAtt.related) {
-            // Find matching attachment in our email.attachments by contentId
-            const matchingAtt = email.value?.attachments?.find(att => {
-              // Try to match by contentId (removing < > brackets if present)
-              const cleanContentId = parsedAtt.contentId?.replace(/^<|>$/g, '') || ''
-              return att.contentId === cleanContentId ||
-                     att.contentId === parsedAtt.contentId ||
-                     att.filename === parsedAtt.filename
-            })
-
-            if (matchingAtt && htmlContent) {
+        // Replace cid: references with presigned URLs from email.attachments
+        if (email.value.attachments && email.value.attachments.length > 0) {
+          email.value.attachments.forEach(att => {
+            if (att.contentId) {
               // Replace cid: references with presigned URLs
-              const cidPattern = new RegExp(`cid:${parsedAtt.contentId.replace(/^<|>$/g, '')}`, 'gi')
-              htmlContent = htmlContent.replace(cidPattern, matchingAtt.viewUrl)
+              // Handle both with and without angle brackets
+              const cidPatterns = [
+                new RegExp(`cid:${att.contentId}`, 'gi'),
+                new RegExp(`cid:${att.contentId.replace(/^<|>$/g, '')}`, 'gi')
+              ]
+              cidPatterns.forEach(pattern => {
+                htmlContent = htmlContent.replace(pattern, att.viewUrl)
+              })
             }
-          }
-        })
-      }
+          })
+        }
 
-      // Store parsed content, or fall back to raw body if parsing returned nothing
-      parsedContent.value = {
-        html: htmlContent || undefined,
-        text: textContent || undefined
-      }
-
-      // If both html and text are empty after parsing, use raw body as fallback
-      if (!parsedContent.value.html && !parsedContent.value.text && email.value.body) {
         parsedContent.value = {
-          text: email.value.body
+          html: htmlContent
+        }
+      } else {
+        // Body is raw MIME, use postal-mime to parse
+        const parser = new PostalMime()
+        const parsed = await parser.parse(email.value.body)
+
+        // Extract HTML or text content
+        let htmlContent = parsed.html || ''
+        const textContent = parsed.text || ''
+
+        // If we have inline attachments, replace cid: references with presigned URLs
+        if (parsed.attachments && parsed.attachments.length > 0 && email.value.attachments) {
+          // Map postal-mime attachments to our attachment URLs using contentId
+          parsed.attachments.forEach(parsedAtt => {
+            if (parsedAtt.contentId && parsedAtt.related) {
+              // Find matching attachment in our email.attachments by contentId
+              const matchingAtt = email.value?.attachments?.find(att => {
+                // Try to match by contentId (removing < > brackets if present)
+                const cleanContentId = parsedAtt.contentId?.replace(/^<|>$/g, '') || ''
+                return att.contentId === cleanContentId ||
+                       att.contentId === parsedAtt.contentId ||
+                       att.filename === parsedAtt.filename
+              })
+
+              if (matchingAtt && htmlContent) {
+                // Replace cid: references with presigned URLs
+                const cidPattern = new RegExp(`cid:${parsedAtt.contentId.replace(/^<|>$/g, '')}`, 'gi')
+                htmlContent = htmlContent.replace(cidPattern, matchingAtt.viewUrl)
+              }
+            }
+          })
+        }
+
+        // Store parsed content, or fall back to raw body if parsing returned nothing
+        parsedContent.value = {
+          html: htmlContent || undefined,
+          text: textContent || undefined
+        }
+
+        // If both html and text are empty after parsing, use raw body as fallback
+        if (!parsedContent.value.html && !parsedContent.value.text && email.value.body) {
+          parsedContent.value = {
+            text: email.value.body
+          }
         }
       }
     } catch (error) {
-      console.error('Failed to parse email with postal-mime:', error)
+      console.error('Failed to parse email body:', error)
       // Fallback: treat body as plain text
       parsedContent.value = {
         text: email.value.body
