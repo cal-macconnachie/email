@@ -1079,7 +1079,7 @@ function formatDate(dateStr: string): string {
 
 .email-list-scrollable {
   overflow-y: auto;
-  max-height: calc(100vh - 300px);
+  max-height: 100dvh;
   -webkit-overflow-scrolling: touch;
 }
 .row {
