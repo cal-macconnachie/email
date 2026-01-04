@@ -920,6 +920,7 @@ function formatDate(dateStr: string): string {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  max-height: 100dvh;
 }
 
 
