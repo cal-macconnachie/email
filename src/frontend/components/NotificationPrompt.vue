@@ -85,7 +85,7 @@ function handleDismiss() {
 
 @media (max-width: 480px) {
   .notification-prompt {
-    bottom: 1rem;
+    bottom: 4rem;
     width: calc(100% - 1rem);
   }
 
