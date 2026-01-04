@@ -91,7 +91,9 @@ export const handler = async (
     const cookieOptions = `HttpOnly; ${secureFlag}SameSite=Lax; Path=/${domainSuffix}`
     const accessTokenCookie = `AccessToken=${AccessToken}; Max-Age=3600; ${cookieOptions}`
     const idTokenCookie = `IdToken=${IdToken}; Max-Age=3600; ${cookieOptions}`
-    const refreshTokenCookie = `RefreshToken=${RefreshToken}; Max-Age=2592000; ${cookieOptions}`
+    // Set refresh token to expire in 10 years (effectively never expires)
+    // Actual token validity is controlled by Cognito User Pool settings
+    const refreshTokenCookie = `RefreshToken=${RefreshToken}; Max-Age=315360000; ${cookieOptions}`
 
     return {
       statusCode: 200,
