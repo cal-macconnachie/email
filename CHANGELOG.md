@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.31](https://github.com/cal-macconnachie/email/compare/v1.3.30...v1.3.31) (2026-01-04)
+
+
+### Bug Fixes
+
+* correct s3 key ([66be844](https://github.com/cal-macconnachie/email/commit/66be844fd16193f8694e4bf7fb925ff8b6388d87))
+
 ### [1.3.30](https://github.com/cal-macconnachie/email/compare/v1.3.29...v1.3.30) (2026-01-04)
 
 
