@@ -75,7 +75,7 @@ export const handler = async (
     // Validate that the authenticated user is either the recipient or sender
     if (validRecipients.indexOf(email.recipient) === -1 && validRecipients.indexOf(email.sender) === -1) {
       return {
-        statusCode: 403,
+        statusCode: 500,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Forbidden - You can only access your own emails' }),
       }
@@ -144,14 +144,14 @@ export const handler = async (
     if (error instanceof Error) {
       if (error.name === 'NoSuchKey') {
         return {
-          statusCode: 404,
+          statusCode: 500,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ error: 'Email not found' }),
         }
       }
       if (error.name === 'AccessDenied') {
         return {
-          statusCode: 403,
+          statusCode: 500,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ error: 'Access denied' }),
         }
