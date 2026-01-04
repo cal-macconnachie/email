@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.15](https://github.com/cal-macconnachie/email/compare/v1.3.14...v1.3.15) (2026-01-04)
+
+
+### Bug Fixes
+
+* weird flex stuff ([8b6fc5d](https://github.com/cal-macconnachie/email/commit/8b6fc5db44936552e47f86c92a41901d193a0a66))
+
 ### [1.3.14](https://github.com/cal-macconnachie/email/compare/v1.3.13...v1.3.14) (2026-01-04)
 
 
