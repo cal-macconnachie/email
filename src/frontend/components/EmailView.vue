@@ -2,12 +2,12 @@
   <div ref="emailContainer" class="email-container">
     <div class="thread-email-header">
       <div class="thread-email-meta">
-        <p class="thread-email-sender"><strong>From:</strong> {{ displayEmail.sender }}</p>
-        <p class="thread-email-date">{{ formatFullDate(displayEmail.created_at) }}</p>
+        <p class="thread-email-sender"><strong>From:</strong> {{ email.sender }}</p>
+        <p class="thread-email-date">{{ formatFullDate(email.created_at) }}</p>
       </div>
       <div class="thread-email-actions">
         <base-button
-          @click="handleReply(displayEmail)"
+          @click="handleReply(email)"
           variant="ghost-secondary"
           size="sm"
           title="Reply"
@@ -28,12 +28,12 @@
           </svg>
         </base-button>
         <base-button
-          v-if="displayEmail.s3_key === decodeURIComponent(props.s3Key)"
-          @click="handleToggleArchive(displayEmail)"
+          v-if="email.s3_key === decodeURIComponent(s3Key)"
+          @click="handleToggleArchive(email)"
           variant="ghost-secondary"
           size="sm"
           :disabled="isArchiving"
-          :title="isArchiving ? (displayEmail.archived ? 'Unarchiving...' : 'Archiving...') : (displayEmail.archived ? 'Unarchive' : 'Archive')"
+          :title="isArchiving ? (email.archived ? 'Unarchiving...' : 'Archiving...') : (email.archived ? 'Unarchive' : 'Archive')"
         >
           <!-- Loading spinner -->
           <svg
@@ -53,7 +53,7 @@
           </svg>
           <!-- Archive icon (box with down arrow) -->
           <svg
-            v-else-if="!displayEmail.archived"
+            v-else-if="!email.archived"
             xmlns="http://www.w3.org/2000/svg"
             height="16"
             width="16"
@@ -89,20 +89,20 @@
       </div>
     </div>
 
-    <div v-if="displayEmail.cc && displayEmail.cc.length > 0" class="cc-info">
-      <p class="cc-text"><strong>CC:</strong> {{ displayEmail.cc.join(', ') }}</p>
+    <div v-if="email.cc && email.cc.length > 0" class="cc-info">
+      <p class="cc-text"><strong>CC:</strong> {{ email.cc.join(', ') }}</p>
     </div>
 
-    <div v-if="displayEmail.body" class="email-body" v-html="parseEmailBody(displayEmail.body, displayEmail.attachments).content"></div>
+    <div v-if="emailBody" class="email-body" v-html="parseEmailBody(emailBody, email.attachments).content"></div>
     <div v-else class="email-body-loading">
       <p>{{ isLoadingBody ? 'Loading email content...' : 'No content available' }}</p>
     </div>
 
-    <div v-if="displayEmail.attachments && displayEmail.attachments.length > 0" class="attachments-section">
-      <h3 class="section-title">Attachments ({{ displayEmail.attachments.length }})</h3>
+    <div v-if="email.attachments && email.attachments.length > 0" class="attachments-section">
+      <h3 class="section-title">Attachments ({{ email.attachments.length }})</h3>
       <div class="attachments-list">
         <a
-          v-for="attachment in displayEmail.attachments"
+          v-for="attachment in email.attachments"
           :key="attachment.key"
           :href="attachment.downloadUrl"
           :download="attachment.filename"
@@ -141,7 +141,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Email } from '../api/client'
 import { useEmailStore } from '../stores/email'
 
@@ -153,39 +153,19 @@ const props = defineProps<{
 const emailStore = useEmailStore()
 const isArchiving = ref(false)
 const isLoadingBody = ref(false)
-const localEmail = ref<Email>(props.email)
-const hasFetchedBody = ref(false)
+const emailBody = ref(props.email.body || '')
 const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
 
-// Computed property to get the latest email data from store or local
-const displayEmail = computed(() => {
-  // Try to find updated version in store
-  const storeEmail = emailStore.emails.find(e => e.s3_key === props.email.s3_key)
-  return storeEmail || localEmail.value
-})
-
-// Fetch email body if missing
+// Fetch email body once on mount
 onMounted(async () => {
-  // Check if body exists in store first
-  const storeEmail = emailStore.emails.find(e => e.s3_key === props.email.s3_key && e.body)
-
-  if (storeEmail) {
-    // Body exists in store, use it
-    localEmail.value = storeEmail
-    return
-  }
-
-  // Only fetch if we haven't tried before and body doesn't exist
-  if (!displayEmail.value.body && !hasFetchedBody.value && !isLoadingBody.value) {
-    hasFetchedBody.value = true
+  // Only fetch if we don't have a body
+  if (!emailBody.value) {
     isLoadingBody.value = true
     try {
-      await emailStore.fetchEmailDetail(props.email.s3_key)
-      // Update local email with fetched data
-      const updatedEmail = emailStore.emails.find(e => e.s3_key === props.email.s3_key)
-      if (updatedEmail) {
-        localEmail.value = updatedEmail
+      const response = await emailStore.fetchEmailDetail(props.email.s3_key)
+      if (response && response.body) {
+        emailBody.value = response.body
       }
     } catch (error) {
       console.error('Failed to fetch email body:', error)
@@ -200,15 +180,14 @@ onMounted(async () => {
       (entries) => {
         entries.forEach((entry) => {
           // If email is in viewport and is unread, mark as read
-          if (entry.isIntersecting && displayEmail.value && !displayEmail.value.read) {
-            emailStore.markAsRead(displayEmail.value.timestamp)
+          if (entry.isIntersecting && props.email && !props.email.read) {
+            emailStore.markAsRead(props.email.timestamp)
           }
         })
       },
       {
         // Trigger when at least 50% of the email is visible
         threshold: 0.5,
-        // Add some margin to trigger slightly before fully in viewport
         rootMargin: '0px'
       }
     )

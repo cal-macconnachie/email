@@ -57,52 +57,44 @@ onMounted(async () => {
     const decodedKey = decodeURIComponent(props.s3Key)
 
     // Find the target email in the store (from inbox/list view)
-    let targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
+    const targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
 
     if (!targetEmail) {
-      // If not in store, fetch just the metadata to get thread_id
-      // This should NOT fetch the body, only metadata
-      await emailStore.fetchEmailDetail(decodedKey)
-      targetEmail = emailStore.currentEmail || undefined
+      console.error('Email not found in store. Navigate from inbox first.')
+      emailStore.error = 'Email not found. Please navigate from inbox.'
+      return
+    }
+
+    emailStore.currentEmail = targetEmail
+
+    // Load thread emails (metadata only, no bodies)
+    if (targetEmail.thread_id) {
+      // Fetch ONLY the thread list (metadata, no bodies)
+      threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, false)
+
+      // Sort by date
+      threadEmails.value.sort((a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
     } else {
-      emailStore.currentEmail = targetEmail
+      // Single email, not part of a thread
+      threadEmails.value = [targetEmail]
     }
 
-    if (targetEmail) {
-      // Load thread emails (metadata only, no bodies)
-      if (targetEmail.thread_id) {
-        // Fetch the full thread list (metadata only)
-        // The false parameter should indicate "don't fetch bodies"
-        threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, false)
-
-        // Ensure the thread is sorted by date
-        threadEmails.value.sort((a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        )
-      } else {
-        // Single email, not part of a thread
-        threadEmails.value = [targetEmail]
+    // Scroll to the target email after thread is loaded
+    await nextTick()
+    setTimeout(() => {
+      if (targetEmailCard.value && targetEmailCard.value.length > 0) {
+        const isMobile = window.innerWidth <= 768
+        targetEmailCard.value[0].scrollIntoView({
+          behavior: 'smooth',
+          block: isMobile ? 'start' : 'center'
+        })
       }
-
-      // Note: EmailView component will mark emails as read when they enter the viewport
-
-      // Scroll to the target email after rendering and content loading
-      // We need to wait for EmailView components to fetch and render their bodies
-      await nextTick()
-      // Add a small delay to ensure content is fully loaded before scrolling
-      setTimeout(() => {
-        if (targetEmailCard.value && targetEmailCard.value.length > 0) {
-          // Use 'start' on mobile for better positioning, 'center' on desktop
-          const isMobile = window.innerWidth <= 768
-          targetEmailCard.value[0].scrollIntoView({
-            behavior: 'smooth',
-            block: isMobile ? 'start' : 'center'
-          })
-        }
-      }, 300)
-    }
+    }, 300)
   } catch (error) {
-    console.error('Failed to fetch email:', error)
+    console.error('Failed to fetch thread:', error)
+    emailStore.error = 'Failed to load thread'
   }
 })
 </script>
