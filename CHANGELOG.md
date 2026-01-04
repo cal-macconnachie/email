@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.8](https://github.com/cal-macconnachie/email/compare/v1.3.7...v1.3.8) (2026-01-04)
+
+
+### Bug Fixes
+
+* svg and stuff ([00db49d](https://github.com/cal-macconnachie/email/commit/00db49d06a5426631e2e2d399277b12c04db472b))
+* type ([45ba431](https://github.com/cal-macconnachie/email/commit/45ba431e6dc260b2df96980cb41317c1f9b1bb16))
+
 ### [1.3.7](https://github.com/cal-macconnachie/email/compare/v1.3.6...v1.3.7) (2026-01-04)
 
 
