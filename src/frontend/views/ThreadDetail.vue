@@ -64,6 +64,7 @@ onMounted(async () => {
 
     if (!targetEmail) {
       await emailStore.fetchEmailDetail(decodedKey)
+      await nextTick()
       targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
       if (!targetEmail) {
         emailStore.error = 'Email not found'
