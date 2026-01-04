@@ -22,6 +22,10 @@ fi
 # build lambda files
 echo "Building lambda files..."
 yarn build
+if [[ $? -ne 0 ]]; then
+  echo "Build failed. Aborting release."
+  exit 1
+fi
 
 # run terraform validate to validate terraform files
 echo "Validating terraform files..."
