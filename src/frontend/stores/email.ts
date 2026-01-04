@@ -101,7 +101,16 @@ export const useEmailStore = defineStore('email', () => {
         mailbox: 'inbox',
         recipient: recipient || undefined,
       })
+      // Replace inbox emails but preserve any that have bodies loaded
+      const existingEmailsWithBodies = inboxEmails.value.filter(e => e.body)
       inboxEmails.value = response.emails
+      // Merge back any emails that had bodies loaded
+      existingEmailsWithBodies.forEach(existingEmail => {
+        const emailInResponse = inboxEmails.value.find(e => e.s3_key === existingEmail.s3_key)
+        if (emailInResponse && !emailInResponse.body) {
+          Object.assign(emailInResponse, existingEmail)
+        }
+      })
     } catch (err) {
       inboxError.value = err instanceof Error ? err.message : 'Failed to fetch inbox emails'
       throw err
@@ -121,7 +130,16 @@ export const useEmailStore = defineStore('email', () => {
         mailbox: 'sent',
         recipient: recipient || undefined,
       })
+      // Replace sent emails but preserve any that have bodies loaded
+      const existingEmailsWithBodies = sentEmails.value.filter(e => e.body)
       sentEmails.value = response.emails
+      // Merge back any emails that had bodies loaded
+      existingEmailsWithBodies.forEach(existingEmail => {
+        const emailInResponse = sentEmails.value.find(e => e.s3_key === existingEmail.s3_key)
+        if (emailInResponse && !emailInResponse.body) {
+          Object.assign(emailInResponse, existingEmail)
+        }
+      })
     } catch (err) {
       sentError.value = err instanceof Error ? err.message : 'Failed to fetch sent emails'
       throw err
@@ -141,7 +159,16 @@ export const useEmailStore = defineStore('email', () => {
         mailbox: 'archived',
         recipient: recipient || undefined,
       })
+      // Replace archived emails but preserve any that have bodies loaded
+      const existingEmailsWithBodies = archivedEmails.value.filter(e => e.body)
       archivedEmails.value = response.emails
+      // Merge back any emails that had bodies loaded
+      existingEmailsWithBodies.forEach(existingEmail => {
+        const emailInResponse = archivedEmails.value.find(e => e.s3_key === existingEmail.s3_key)
+        if (emailInResponse && !emailInResponse.body) {
+          Object.assign(emailInResponse, existingEmail)
+        }
+      })
     } catch (err) {
       archivedError.value = err instanceof Error ? err.message : 'Failed to fetch archived emails'
       throw err
