@@ -207,6 +207,9 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
+  .email-detail-container {
+    margin-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  }
   .email-detail-main {
     padding: var(--space-4);
     padding-bottom: var(--space-8);
