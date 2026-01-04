@@ -177,6 +177,7 @@ onMounted(async () => {
   if (!email.value?.body) {
     isLoadingBody.value = true
     try {
+      console.log('Fetching email body for', decodedS3Key)
       await emailStore.fetchEmailDetail(decodedS3Key)
       email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
     } catch (error) {

@@ -63,6 +63,7 @@ onMounted(async () => {
     let targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
 
     if (!targetEmail) {
+      console.log('Target email not found in store, fetching detail...', decodedKey)
       await emailStore.fetchEmailDetail(decodedKey)
       await nextTick()
       targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
@@ -110,10 +111,11 @@ onMounted(async () => {
   max-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   background-color: var(--color-bg-secondary);
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 .email-detail-header {
