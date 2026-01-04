@@ -949,7 +949,6 @@ function formatDate(dateStr: string): string {
   opacity: 0.6;
   white-space: nowrap;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .unread-count {
