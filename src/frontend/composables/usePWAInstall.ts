@@ -1,8 +1,15 @@
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+
+// Extend Navigator interface to include iOS standalone property
+declare global {
+  interface Navigator {
+    standalone?: boolean
+  }
 }
 
 export function usePWAInstall() {
@@ -17,7 +24,7 @@ export function usePWAInstall() {
     // Check if app is already installed/running as PWA
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true
+      window.navigator.standalone === true
     )
   }
 
