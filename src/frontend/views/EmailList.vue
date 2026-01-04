@@ -891,6 +891,7 @@ function formatDate(dateStr: string): string {
   gap: var(--space-2);
   width: 100%;
   min-width: 0;
+  overflow: hidden;
 }
 
 .email-subject {
@@ -947,9 +948,8 @@ function formatDate(dateStr: string): string {
   font-size: var(--font-size-sm);
   opacity: 0.6;
   white-space: nowrap;
-  flex: 0 1 auto;
+  flex-shrink: 0;
   margin-left: auto;
-  min-width: 0;
 }
 
 .unread-count {
