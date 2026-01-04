@@ -275,13 +275,18 @@ onMounted(() => {
   if (route.query.inReplyTo) {
     emailStore.replyData.inReplyTo = route.query.inReplyTo as string
   }
+
+  // Build references array for proper threading
   if (route.query.references) {
     const refsString = route.query.references as string
     emailStore.replyData.references = refsString ? refsString.split(',') : []
-    // Add the inReplyTo to references for proper threading
-    if (emailStore.replyData.inReplyTo) {
-      emailStore.replyData.references.push(emailStore.replyData.inReplyTo)
-    }
+  } else {
+    emailStore.replyData.references = []
+  }
+
+  // Always add the inReplyTo to references for proper threading (if it exists and not already included)
+  if (emailStore.replyData.inReplyTo && !emailStore.replyData.references.includes(emailStore.replyData.inReplyTo)) {
+    emailStore.replyData.references.push(emailStore.replyData.inReplyTo)
   }
 
   // Show CC/BCC if they have values (e.g., from query params)

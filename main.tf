@@ -75,15 +75,9 @@ resource "aws_dynamodb_table" "thread_relations" {
     type = "S"
   }
 
-  attribute {
-    name = "recipient"
-    type = "S"
-  }
-
   global_secondary_index {
     name            = "MessageIdIndex"
     hash_key        = "message_id"
-    range_key       = "recipient"
     projection_type = "ALL"
   }
 

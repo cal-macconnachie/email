@@ -62,7 +62,6 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
           email.message_id,
           email.in_reply_to,
           email.references,
-          recipient,
           threadRelationsTableName
         )
         email.thread_id = thread_id
@@ -128,9 +127,9 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
           },
           record: {
             message_id: email.message_id,
-            recipient: email.recipient,
             subject: email.subject,
-            email_recipient: email.recipient, // Store the actual email record's recipient for fetching
+            recipient: email.recipient, // The recipient who can view this thread
+            email_recipient: email.recipient, // The recipient field in the emails table for fetching
           },
         })
 

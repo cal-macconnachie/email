@@ -17,7 +17,6 @@ interface DetermineThreadIdResult {
  * @param message_id - The Message-ID of the current email
  * @param in_reply_to - The In-Reply-To header (Message-ID this email replies to)
  * @param references - Array of Message-IDs from the References header
- * @param recipient - The recipient email address (for per-recipient thread lookup)
  * @param tableName - The thread_relations DynamoDB table name
  * @returns Object with thread_id and isNewThread flag
  */
@@ -25,12 +24,11 @@ export async function determineThreadId(
   message_id: string,
   in_reply_to: string | undefined,
   references: string[] | undefined,
-  recipient: string,
   tableName: string
 ): Promise<DetermineThreadIdResult> {
   // Try to find existing thread from In-Reply-To header
   if (in_reply_to) {
-    const threadId = await lookupThreadByMessageId(in_reply_to, recipient, tableName)
+    const threadId = await lookupThreadByMessageId(in_reply_to, tableName)
     if (threadId) {
       return { thread_id: threadId, isNewThread: false }
     }
@@ -42,7 +40,7 @@ export async function determineThreadId(
     const reversedReferences = [...references].reverse()
 
     for (const refMessageId of reversedReferences) {
-      const threadId = await lookupThreadByMessageId(refMessageId, recipient, tableName)
+      const threadId = await lookupThreadByMessageId(refMessageId, tableName)
       if (threadId) {
         return { thread_id: threadId, isNewThread: false }
       }
@@ -55,26 +53,24 @@ export async function determineThreadId(
 }
 
 /**
- * Looks up a thread_id by querying the MessageIdIndex GSI for a specific message_id and recipient.
+ * Looks up a thread_id by querying the MessageIdIndex GSI for a specific message_id.
+ * Since message_ids are globally unique, we don't need to filter by recipient.
  *
  * @param message_id - The Message-ID to look up
- * @param recipient - The recipient email address
  * @param tableName - The thread_relations table name
  * @returns The thread_id if found, undefined otherwise
  */
 async function lookupThreadByMessageId(
   message_id: string,
-  recipient: string,
   tableName: string
 ): Promise<string | undefined> {
   try {
     const result = await query({
       tableName,
       indexName: 'MessageIdIndex',
-      keyConditionExpression: 'message_id = :messageId AND recipient = :recipient',
+      keyConditionExpression: 'message_id = :messageId',
       expressionAttributeValues: {
         ':messageId': message_id,
-        ':recipient': recipient,
       },
       limit: 1, // We only need one result
     })

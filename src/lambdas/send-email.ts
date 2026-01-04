@@ -202,11 +202,17 @@ export const handler = async (
       ? `<${sesResponse.MessageId}@email.amazonses.com>`
       : `<${messageId}@macconnachie.com>`
 
+    // Determine thread_id once for all recipients (thread is global, not per-recipient)
+    const { thread_id } = await determineThreadId(
+      generatedMessageId,
+      inReplyTo,
+      references,
+      threadRelationsTableName
+    )
+
     // Process each recipient
     for (const recipient of to) {
       const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
-
-      // Determine thread_id for this email
 
       // Move attachments from pending to final location and collect keys
       const finalAttachmentKeys: string[] = []
@@ -237,13 +243,6 @@ export const handler = async (
 
       // Create email object
       const emailKey = `${sanitizedRecipient}/${date}/${messageId}.json`
-      const { thread_id } = await determineThreadId(
-        generatedMessageId,
-        inReplyTo,
-        references,
-        recipient,
-        threadRelationsTableName
-      )
       const email: Email = {
         recipient,
         sender: from,
@@ -283,6 +282,7 @@ export const handler = async (
       )
 
       // Store thread relationship in thread_relations table
+      // Note: We store one relation per recipient so each user can see the thread
       await create({
         tableName: threadRelationsTableName,
         key: {
@@ -291,9 +291,9 @@ export const handler = async (
         },
         record: {
           message_id: generatedMessageId,
-          recipient,
           subject,
-          email_recipient: recipient, // Store the actual email record's recipient for fetching
+          recipient, // The recipient who can view this thread
+          email_recipient: recipient, // The recipient field in the emails table for fetching
         },
       })
 
@@ -327,16 +327,8 @@ export const handler = async (
       console.log(`Successfully stored sent email for ${recipient}`)
     }
 
-    // Also add thread relations for the sender so they see their sent emails in threads
+    // Also add thread relation for the sender so they see their sent emails in threads
     // (We don't duplicate the email record, just the thread relation)
-    const { thread_id } = await determineThreadId(
-      generatedMessageId,
-      inReplyTo,
-      references,
-      from,
-      threadRelationsTableName
-    )
-
     await create({
       tableName: threadRelationsTableName,
       key: {
@@ -345,8 +337,8 @@ export const handler = async (
       },
       record: {
         message_id: generatedMessageId,
-        recipient: from,
         subject,
+        recipient: from, // The sender can view this thread
         email_recipient: to[0], // Store the first recipient's email for fetching the sent email record
       },
     })
