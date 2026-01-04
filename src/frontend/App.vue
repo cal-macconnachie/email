@@ -4,7 +4,6 @@
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="top-right-controls">
-        <theme-toggle size="sm"/>
       <email-selector v-if="authStore.isAuthenticated" />
     </div>
     <router-view />
@@ -12,6 +11,7 @@
       <ComposeDrawer />
     </base-drawer>
     <NotificationPrompt v-if="authStore.isAuthenticated" />
+    <PWAInstallPrompt />
   </div>
 </template>
 
@@ -23,6 +23,7 @@ import { useRouter } from 'vue-router'
 import ComposeDrawer from './components/ComposeForm.vue'
 import EmailSelector from './components/EmailSelector.vue'
 import NotificationPrompt from './components/NotificationPrompt.vue'
+import PWAInstallPrompt from './components/PWAInstallPrompt.vue'
 import { usePushNotifications } from './composables/usePushNotifications'
 import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'

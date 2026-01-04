@@ -41,6 +41,9 @@
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </button>
+          <div class="theme-toggle-wrapper">
+            <theme-toggle size="sm"/>
+          </div>
         </div>
       </div>
     </transition>
@@ -76,13 +79,16 @@
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </button>
+        <div class="theme-toggle-wrapper">
+          <theme-toggle size="sm"/>
+        </div>
       </div>
     </base-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BaseDrawer } from '@cal.macconnachie/web-components'
+import { BaseDrawer, ThemeToggle } from '@cal.macconnachie/web-components'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -254,6 +260,13 @@ onBeforeUnmount(() => {
 .check-icon {
   color: var(--color-success);
   flex-shrink: 0;
+}
+
+.theme-toggle-wrapper {
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: center;
 }
 
 /* Drawer Content */
