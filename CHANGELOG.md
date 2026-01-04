@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.9](https://github.com/cal-macconnachie/email/compare/v1.3.8...v1.3.9) (2026-01-04)
+
+
+### Bug Fixes
+
+* exit on build fail ([f490804](https://github.com/cal-macconnachie/email/commit/f490804a50316d3e31b4181bbc8ca0305bde0ceb))
+* one more try at making app feel native ([3a5e8f2](https://github.com/cal-macconnachie/email/commit/3a5e8f240344b4ddb7c77c31c4d3e43a16ec620f))
+
 ### [1.3.8](https://github.com/cal-macconnachie/email/compare/v1.3.7...v1.3.8) (2026-01-04)
 
 
