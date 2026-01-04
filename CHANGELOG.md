@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/cal-macconnachie/email/compare/v1.4.11...v1.5.0) (2026-01-04)
+
+
+### Features
+
+* update thread relations ([92306c0](https://github.com/cal-macconnachie/email/commit/92306c02d738406acc6e64e047ccaf876dab660f))
+
 ### [1.4.11](https://github.com/cal-macconnachie/email/compare/v1.4.10...v1.4.11) (2026-01-04)
 
 
