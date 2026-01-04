@@ -158,6 +158,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .email-selector {
   position: relative;
+  color: inherit;
 }
 
 .selector-button {
@@ -172,6 +173,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: inherit;
 }
 
 .selector-button:hover .email-avatar {
@@ -190,6 +192,7 @@ onBeforeUnmount(() => {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   transition: all 0.2s;
+  color: inherit;
 }
 
 /* Dropdown Menu */
