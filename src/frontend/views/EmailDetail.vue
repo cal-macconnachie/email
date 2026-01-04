@@ -29,7 +29,7 @@
           class="thread-email-card"
           :class="{ 'thread-email-active': email.s3_key === decodeURIComponent(props.s3Key) }"
         >
-          <email-view :email="email" :s3-key="props.s3Key" />
+          <email-view :email="email" :s3-key="email.s3_key" />
       </div>
       </div>
     </main>
@@ -158,7 +158,7 @@ onMounted(async () => {
 }
 
 .email-detail-main {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: var(--space-6);
   flex: 1;
