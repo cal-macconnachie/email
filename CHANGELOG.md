@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.4](https://github.com/cal-macconnachie/email/compare/v1.4.3...v1.4.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* prompt fixes ([45358e6](https://github.com/cal-macconnachie/email/commit/45358e6112f5e6ed53f45572861ed1e103543dc2))
+
 ### [1.4.3](https://github.com/cal-macconnachie/email/compare/v1.4.2...v1.4.3) (2026-01-04)
 
 
