@@ -728,11 +728,6 @@ function handleTouchStart(event: TouchEvent, listRef: HTMLElement | null) {
   if (!listRef) return
 
   const scrollTop = listRef.scrollTop
-  // Always reset pulling state first
-  isPulling.value = false
-  pullDistance.value = 0
-
-  // Only enable pulling if we're at the top
   if (scrollTop === 0) {
     pullStartY.value = event.touches[0].clientY
     isPulling.value = true
@@ -744,16 +739,8 @@ function handleTouchMove(event: TouchEvent, listRef: HTMLElement | null) {
 
   const currentY = event.touches[0].clientY
   const distance = currentY - pullStartY.value
-  const scrollTop = listRef.scrollTop
 
-  // If we've scrolled down, disable pull-to-refresh for this gesture
-  if (scrollTop > 0) {
-    isPulling.value = false
-    pullDistance.value = 0
-    return
-  }
-
-  if (distance > 0 && scrollTop === 0) {
+  if (distance > 0 && listRef.scrollTop === 0) {
     event.preventDefault()
     pullDistance.value = Math.min(distance, pullThreshold * 1.5)
   } else {
@@ -1150,8 +1137,10 @@ function formatDate(dateStr: string): string {
 
 .email-list-scrollable {
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
   min-height: 0;
+  height: 0;
   -webkit-overflow-scrolling: touch;
 }
 .row {
