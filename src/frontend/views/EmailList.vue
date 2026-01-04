@@ -841,6 +841,7 @@ function formatDate(dateStr: string): string {
   border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background-color 0.2s;
+  min-width: 0;
 }
 
 .email-list-item:hover {
@@ -898,8 +899,7 @@ function formatDate(dateStr: string): string {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1 1 0;
-  max-width: 35%;
+  flex: 2 1 0;
   min-width: 0;
 }
 
@@ -909,8 +909,7 @@ function formatDate(dateStr: string): string {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 0 1 auto;
-  max-width: 25%;
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -1010,6 +1009,15 @@ function formatDate(dateStr: string): string {
     padding: var(--space-4);
     padding-top: var(--space-10);
     margin-top: var(--space-8);
+  }
+
+  .email-list-scrollable {
+    overflow-y: visible;
+    height: auto;
+  }
+
+  .email-list-card {
+    max-height: none;
   }
 }
 </style>
