@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.7](https://github.com/cal-macconnachie/email/compare/v1.4.6...v1.4.7) (2026-01-04)
+
+
+### Bug Fixes
+
+* margin on bottom ([4461d6b](https://github.com/cal-macconnachie/email/commit/4461d6b722938d704fa2e61b016be3f029bdaf4d))
+* testing ([fadf12e](https://github.com/cal-macconnachie/email/commit/fadf12ec125e1c958cfa08670262e5b7d3ba5233))
+
 ### [1.4.6](https://github.com/cal-macconnachie/email/compare/v1.4.5...v1.4.6) (2026-01-04)
 
 
