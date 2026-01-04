@@ -328,40 +328,28 @@ export const useEmailStore = defineStore('email', () => {
 
   function addEmailsToStore(newEmails: Email[]) {
     newEmails.forEach(email => {
+      // Set currentUserEmail if not already set - use the recipient as the current user
+      if (!currentUserEmail.value) {
+        currentUserEmail.value = email.recipient
+      }
+
       const emailInStore = emails.value.find(e => e.s3_key === email.s3_key)
       const emailArchived = email.archived
       const emailSentByUser = currentUserEmail.value ? email.sender === currentUserEmail.value : false
       const emailReceivedByUser = currentUserEmail.value ? email.recipient === currentUserEmail.value : false
 
-      console.log('addEmailsToStore debug:', {
-        s3_key: email.s3_key,
-        emailInStore: !!emailInStore,
-        currentUserEmail: currentUserEmail.value,
-        emailSender: email.sender,
-        emailRecipient: email.recipient,
-        emailArchived,
-        emailSentByUser,
-        emailReceivedByUser
-      })
-
       if (emailInStore) {
-        // Update existing email only if we have no body and the new email has a body
-          Object.assign(emailInStore, email)
-          console.log('Updated existing email in store')
+        // Update existing email
+        Object.assign(emailInStore, email)
       }
       if (!emailInStore) {
         // add to correct mailbox
         if (emailArchived) {
           archivedEmails.value.push(email)
-          console.log('Added to archived emails')
         } else if (emailSentByUser) {
           sentEmails.value.push(email)
-          console.log('Added to sent emails')
         } else if (emailReceivedByUser) {
           inboxEmails.value.push(email)
-          console.log('Added to inbox emails')
-        } else {
-          console.log('⚠️ EMAIL NOT ADDED TO ANY MAILBOX!')
         }
       }
     })
