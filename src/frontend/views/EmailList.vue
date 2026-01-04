@@ -858,7 +858,6 @@ function formatDate(dateStr: string): string {
   flex: 1;
   gap: var(--space-3);
   min-height: 0;
-  overflow: hidden;
 }
 
 .loading-state {
