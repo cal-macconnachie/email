@@ -4,6 +4,21 @@ set -a
 source .env.local
 set +a
 
+if [[ -n $(git status --porcelain) ]]; then
+  read "?You have uncommitted changes. please enter a conventional commit message or press enter to abort: " response
+  # ensure is starts with feat:, fix:, chore:, docs:, style:, refactor:, perf:, test:, or ci:
+  if [[ -z "$response" ]]; then
+    echo "Release cancelled."
+    exit 1
+  fi
+  if [[ ! "$response" =~ ^(feat:|fix:|chore:|docs:|style:|refactor:|perf:|test:|ci:) ]]; then
+    # assume fix and prepend
+    response="fix: $response"
+  fi
+  git add .
+  git commit -m "$response"
+fi
+
 # run terraform fmt to lint terraform files
 echo "Running linter..."
 yarn lint
