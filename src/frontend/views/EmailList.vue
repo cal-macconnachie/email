@@ -728,32 +728,32 @@ function handleTouchStart(event: TouchEvent, listRef: HTMLElement | null) {
   if (!listRef) return
 
   const scrollTop = listRef.scrollTop
+  // Always reset pulling state first
+  isPulling.value = false
+  pullDistance.value = 0
+
+  // Only enable pulling if we're at the top
   if (scrollTop === 0) {
     pullStartY.value = event.touches[0].clientY
     isPulling.value = true
-  } else {
-    // Explicitly reset if not at top to prevent stuck state
-    isPulling.value = false
-    pullDistance.value = 0
   }
 }
 
 function handleTouchMove(event: TouchEvent, listRef: HTMLElement | null) {
-  if (!listRef) return
+  if (!isPulling.value || !listRef) return
 
-  // If we're not at the top anymore, always reset pulling state
-  if (listRef.scrollTop > 0) {
+  const currentY = event.touches[0].clientY
+  const distance = currentY - pullStartY.value
+  const scrollTop = listRef.scrollTop
+
+  // If we've scrolled down, disable pull-to-refresh for this gesture
+  if (scrollTop > 0) {
     isPulling.value = false
     pullDistance.value = 0
     return
   }
 
-  if (!isPulling.value) return
-
-  const currentY = event.touches[0].clientY
-  const distance = currentY - pullStartY.value
-
-  if (distance > 0 && listRef.scrollTop === 0) {
+  if (distance > 0 && scrollTop === 0) {
     event.preventDefault()
     pullDistance.value = Math.min(distance, pullThreshold * 1.5)
   } else {
