@@ -144,11 +144,11 @@
   </div>
 </template>
 <script setup lang="ts">
+import PostalMime from 'postal-mime'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
-import PostalMime from 'postal-mime'
 
 const props = defineProps<{
   s3Key: string
@@ -172,6 +172,7 @@ function isUserReceivedEmail(): boolean {
 // Fetch email body once on mount
 onMounted(async () => {
   // Only fetch if we don't have a body
+  console.log('EmailView mounted for s3Key:', decodedS3Key)
   email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
   if (!email.value?.body) {
     isLoadingBody.value = true
@@ -218,10 +219,17 @@ onMounted(async () => {
         })
       }
 
-      // Store parsed content
+      // Store parsed content, or fall back to raw body if parsing returned nothing
       parsedContent.value = {
         html: htmlContent || undefined,
         text: textContent || undefined
+      }
+
+      // If both html and text are empty after parsing, use raw body as fallback
+      if (!parsedContent.value.html && !parsedContent.value.text && email.value.body) {
+        parsedContent.value = {
+          text: email.value.body
+        }
       }
     } catch (error) {
       console.error('Failed to parse email with postal-mime:', error)

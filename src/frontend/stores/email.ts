@@ -163,23 +163,7 @@ export const useEmailStore = defineStore('email', () => {
     try {
       const email = await api.emails.getDetail(s3Key)
 
-      // Update in the inbox emails list if it exists
-      const inboxIndex = inboxEmails.value.findIndex(e => e.s3_key === s3Key)
-      if (inboxIndex !== -1) {
-        inboxEmails.value[inboxIndex] = email
-      }
-
-      // Update in the sent emails list if it exists
-      const sentIndex = sentEmails.value.findIndex(e => e.s3_key === s3Key)
-      if (sentIndex !== -1) {
-        sentEmails.value[sentIndex] = email
-      }
-
-      // Update in the archived emails list if it exists
-      const archivedIndex = archivedEmails.value.findIndex(e => e.s3_key === s3Key)
-      if (archivedIndex !== -1) {
-        archivedEmails.value[archivedIndex] = email
-      }
+      addEmailsToStore([email])
 
       return email
     } catch (err) {
@@ -267,6 +251,7 @@ export const useEmailStore = defineStore('email', () => {
     error.value = null
     try {
       const response = await api.emails.getThread(threadId, includeBody)
+      addEmailsToStore(response.emails)
       return response.emails
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch thread'
@@ -333,6 +318,29 @@ export const useEmailStore = defineStore('email', () => {
     sentEmails.value = []
     archivedEmails.value = []
     currentEmail.value = null
+  }
+
+  function addEmailsToStore(newEmails: Email[]) {
+    newEmails.forEach(email => {
+      const emailInStore = emails.value.find(e => e.s3_key === email.s3_key)
+      const emailArchived = email.archived
+      const emailSentByUser = currentUserEmail.value ? email.sender === currentUserEmail.value : false
+      const emailReceivedByUser = currentUserEmail.value ? email.recipient === currentUserEmail.value : false
+      if (emailInStore) {
+        // Update existing email only if we have no body and the new email has a body
+          Object.assign(emailInStore, email)
+      }
+      if (!emailInStore) {
+        // add to correct mailbox
+        if (emailArchived) {
+          archivedEmails.value.push(email)
+        } else if (emailSentByUser) {
+          sentEmails.value.push(email)
+        } else if (emailReceivedByUser) {
+          inboxEmails.value.push(email)
+        }
+      }
+    })
   }
 
   return {

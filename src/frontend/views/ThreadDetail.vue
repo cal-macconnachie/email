@@ -179,6 +179,10 @@ onMounted(async () => {
 
 .thread-email-card {
   scroll-margin-top: var(--space-20);
+  padding: var(--space-4);
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
   transition: all 0.3s ease;
 }
 
