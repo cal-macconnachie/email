@@ -143,6 +143,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
+import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
 
 const props = defineProps<{
@@ -150,12 +151,18 @@ const props = defineProps<{
 }>()
 
 const emailStore = useEmailStore()
+const authStore = useAuthStore()
 const isArchiving = ref(false)
 const isLoadingBody = ref(false)
 const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
 const email = ref<Email | null>(null)
 const decodedS3Key = decodeURIComponent(props.s3Key)
+
+function isUserReceivedEmail(): boolean {
+  if (!email.value) return false
+  return authStore.selectedRecipient === email.value.recipient
+}
 
 // Fetch email body once on mount
 onMounted(async () => {
@@ -179,7 +186,7 @@ onMounted(async () => {
       (entries) => {
         entries.forEach((entry) => {
           // If email is in viewport and is unread, mark as read
-          if (entry.isIntersecting && email.value && !email.value.read ) {
+          if (entry.isIntersecting && email.value && !email.value.read && isUserReceivedEmail()) {
             emailStore.markAsRead(email.value.timestamp)
           }
         })
