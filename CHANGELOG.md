@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1](https://github.com/cal-macconnachie/email/compare/v1.6.0...v1.6.1) (2026-01-05)
+
+
+### Bug Fixes
+
+* thread alignemnt on large screens ([34f8069](https://github.com/cal-macconnachie/email/commit/34f8069df5c8300ccef06a16b21d99e5aa235fec))
+
 ## [1.6.0](https://github.com/cal-macconnachie/email/compare/v1.5.1...v1.6.0) (2026-01-05)
 
 
