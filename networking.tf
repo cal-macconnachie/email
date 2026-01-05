@@ -1,6 +1,6 @@
 # Local variables
 locals {
-  domain_names     = [var.domain_name]
+  domain_names     = [var.domain_name, "www.${var.domain_name}"]
   sanitized_domain = replace(var.domain_name, ".", "-")
 }
 
@@ -102,6 +102,34 @@ resource "aws_acm_certificate_validation" "main" {
   validation_record_fqdns = [for record in aws_route53_record.acm_validation : record.fqdn]
 }
 
+# CloudFront Function to redirect www and subdomains to root domain
+resource "aws_cloudfront_function" "redirect_to_root" {
+  name    = "${local.sanitized_domain}-redirect-to-root"
+  runtime = "cloudfront-js-2.0"
+  comment = "Redirect www and other subdomains to root domain"
+  publish = true
+  code    = <<-EOT
+function handler(event) {
+    var request = event.request;
+    var host = request.headers.host.value;
+    var rootDomain = '${var.domain_name}';
+
+    // If the host is not the root domain, redirect
+    if (host !== rootDomain) {
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: {
+                'location': { value: 'https://' + rootDomain + request.uri }
+            }
+        };
+    }
+
+    return request;
+}
+EOT
+}
+
 # CloudFront Distribution
 resource "aws_cloudfront_distribution" "main" {
   enabled             = true
@@ -169,6 +197,11 @@ resource "aws_cloudfront_distribution" "main" {
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
     cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.redirect_to_root.arn
+    }
   }
 
   # Custom error responses for SPA routing
