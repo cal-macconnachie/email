@@ -116,9 +116,11 @@ onMounted(async () => {
   background-color: var(--color-bg-secondary);
   touch-action: pan-y;
   overscroll-behavior-y: contain;
+  align-items: center;
 }
 
 .email-detail-header {
+  width: 100vw;
   flex-shrink: 0;
 }
 
@@ -171,6 +173,7 @@ onMounted(async () => {
 .email-detail-main {
   max-width: 1600px;
   padding: var(--space-6);
+  width: 100vw;
   flex: 1;
 }
 
