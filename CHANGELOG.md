@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/cal-macconnachie/email/compare/v1.5.1...v1.6.0) (2026-01-05)
+
+
+### Features
+
+* redirect www to root always ([b0fbca3](https://github.com/cal-macconnachie/email/commit/b0fbca3b7bb7db7b088b4320038206124980ccc6))
+
 ### [1.5.1](https://github.com/cal-macconnachie/email/compare/v1.5.0...v1.5.1) (2026-01-04)
 
 
