@@ -18,14 +18,14 @@
             size="sm"
             title="Logout"
           >
-            <base-icon name="external-link" size="20px" />
+            <base-icon name="external-link" size="24px" />
           </base-button>
         </div>
         <!-- Inbox Tab -->
         <base-tab
           id="inbox"
           label="Inbox"
-          icon="open-email"
+          icon="<base-icon name='open-email' size='24px'></base-icon>"
         >
 
           <div class="email-list-card">
@@ -47,7 +47,7 @@
                 @click="showFiltersDropdown = !showFiltersDropdown"
                 title="Filters"
               >
-                <base-icon name="filters" size="20px" />
+                <base-icon name="filters" size="24px" />
               </base-button>
               <base-button
                 variant="ghost"
@@ -55,7 +55,7 @@
                 @click="toggleSortOrder"
                 class="sort-button"
               >
-                <base-icon name="arrow" size="20px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
+                <base-icon name="arrow" size="24px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
               </base-button>
             </div>
 
@@ -124,7 +124,7 @@
         <base-tab
           id="sent"
           label="Sent"
-          icon="send"
+          icon="<base-icon name='send' size='24px'></base-icon"
         >
 
           <div class="email-list-card">
@@ -141,7 +141,7 @@
                 @click="showFiltersDropdown = !showFiltersDropdown"
                 title="Filters"
               >
-                <base-icon name="filters" size="20px" />
+                <base-icon name="filters" size="24px" />
               </base-button>
               <base-button
                 variant="ghost"
@@ -149,7 +149,7 @@
                 @click="toggleSortOrder"
                 class="sort-button"
               >
-                <base-icon name="arrow" size="20px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
+                <base-icon name="arrow" size="24px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
               </base-button>
             </div>
 
@@ -220,7 +220,7 @@
         <base-tab
           id="archived"
           label="Archived"
-          icon="file-cabinet"
+          icon="<base-icon name='file-cabinet' size='24px'></base-icon"
         >
           <div class="email-list-card">
             <div class="email-list-header">
@@ -236,7 +236,7 @@
                 @click="showFiltersDropdown = !showFiltersDropdown"
                 title="Filters"
               >
-                <base-icon name="filters" size="20px" />
+                <base-icon name="filters" size="24px" />
               </base-button>
               <base-button
                 variant="ghost"
@@ -244,7 +244,7 @@
                 @click="toggleSortOrder"
                 class="sort-button"
               >
-                <base-icon name="arrow" size="20px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
+                <base-icon name="arrow" size="24px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
               </base-button>
             </div>
 
