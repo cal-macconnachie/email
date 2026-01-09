@@ -1,6 +1,6 @@
 {
   "name": "email",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "private": true,
   "author": "Cal MacConnachie <cal.macconnachie@gmail.com>",
   "scripts": {
