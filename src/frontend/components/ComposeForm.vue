@@ -96,18 +96,7 @@
           @click="fileInput?.click()"
           :disabled="emailStore.isLoading || hasUploadingAttachments"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="16"
-            width="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            style="margin-right: 8px;"
-          >
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-          </svg>
+          <base-icon name="paperclip" size="16px" style="margin-right: 8px;" />
           Add Attachments
         </base-button>
 
@@ -118,18 +107,7 @@
             class="attachment-item"
             :class="{ 'attachment-uploading': attachment.uploading }"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="16"
-              width="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="attachment-icon"
-            >
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-            </svg>
+            <base-icon name="paperclip" size="16px" class="attachment-icon" />
             <span class="attachment-name">{{ attachment.filename }}</span>
             <span class="attachment-size">({{ formatFileSize(attachment.size) }})</span>
             <span v-if="attachment.uploading" class="attachment-status">

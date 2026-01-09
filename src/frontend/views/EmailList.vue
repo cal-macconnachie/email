@@ -18,28 +18,14 @@
             size="sm"
             title="Logout"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
+            <base-icon name="external-link" size="20px" />
           </base-button>
         </div>
         <!-- Inbox Tab -->
         <base-tab
           id="inbox"
           label="Inbox"
-          icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><path d=&quot;M22 12h-6l-2 3h-4l-2-3H2&quot;/><path d=&quot;M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z&quot;/></svg>"
+          icon="open-email"
         >
 
           <div class="email-list-card">
@@ -61,19 +47,7 @@
                 @click="showFiltersDropdown = !showFiltersDropdown"
                 title="Filters"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
+                <base-icon name="filters" size="20px" />
               </base-button>
               <base-button
                 variant="ghost"
@@ -81,20 +55,7 @@
                 @click="toggleSortOrder"
                 class="sort-button"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
-                >
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
+                <base-icon name="arrow" size="20px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
               </base-button>
             </div>
 
@@ -128,17 +89,7 @@
                 <div class="email-badges">
                   <span v-if="!email.read" class="badge unread-badge">•</span>
                   <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      height="10"
-                      width="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                    </svg>
+                    <base-icon name="paperclip" size="10px" />
                   </span>
                 </div>
                 <span class="email-date">{{ formatDate(email.created_at) }}</span>
@@ -149,17 +100,7 @@
                   <div class="email-badges">
                     <span v-if="!email.read" class="badge unread-badge">•</span>
                     <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="10"
-                        width="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                      </svg>
+                      <base-icon name="paperclip" size="10px" />
                     </span>
                   </div>
                 </div>
@@ -183,7 +124,7 @@
         <base-tab
           id="sent"
           label="Sent"
-          icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><line x1=&quot;22&quot; y1=&quot;2&quot; x2=&quot;11&quot; y2=&quot;13&quot;/><polygon points=&quot;22 2 15 22 11 13 2 9 22 2&quot;/></svg>"
+          icon="send"
         >
 
           <div class="email-list-card">
@@ -200,19 +141,7 @@
                 @click="showFiltersDropdown = !showFiltersDropdown"
                 title="Filters"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
+                <base-icon name="filters" size="20px" />
               </base-button>
               <base-button
                 variant="ghost"
@@ -220,20 +149,7 @@
                 @click="toggleSortOrder"
                 class="sort-button"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
-                >
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
+                <base-icon name="arrow" size="20px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
               </base-button>
             </div>
 
@@ -270,17 +186,7 @@
                 <span class="email-sender">To: {{ email.recipient }}</span>
                 <div class="email-badges">
                   <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      height="10"
-                      width="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                    </svg>
+                    <base-icon name="paperclip" size="10px" />
                   </span>
                 </div>
                 <span class="email-date">{{ formatDate(email.created_at) }}</span>
@@ -290,17 +196,7 @@
                   <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
                   <div class="email-badges">
                     <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="10"
-                        width="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                      </svg>
+                      <base-icon name="paperclip" size="10px" />
                     </span>
                   </div>
                 </div>
@@ -324,7 +220,7 @@
         <base-tab
           id="archived"
           label="Archived"
-          icon="<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><polyline points=&quot;21 8 21 21 3 21 3 8&quot;/><rect x=&quot;1&quot; y=&quot;3&quot; width=&quot;22&quot; height=&quot;5&quot;/><line x1=&quot;10&quot; y1=&quot;12&quot; x2=&quot;14&quot; y2=&quot;12&quot;/></svg>"
+          icon="file-cabinet"
         >
           <div class="email-list-card">
             <div class="email-list-header">
@@ -340,19 +236,7 @@
                 @click="showFiltersDropdown = !showFiltersDropdown"
                 title="Filters"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
+                <base-icon name="filters" size="20px" />
               </base-button>
               <base-button
                 variant="ghost"
@@ -360,20 +244,7 @@
                 @click="toggleSortOrder"
                 class="sort-button"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }"
-                >
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
+                <base-icon name="arrow" size="20px" :class="{ 'rotate-arrow': filters.sortOrder === 'ASC' }" />
               </base-button>
             </div>
 
@@ -409,17 +280,7 @@
                 <div class="email-badges">
                   <span v-if="!email.read" class="badge unread-badge">•</span>
                   <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      height="10"
-                      width="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                    </svg>
+                    <base-icon name="paperclip" size="10px" />
                   </span>
                 </div>
                 <span class="email-date">{{ formatDate(email.created_at) }}</span>
@@ -430,17 +291,7 @@
                   <div class="email-badges">
                     <span v-if="!email.read" class="badge unread-badge">•</span>
                     <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="10"
-                        width="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                      </svg>
+                      <base-icon name="paperclip" size="10px" />
                     </span>
                   </div>
                 </div>

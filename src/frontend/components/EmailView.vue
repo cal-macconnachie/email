@@ -12,20 +12,7 @@
           size="sm"
           title="Reply"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="16"
-            width="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M9 14l-5-5 5-5"/>
-            <path d="M4 9h10.5a5.5 5.5 0 010 11H12"/>
-          </svg>
+          <base-icon name="reply" size="16px" />
         </base-button>
         <base-button
           v-if="email.s3_key === decodedS3Key"
@@ -52,39 +39,9 @@
             <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
           </svg>
           <!-- Archive icon (box with down arrow) -->
-          <svg
-            v-else-if="!email.archived"
-            xmlns="http://www.w3.org/2000/svg"
-            height="16"
-            width="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="21 8 21 21 3 21 3 8"></polyline>
-            <rect x="1" y="3" width="22" height="5"></rect>
-            <line x1="10" y1="12" x2="14" y2="12"></line>
-          </svg>
+          <base-icon v-else-if="!email.archived" name="file-cabinet" size="16px" />
           <!-- Unarchive icon (box with up arrow) -->
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            height="16"
-            width="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="21 8 21 21 3 21 3 8"></polyline>
-            <rect x="1" y="3" width="22" height="5"></rect>
-            <polyline points="10 12 12 10 14 12"></polyline>
-          </svg>
+          <base-icon v-else name="file-cabinet" size="16px" />
         </base-button>
       </div>
     </div>
@@ -111,33 +68,9 @@
           :download="attachment.filename"
           class="attachment-item"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="16"
-            width="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="attachment-icon"
-          >
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-          </svg>
+          <base-icon name="paperclip" size="16px" class="attachment-icon" />
           <span class="attachment-name">{{ attachment.filename }}</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="16"
-            width="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="download-icon"
-          >
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
+          <base-icon name="download" size="16px" class="download-icon" />
         </a>
       </div>
     </div>
