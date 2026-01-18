@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.5](https://github.com/cal-macconnachie/email/compare/v1.6.4...v1.6.5) (2026-01-18)
+
+
+### Bug Fixes
+
+* upgrade web components ([70c7e04](https://github.com/cal-macconnachie/email/commit/70c7e04c90364d0db6509b400ee94d568e1e86cb))
+
 ### [1.6.4](https://github.com/cal-macconnachie/email/compare/v1.6.3...v1.6.4) (2026-01-10)
 
 
