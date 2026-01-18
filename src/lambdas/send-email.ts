@@ -132,7 +132,7 @@ export const handler = async (
 
     // Construct raw MIME email
     const boundary = 'NextPartBoundary'
-    let rawEmail = `From: ${from}\n`
+    let rawEmail = `From: ${from.split('@')[0]} MacConnachie <${from}>\n`
     rawEmail += `To: ${to.join(', ')}\n`
     if (cc && cc.length > 0) {
       rawEmail += `Cc: ${cc.join(', ')}\n`
