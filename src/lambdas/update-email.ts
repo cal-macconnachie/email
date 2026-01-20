@@ -1,16 +1,18 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb'
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { update } from './helpers/dynamo-helpers/update'
 import { Email } from './helpers/parse-email'
 import { getAuthenticatedRecipient } from './middleware/auth-middleware'
 
 const s3Client = new S3Client({ region: process.env.REGION })
+const dynamoClient = new DynamoDBClient({ region: process.env.REGION })
 
 interface UpdateEmailRequest {
   timestamp: string
   read?: boolean
   archived?: boolean
-  recipient?: string
 }
 
 export const handler = async (
@@ -49,19 +51,7 @@ export const handler = async (
     }
 
     const request = JSON.parse(event.body) as UpdateEmailRequest
-    const { timestamp, read, archived, recipient: requestRecipient } = request
-
-    if (requestRecipient != null) {
-      if (authResult.recipients.indexOf(requestRecipient) === -1) {
-        return {
-          statusCode: 403,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ error: `Forbidden - You are not authorized to send from: ${requestRecipient}` }),
-        }
-      } else {
-        recipient = requestRecipient
-      }
-    }
+    const { timestamp, read, archived } = request
 
     // Validate required fields
     if (!timestamp) {
@@ -80,6 +70,37 @@ export const handler = async (
         body: JSON.stringify({ error: 'At least one of read or archived must be provided' }),
       }
     }
+
+    // Find which recipient owns this email by checking all recipients the user has access to
+    let emailRecipient: string | null = null
+    for (const recipientToCheck of authResult.recipients) {
+      try {
+        const getItemResponse = await dynamoClient.send(
+          new GetItemCommand({
+            TableName: tableName,
+            Key: marshall({ recipient: recipientToCheck, timestamp }),
+          })
+        )
+        if (getItemResponse.Item) {
+          emailRecipient = recipientToCheck
+          break
+        }
+      } catch (err) {
+        // Continue checking other recipients
+        continue
+      }
+    }
+
+    // If we didn't find the email in any of the user's recipients, they don't have access
+    if (!emailRecipient) {
+      return {
+        statusCode: 404,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Email not found or you do not have access to it' }),
+      }
+    }
+
+    recipient = emailRecipient
 
     // Build updates object
     const updates: { read?: boolean; archived?: boolean } = {}
