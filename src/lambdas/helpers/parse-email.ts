@@ -74,6 +74,7 @@ Content-Type: text/html; charset="UTF-8"
 */
 
 import { v4 } from 'uuid'
+import { simpleParser, AddressObject } from 'mailparser'
 
 export interface AttachmentUrl {
     key: string
@@ -106,60 +107,59 @@ export interface Email {
     threadEmails?: Email[]
 }
 
-export function parseEmail(emailString: string): {
+export async function parseEmail(emailString: string): Promise<{
     emails: Email[];
     attachments?: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }>;
-} {
-    const headers: Record<string, string> = {}
-    const bodyParts: string[] = []
-    const attachments: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }> = []
-    let isBody = false
+}> {
+    const parsed = await simpleParser(emailString)
 
-    // Split the email string into lines
-    const lines = emailString.split('\n')
+    const to = parsed.to ? extractEmailAddresses(parsed.to) : []
+    const from = parsed.from ? extractEmailAddresses(parsed.from) : []
+    const cc = parsed.cc ? extractEmailAddresses(parsed.cc) : []
+    const bcc = parsed.bcc ? extractEmailAddresses(parsed.bcc) : []
+    const replyTo = parsed.replyTo ? extractEmailAddresses(parsed.replyTo) : []
 
-    for (const line of lines) {
-        if (isBody) {
-            bodyParts.push(line)
-        } else if (line.trim() === '') {
-            isBody = true // Start of the body
-        } else {
-            const [key, ...value] = line.split(':')
-            if (key && value) {
-                headers[key.trim().toLowerCase()] = value.join(':').trim()
-            }
-        }
+    const subject = parsed.subject ?? ''
+    const messageId = parsed.messageId ?? ''
+    const inReplyTo = parsed.inReplyTo ?? undefined
+
+    // Parse references - mailparser returns it as a string or array
+    const references = parsed.references
+        ? (Array.isArray(parsed.references) ? parsed.references : [parsed.references])
+        : undefined
+
+    if (to.length === 0 || from.length === 0) {
+        throw new Error('Missing required email fields: to or from')
     }
 
-    const body = extractHtmlBody(bodyParts.join('\n').trim(), attachments)
-    const to = headers['to']
-    const from = headers['from']
-    const subject = headers['subject'] ?? ''
-    const messageId = headers['message-id'] ?? ''
-    const inReplyTo = headers['in-reply-to']
-    const referencesHeader = headers['references']
+    const sender = from[0]
 
-    if (!to || !from) {
-        throw new Error('Missing required email fields: to, from, or subject')
-    }
-
-    const toAddress = to.split(',').map(addr => addr.trim()) // Handle multiple recipients, use the first one
+    // Get HTML body, fallback to text if no HTML available
+    const body = parsed.html || parsed.text || ''
 
     const id = v4()
 
-    // Parse references header (space-separated list of Message-IDs)
-    const references = referencesHeader
-        ? referencesHeader.split(/\s+/).filter(ref => ref.trim().length > 0)
-        : undefined
+    // Process attachments
+    const attachments: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }> = []
+    if (parsed.attachments && parsed.attachments.length > 0) {
+        for (const attachment of parsed.attachments) {
+            attachments.push({
+                filename: attachment.filename || 'unnamed',
+                contentType: attachment.contentType || 'application/octet-stream',
+                rawContent: attachment.content,
+                contentId: attachment.cid || undefined,
+            })
+        }
+    }
 
     return {
-        emails: toAddress.map((to) => ({
-            recipient: formatEmailAddress(to),
-            sender: formatEmailAddress(from),
-            recipient_sender: `${formatEmailAddress(to)}#${formatEmailAddress(from)}`,
-            cc: headers['cc'] ? headers['cc'].split(',').map((email) => email.trim()).map((em) => formatEmailAddress(em)) : [],
-            bcc: headers['bcc'] ? headers['bcc'].split(',').map((email) => email.trim()).map((em) => formatEmailAddress(em)) : [],
-            reply_to: headers['reply-to'] ? headers['reply-to'].split(',').map((email) => email.trim()).map((em) => formatEmailAddress(em)) : [],
+        emails: to.map((recipient) => ({
+            recipient,
+            sender,
+            recipient_sender: `${recipient}#${sender}`,
+            cc,
+            bcc,
+            reply_to: replyTo,
             subject,
             body,
             s3_key: '',
@@ -177,64 +177,19 @@ export function parseEmail(emailString: string): {
     }
 }
 
-function formatEmailAddress(email: string): string {
-    // 'cal macconnachie <cal.macconnachie@gmail.com>' -> 'cal.macconnachie@gmail.com'
-    const match = email.match(/<([^>]+)>/)
-    return match ? match[1].trim() : email.trim()
-}
+function extractEmailAddresses(addressObj: AddressObject | AddressObject[]): string[] {
+    const addresses: AddressObject[] = Array.isArray(addressObj) ? addressObj : [addressObj]
+    const emails: string[] = []
 
-function extractHtmlBody(body: string, attachments: Array<{ filename: string; contentType: string; rawContent: Buffer; contentId?: string }>): string {
-    const parts = body.split('--')
-    let htmlBody = ''
-
-    for (const part of parts) {
-        if (part.includes('Content-Type: text/html')) {
-            const lines = part.split('\n')
-            let isContent = false
-            let content = ''
-
-            for (const line of lines) {
-                if (isContent) {
-                    content += line + '\n'
+    for (const addr of addresses) {
+        if (addr.value) {
+            for (const item of addr.value) {
+                if (item.address) {
+                    emails.push(item.address)
                 }
-                if (line.includes('Content-Type: text/html')) {
-                    isContent = true // Start capturing content after this line
-                }
-            }
-
-            htmlBody += content.trim() // Append the captured content
-        } else if (part.includes('Content-Disposition: attachment')) {
-            const filenameMatch = part.match(/filename="(.+?)"/)
-            const contentTypeMatch = part.match(/Content-Type: (.+?);/)
-            const contentIdMatch = part.match(/Content-ID:\s*<([^>]+)>/i)
-            const rawContentStartIndex = part.indexOf('\r\n\r\n') + 4 // Find the start of the raw content
-            const rawContent = part.slice(rawContentStartIndex).trim()
-
-            if (filenameMatch && rawContent) {
-                attachments.push({
-                    filename: filenameMatch[1],
-                    contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
-                    rawContent: Buffer.from(rawContent, 'base64'),
-                    contentId: contentIdMatch ? contentIdMatch[1] : undefined,
-                })
-            }
-        } else if (part.includes('Content-Disposition: inline')) {
-            const filenameMatch = part.match(/filename="(.+?)"/)
-            const contentTypeMatch = part.match(/Content-Type: (.+?);/)
-            const contentIdMatch = part.match(/Content-ID:\s*<([^>]+)>/i)
-            const rawContentStartIndex = part.indexOf('\r\n\r\n') + 4 // Find the start of the raw content
-            const rawContent = part.slice(rawContentStartIndex).trim()
-
-            if (filenameMatch && rawContent) {
-                attachments.push({
-                    filename: filenameMatch[1],
-                    contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
-                    rawContent: Buffer.from(rawContent, 'base64'),
-                    contentId: contentIdMatch ? contentIdMatch[1] : undefined,
-                })
             }
         }
     }
 
-    return htmlBody.trim()
+    return emails
 }

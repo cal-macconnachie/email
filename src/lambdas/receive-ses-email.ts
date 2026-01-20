@@ -45,7 +45,7 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
       }
 
       // Parse the email
-      const { emails, attachments } = parseEmail(rawEmailString)
+      const { emails, attachments } = await parseEmail(rawEmailString)
 
       // Extract basic info
       const messageId = mail.messageId
