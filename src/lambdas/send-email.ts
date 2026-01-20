@@ -212,6 +212,13 @@ export const handler = async (
 
     // Process each recipient
     for (const recipient of to) {
+      // Skip internal recipients (macconnachie.com to macconnachie.com)
+      // These will be handled by receive-ses-email.ts which triggers push notifications
+      if (recipient.endsWith('@macconnachie.com')) {
+        console.log(`Skipping internal recipient ${recipient} (will be handled by receive-ses-email.ts)`)
+        continue
+      }
+
       const sanitizedRecipient = recipient.toLowerCase().replace(/[^a-z0-9@._-]/g, '_')
 
       // Move attachments from pending to final location and collect keys
