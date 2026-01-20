@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { shouldShowIOSInstructions } from '../utils/detectIOSSafari'
 import EmailList from '../views/EmailList.vue'
+import IOSInstallInstructions from '../views/IOSInstallInstructions.vue'
 import Login from '../views/Login.vue'
 import ThreadDetail from '../views/ThreadDetail.vue'
 
@@ -16,6 +18,12 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: '/ios-install',
+      name: 'ios-install',
+      component: IOSInstallInstructions,
       meta: { requiresAuth: false },
     },
     {
@@ -36,6 +44,13 @@ const router = createRouter({
 
 // Navigation guard to check authentication
 router.beforeEach(async (to, from, next) => {
+  // Check if iOS Safari user needs to see install instructions
+  if (shouldShowIOSInstructions() && to.name !== 'ios-install') {
+    // Redirect iOS Safari users (who haven't installed the PWA) to instructions
+    next({ name: 'ios-install' })
+    return
+  }
+
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth !== false
 
