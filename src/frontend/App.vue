@@ -1,16 +1,16 @@
 <template>
   <div id="app" class="min-h-screen">
-    <div v-if="authStore.isAuthenticated" class="compose-button">
+    <div v-if="authStore.isAuthenticated && authStore.isInitialized" class="compose-button">
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
     <div class="top-right-controls">
-      <email-selector v-if="authStore.isAuthenticated" />
+      <email-selector v-if="authStore.isAuthenticated && authStore.isInitialized" />
     </div>
     <router-view />
     <base-drawer ref="composeDrawer" size="lg" @drawer-close="emailStore.composing = false">
       <ComposeDrawer />
     </base-drawer>
-    <NotificationPrompt v-if="authStore.isAuthenticated" />
+    <NotificationPrompt v-if="authStore.isAuthenticated && authStore.isInitialized" />
     <PWAInstallPrompt />
   </div>
 </template>

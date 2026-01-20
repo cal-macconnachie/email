@@ -186,6 +186,9 @@ export const useEmailStore = defineStore('email', () => {
   }
 
   async function fetchEmailDetail(s3Key: string) {
+    if (isLoading.value) {
+      return
+    }
     isLoading.value = true
     error.value = null
     try {

@@ -491,7 +491,7 @@ async function handleServiceWorkerMessage(event: MessageEvent) {
       const newEmail = await emailStore.fetchEmailDetail(s3Key)
 
       // Add or update email in inbox store
-      emailStore.addOrUpdateInboxEmail(newEmail)
+      if (newEmail) emailStore.addOrUpdateInboxEmail(newEmail)
     } catch (error) {
       console.error('Failed to fetch new email from notification:', error)
       // Fallback to refetching inbox only if fetch fails

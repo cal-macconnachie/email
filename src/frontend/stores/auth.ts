@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', () => {
   const selectedRecipient = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const isInitialized = ref(false)
 
   // OTP flow state
   const otpSession = ref<string | null>(null)
@@ -123,6 +124,8 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       isAuthenticated.value = false
       return false
+    } finally {
+      isInitialized.value = true
     }
   }
 
@@ -147,6 +150,7 @@ export const useAuthStore = defineStore('auth', () => {
     otpRequested,
     recipients,
     defaultRecipient,
+    isInitialized,
     requestOtp,
     verifyOtp,
     logout,
