@@ -311,7 +311,7 @@
           </div>
         </base-tab>
       </base-tabs>
-      <base-drawer ref="filtersDropdown">
+      <base-drawer ref="filtersDropdown" @drawer-close="closeDropdown">
               <div class="filters-content">
                 <div class="filter-row">
                   <label class="filter-label">Sender</label>
@@ -462,7 +462,9 @@ watch(
   { immediate: true }
 )
 
-
+const closeDropdown = () => {
+  showFiltersDropdown.value = false
+}
 // Fetch functions for each mailbox
 async function fetchAllMailboxes() {
   const params: any = {
