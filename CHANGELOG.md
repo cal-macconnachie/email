@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.16](https://github.com/cal-macconnachie/email/compare/v1.6.15...v1.6.16) (2026-01-20)
+
+
+### Bug Fixes
+
+* ios install instructions ([2926331](https://github.com/cal-macconnachie/email/commit/292633112054cbfd4a024d6b1b2dff0d45eded27))
+
 ### [1.6.15](https://github.com/cal-macconnachie/email/compare/v1.6.14...v1.6.15) (2026-01-20)
 
 
