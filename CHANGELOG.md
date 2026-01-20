@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.11](https://github.com/cal-macconnachie/email/compare/v1.6.10...v1.6.11) (2026-01-20)
+
+
+### Bug Fixes
+
+* stuff ([557b852](https://github.com/cal-macconnachie/email/commit/557b8529db21e744813e338e1c02b9599e292e67))
+* view heights for large text ([8c9e54d](https://github.com/cal-macconnachie/email/commit/8c9e54dfc2fe70cebafb0da8505c1daecb72a2f7))
+
 ### [1.6.10](https://github.com/cal-macconnachie/email/compare/v1.6.9...v1.6.10) (2026-01-20)
 
 
