@@ -23,7 +23,7 @@ export function isIOSSafari(): boolean {
 export function isStandalone(): boolean {
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as any).standalone === true
+    window.navigator.standalone === true
   )
 }
 
