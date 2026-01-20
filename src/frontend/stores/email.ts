@@ -265,14 +265,55 @@ export const useEmailStore = defineStore('email', () => {
       const email = emails.value.find(e => e.timestamp === timestamp)
       if (!email) return
 
-      await api.emails.update(timestamp, { archived: !email.archived })
-      email.archived = !email.archived
+      const newArchivedStatus = !email.archived
+      await api.emails.update(timestamp, { archived: newArchivedStatus })
+      email.archived = newArchivedStatus
+
+      // Move email between mailboxes
+      if (newArchivedStatus) {
+        // Moving to archived
+        const inboxIndex = inboxEmails.value.findIndex(e => e.timestamp === timestamp)
+        if (inboxIndex !== -1) {
+          inboxEmails.value.splice(inboxIndex, 1)
+          archivedEmails.value.unshift(email)
+        }
+      } else {
+        // Moving to inbox
+        const archivedIndex = archivedEmails.value.findIndex(e => e.timestamp === timestamp)
+        if (archivedIndex !== -1) {
+          archivedEmails.value.splice(archivedIndex, 1)
+          inboxEmails.value.unshift(email)
+        }
+      }
 
       if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
-        currentEmail.value.archived = !currentEmail.value.archived
+        currentEmail.value.archived = newArchivedStatus
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to toggle archive'
+      throw err
+    }
+  }
+
+  async function toggleRead(timestamp: string) {
+    try {
+      const email = emails.value.find(e => e.timestamp === timestamp)
+      if (!email) return
+
+      // Don't try to mark sent emails as read
+      if (currentUserEmail.value && email.sender === currentUserEmail.value) {
+        return
+      }
+
+      const newReadStatus = !email.read
+      await api.emails.update(timestamp, { read: newReadStatus })
+      email.read = newReadStatus
+
+      if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
+        currentEmail.value.read = newReadStatus
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to toggle read status'
       throw err
     }
   }
@@ -417,6 +458,7 @@ export const useEmailStore = defineStore('email', () => {
     sendEmail,
     markAsRead,
     toggleArchived,
+    toggleRead,
     fetchThread,
     clearCurrentEmail,
     resetCompose,

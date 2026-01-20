@@ -71,46 +71,60 @@
               <p class="empty-text">No emails match your search</p>
             </div>
 
-            <div
+            <base-list
               v-else
               ref="inboxListRef"
               class="email-list-scrollable"
+              variant="divided"
+              size="md"
             >
-
-            <div
-              v-for="email in filteredInboxEmails"
-              :key="email.id"
-              class="email-list-item"
-              @click="handleEmailClick(email)"
-            >
-              <div v-if="!isMobile" class="email-card-content">
-                <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
-                <span class="email-sender">{{ email.sender }}</span>
-                <div class="email-badges">
-                  <span v-if="!email.read" class="badge unread-badge">•</span>
-                  <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
-                    <base-icon name="paperclip" size="10px" />
-                  </span>
-                </div>
-                <span class="email-date">{{ formatDate(email.created_at) }}</span>
-              </div>
-              <div v-else class="mobile-email-list-item">
-                <div class="mobile-row-top">
+              <base-list-item
+                v-for="email in filteredInboxEmails"
+                :key="email.id"
+                size="md"
+                interactive
+                :left-swipe-action="{
+                  icon: 'check',
+                  label: email.read ? 'Unread' : 'Read',
+                  color: 'var(--color-info)',
+                  callback: () => handleToggleRead(email)
+                }"
+                :right-swipe-action="{
+                  icon: 'file-cabinet',
+                  label: 'Archive',
+                  color: 'var(--color-warning)',
+                  callback: () => handleArchive(email)
+                }"
+                @item-click="handleEmailClick(email)"
+              >
+                <div v-if="!isMobile" class="email-card-content">
                   <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                  <span class="email-sender">{{ email.sender }}</span>
                   <div class="email-badges">
                     <span v-if="!email.read" class="badge unread-badge">•</span>
                     <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
                       <base-icon name="paperclip" size="10px" />
                     </span>
                   </div>
-                </div>
-                <div class="mobile-row-bottom">
-                  <span class="email-sender">{{ email.sender }}</span>
                   <span class="email-date">{{ formatDate(email.created_at) }}</span>
                 </div>
-              </div>
-            </div>
-            </div>
+                <div v-else class="mobile-email-list-item">
+                  <div class="mobile-row-top">
+                    <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
+                    <div class="email-badges">
+                      <span v-if="!email.read" class="badge unread-badge">•</span>
+                      <span v-if="email.attachment_keys && email.attachment_keys.length > 0" class="badge attachment-badge">
+                        <base-icon name="paperclip" size="10px" />
+                      </span>
+                    </div>
+                  </div>
+                  <div class="mobile-row-bottom">
+                    <span class="email-sender">{{ email.sender }}</span>
+                    <span class="email-date">{{ formatDate(email.created_at) }}</span>
+                  </div>
+                </div>
+              </base-list-item>
+            </base-list>
           </div>
 
           <div class="tab-footer">
@@ -169,17 +183,19 @@
             <p class="empty-text">No emails match your search</p>
           </div>
 
-          <div
+          <base-list
             v-else
             ref="sentListRef"
             class="email-list-scrollable"
+            variant="divided"
+            size="md"
           >
-
-            <div
+            <base-list-item
               v-for="email in filteredSentEmails"
               :key="email.id"
-              class="email-list-item"
-              @click="handleEmailClick(email)"
+              size="md"
+              interactive
+              @item-click="handleEmailClick(email)"
             >
               <div v-if="!isMobile" class="email-card-content">
                 <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
@@ -205,8 +221,8 @@
                   <span class="email-date">{{ formatDate(email.created_at) }}</span>
                 </div>
               </div>
-            </div>
-          </div>
+            </base-list-item>
+          </base-list>
           </div>
 
           <div class="tab-footer">
@@ -262,17 +278,31 @@
           <div v-else-if="filteredArchivedEmails.length === 0" class="empty-state">
             <p class="empty-text">No emails match your search</p>
           </div>
-          <div
+          <base-list
             v-else
             ref="archivedListRef"
             class="email-list-scrollable"
+            variant="divided"
+            size="md"
           >
-
-            <div
+            <base-list-item
               v-for="email in filteredArchivedEmails"
               :key="email.id"
-              class="email-list-item"
-              @click="handleEmailClick(email)"
+              size="md"
+              interactive
+              :left-swipe-action="{
+                icon: 'check',
+                label: email.read ? 'Unread' : 'Read',
+                color: 'var(--color-info)',
+                callback: () => handleToggleRead(email)
+              }"
+              :right-swipe-action="{
+                icon: 'open-email',
+                label: 'Unarchive',
+                color: 'var(--color-success)',
+                callback: () => handleUnarchive(email)
+              }"
+              @item-click="handleEmailClick(email)"
             >
               <div v-if="!isMobile" class="email-card-content">
                 <span class="email-subject">{{ email.subject || '(No subject)' }}</span>
@@ -300,8 +330,8 @@
                   <span class="email-date">{{ formatDate(email.created_at) }}</span>
                 </div>
               </div>
-            </div>
-          </div>
+            </base-list-item>
+          </base-list>
           </div>
 
           <div class="tab-footer">
@@ -598,6 +628,30 @@ function formatDate(dateStr: string): string {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
   }
 }
+
+async function handleToggleRead(email: Email) {
+  try {
+    await emailStore.toggleRead(email.timestamp)
+  } catch (error) {
+    console.error('Failed to toggle read status:', error)
+  }
+}
+
+async function handleArchive(email: Email) {
+  try {
+    await emailStore.toggleArchived(email.timestamp)
+  } catch (error) {
+    console.error('Failed to archive email:', error)
+  }
+}
+
+async function handleUnarchive(email: Email) {
+  try {
+    await emailStore.toggleArchived(email.timestamp)
+  } catch (error) {
+    console.error('Failed to unarchive email:', error)
+  }
+}
 </script>
 
 <style scoped>
@@ -687,21 +741,9 @@ function formatDate(dateStr: string): string {
   transform: rotate(180deg);
 }
 
-.email-list-item {
-  padding: var(--space-2);
-  border-bottom: 1px solid var(--color-border);
-  cursor: pointer;
-  transition: background-color 0.2s;
-  min-width: 0;
+/* Ensure list items have proper minimum height */
+base-list-item {
   min-height: 44px;
-}
-
-.email-list-item:hover {
-  background-color: var(--color-bg-muted);
-}
-
-.email-list-item:last-child {
-  border-bottom: none;
 }
 
 .email-main {
@@ -743,6 +785,7 @@ function formatDate(dateStr: string): string {
   width: 100%;
   min-width: 0;
   overflow: hidden;
+  padding: var(--space-2) 0;
 }
 
 .email-subject {
@@ -822,6 +865,7 @@ function formatDate(dateStr: string): string {
   gap: var(--space-2);
   width: 100%;
   min-width: 0;
+  padding: var(--space-2) 0;
 }
 
 .mobile-row-top {

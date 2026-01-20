@@ -6,6 +6,8 @@ import {
   registerBaseDrawer,
   registerBaseIcon,
   registerBaseInput,
+  registerBaseList,
+  registerBaseListItem,
   registerBaseSelect,
   registerBaseTab,
   registerBaseTabs,
@@ -33,6 +35,8 @@ registerBaseTab()
 registerBaseTabs()
 registerBaseSelect()
 registerBaseIcon()
+registerBaseList()
+registerBaseListItem()
 
 const app = createApp(App)
 const pinia = createPinia()
