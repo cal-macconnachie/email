@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb'
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
+import { marshall } from '@aws-sdk/util-dynamodb'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { update } from './helpers/dynamo-helpers/update'
 import { Email } from './helpers/parse-email'
@@ -87,6 +87,7 @@ export const handler = async (
         }
       } catch (err) {
         // Continue checking other recipients
+        console.warn(`Error checking recipient ${recipientToCheck}:`, err)
         continue
       }
     }
