@@ -606,7 +606,6 @@ function formatDate(dateStr: string): string {
   padding-top: var(--space-12);
   gap: var(--space-4);
   height: 100dvh;
-  max-height: 100dvh;
   overflow: hidden;
 }
 
@@ -651,7 +650,6 @@ function formatDate(dateStr: string): string {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  max-height: 100dvh;
 }
 
 
@@ -688,11 +686,12 @@ function formatDate(dateStr: string): string {
 }
 
 .email-list-item {
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2);
   border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background-color 0.2s;
   min-width: 0;
+  min-height: 44px;
 }
 
 .email-list-item:hover {
@@ -747,21 +746,27 @@ function formatDate(dateStr: string): string {
 .email-subject {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 2 1 0;
   min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 
 .email-sender {
   font-size: var(--font-size-sm);
   opacity: 0.6;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1 1 0;
   min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 
 .email-badges {
@@ -812,14 +817,17 @@ function formatDate(dateStr: string): string {
 .mobile-email-list-item {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
 }
 
 .mobile-row-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .mobile-row-bottom {
@@ -843,7 +851,6 @@ function formatDate(dateStr: string): string {
   overflow-x: hidden;
   flex: 1;
   min-height: 0;
-  height: 0;
   -webkit-overflow-scrolling: touch;
 }
 .row {
@@ -868,6 +875,16 @@ function formatDate(dateStr: string): string {
 
   .email-list-card {
     max-height: none;
+  }
+
+  .mobile-email-list-item .email-subject {
+    flex: 1;
+    -webkit-line-clamp: 3;
+  }
+
+  .mobile-email-list-item .email-sender {
+    white-space: normal;
+    -webkit-line-clamp: 2;
   }
 }
 </style>

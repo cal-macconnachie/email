@@ -269,18 +269,26 @@ async function handleToggleArchive(email: Email) {
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--color-border);
+  min-width: 0;
+  max-width: 100%;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .thread-email-meta {
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .thread-email-sender {
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .thread-email-date {
@@ -312,6 +320,23 @@ async function handleToggleArchive(email: Email) {
   overflow-wrap: break-word;
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+.email-body :deep(table) {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+.email-body :deep(img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.email-body :deep(pre) {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .email-body-loading {
@@ -363,6 +388,9 @@ async function handleToggleArchive(email: Email) {
 .attachment-name {
   flex: 1;
   font-size: var(--font-size-sm);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .download-icon {
@@ -377,6 +405,16 @@ async function handleToggleArchive(email: Email) {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .thread-email-actions {
+    gap: var(--space-3);
+  }
+
+  .attachment-item {
+    min-height: 44px;
   }
 }
 </style>

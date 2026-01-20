@@ -108,7 +108,6 @@ onMounted(async () => {
 <style scoped>
 .email-detail-container {
   height: 100dvh;
-  max-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
   display: flex;
@@ -150,6 +149,8 @@ onMounted(async () => {
   margin: 0 0 var(--space-2) 0;
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .email-meta {
@@ -190,6 +191,7 @@ onMounted(async () => {
   border-radius: var(--radius-md);
   background: var(--color-bg-primary);
   transition: all 0.3s ease;
+  min-height: fit-content;
 }
 
 .loading-state {
