@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.12](https://github.com/cal-macconnachie/email/compare/v1.6.11...v1.6.12) (2026-01-20)
+
+
+### Bug Fixes
+
+* mail parser ([dab1256](https://github.com/cal-macconnachie/email/commit/dab12563cc5da87761536a9bc3139f0965be2616))
+
 ### [1.6.11](https://github.com/cal-macconnachie/email/compare/v1.6.10...v1.6.11) (2026-01-20)
 
 
