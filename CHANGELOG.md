@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.15](https://github.com/cal-macconnachie/email/compare/v1.6.14...v1.6.15) (2026-01-20)
+
+
+### Bug Fixes
+
+* attempt ios install instructions ([fb98998](https://github.com/cal-macconnachie/email/commit/fb989986cd1151a66cd29771d5aedd328acc81a3))
+* lint ([b4c053e](https://github.com/cal-macconnachie/email/commit/b4c053e4edb5616f7fc1c7c222ec5335fc86b39d))
+* lint script ([5eb09f1](https://github.com/cal-macconnachie/email/commit/5eb09f17c5e80ab0faa60109faf53f3139c97675))
+
 ### [1.6.14](https://github.com/cal-macconnachie/email/compare/v1.6.13...v1.6.14) (2026-01-20)
 
 
