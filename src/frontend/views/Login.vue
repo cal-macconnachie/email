@@ -149,6 +149,8 @@ async function handleVerifyOtp() {
   try {
     const success = await authStore.verifyOtp(otpCode.value)
     if (success) {
+      // Load session data (recipients, default recipient) after successful login
+      await authStore.checkSession()
       router.push('/emails')
     }
   } catch (error) {

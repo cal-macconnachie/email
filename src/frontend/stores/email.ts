@@ -234,24 +234,14 @@ export const useEmailStore = defineStore('email', () => {
   }
 
   async function markAsRead(timestamp: string) {
-    console.log('[markAsRead] Called with timestamp:', timestamp)
     // Don't try to mark sent emails as read
     const email = emails.value.find(e => e.timestamp === timestamp) || currentEmail.value
-    console.log('[markAsRead] Email found:', {
-      hasEmail: !!email,
-      sender: email?.sender,
-      recipient: email?.recipient,
-      currentUserEmail: currentUserEmail.value,
-      isSentEmail: email && currentUserEmail.value && email.sender === currentUserEmail.value
-    })
     if (email && currentUserEmail.value && email.sender === currentUserEmail.value) {
       // This is a sent email, don't try to update it
-      console.log('[markAsRead] Skipping - this is a sent email')
       return
     }
 
     try {
-      console.log('[markAsRead] Updating email to read=true')
       await api.emails.update(timestamp, { read: true })
       // Update local state
       const email = emails.value.find(e => e.timestamp === timestamp)
@@ -261,9 +251,7 @@ export const useEmailStore = defineStore('email', () => {
       if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
         currentEmail.value.read = true
       }
-      console.log('[markAsRead] Successfully marked as read')
     } catch (err) {
-      console.error('[markAsRead] Error:', err)
       error.value = err instanceof Error ? err.message : 'Failed to mark as read'
       throw err
     }

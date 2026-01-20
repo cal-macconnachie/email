@@ -209,18 +209,8 @@ onMounted(async () => {
     intersectionObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          console.log('[IntersectionObserver] Entry:', {
-            isIntersecting: entry.isIntersecting,
-            hasEmail: !!email.value,
-            emailRead: email.value?.read,
-            isUserReceivedEmail: isUserReceivedEmail(),
-            selectedRecipient: authStore.selectedRecipient,
-            emailRecipient: email.value?.recipient,
-            emailSender: email.value?.sender,
-          })
           // If email is in viewport and is unread, mark as read
           if (entry.isIntersecting && email.value && !email.value.read && isUserReceivedEmail()) {
-            console.log('[IntersectionObserver] Calling markAsRead for timestamp:', email.value.timestamp)
             emailStore.markAsRead(email.value.timestamp)
           }
         })

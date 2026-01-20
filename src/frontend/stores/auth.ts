@@ -111,25 +111,16 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function checkSession() {
     try {
-      const response = await api.auth.getSession()
-      console.log('[checkSession] API response:', response)
-      const { recipients: apiRecipients, default_recipient } = response
+      const { recipients: apiRecipients, default_recipient } = await api.auth.getSession()
       recipients.value = apiRecipients
       defaultRecipient.value = default_recipient
-      console.log('[checkSession] Before setting selectedRecipient:', {
-        selectedRecipient: selectedRecipient.value,
-        defaultRecipient: default_recipient,
-        willSet: !selectedRecipient.value && !!default_recipient
-      })
       // Initialize selectedRecipient to defaultRecipient if not already set
       if (!selectedRecipient.value && default_recipient) {
         selectedRecipient.value = default_recipient
-        console.log('[checkSession] Set selectedRecipient to:', selectedRecipient.value)
       }
       isAuthenticated.value = true
       return true
-    } catch (error) {
-      console.error('[checkSession] Error:', error)
+    } catch {
       isAuthenticated.value = false
       return false
     }
