@@ -19,11 +19,23 @@ if [[ -n $(git status --porcelain) ]]; then
   git commit -m "$response"
 fi
 
-# run terraform fmt to lint terraform files
+# run linter with retry loop
 echo "Running linter..."
-yarn lint
+while true; do
+  yarn lint
+  if [[ $? -eq 0 ]]; then
+    break
+  fi
+  echo "\nLinting failed. Please fix the errors."
+  read "?Have you fixed the errors? (y/n) " response
+  if [[ "$response" != "y" ]]; then
+    echo "Release cancelled."
+    exit 1
+  fi
+  echo "Re-running linter..."
+done
 
-# if tree is dirty after linting, abort
+# if tree is dirty after linting, commit the changes
 if [[ -n $(git status --porcelain) ]]; then
   read "?Linting changes detected. Please review and input 'y' to continue, press any other key to abort: " response
   if [[ "$response" != "y" ]]; then
@@ -31,7 +43,7 @@ if [[ -n $(git status --porcelain) ]]; then
     exit 1
   fi
   git add .
-  git commit -m "chore: lint terraform files"
+  git commit -m "fix: lint"
 fi
 
 # build lambda files
