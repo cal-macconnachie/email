@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.13](https://github.com/cal-macconnachie/email/compare/v1.6.12...v1.6.13) (2026-01-20)
+
+
+### Bug Fixes
+
+* close dropdown reset boolean ([9ee2115](https://github.com/cal-macconnachie/email/commit/9ee2115820d392b976b3a7cb634c1e2b5bad254a))
+
 ### [1.6.12](https://github.com/cal-macconnachie/email/compare/v1.6.11...v1.6.12) (2026-01-20)
 
 
