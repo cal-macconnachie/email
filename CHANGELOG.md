@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.14](https://github.com/cal-macconnachie/email/compare/v1.6.13...v1.6.14) (2026-01-20)
+
+
+### Bug Fixes
+
+* allow updating of non default emails ([d01c0b1](https://github.com/cal-macconnachie/email/commit/d01c0b176fe1373c62c54bd93e983c6a18f5a792))
+* lint ([1862ec2](https://github.com/cal-macconnachie/email/commit/1862ec27ec169d9934a2908c8b74f7c92da06658))
+
 ### [1.6.13](https://github.com/cal-macconnachie/email/compare/v1.6.12...v1.6.13) (2026-01-20)
 
 
