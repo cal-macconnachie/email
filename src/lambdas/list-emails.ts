@@ -38,6 +38,7 @@ export const handler = async (
     // Authenticate and get recipient from phone→email mapping
     const authResult = await getAuthenticatedRecipient(event)
     if (!authResult.success) {
+      console.warn('Authentication failed:', authResult.error)
       return {
         statusCode: authResult.statusCode,
         headers: { 'Content-Type': 'application/json' },
