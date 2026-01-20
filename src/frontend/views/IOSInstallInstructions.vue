@@ -17,8 +17,6 @@
             <div class="step-content">
               <p class="step-text">
                 Tap the <strong>Share</strong> button
-                <span class="share-icon">⎵</span>
-                at the bottom of Safari
               </p>
             </div>
           </div>
