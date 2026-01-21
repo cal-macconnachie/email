@@ -1028,19 +1028,22 @@ base-list-item {
 
   /* Override base-tabs styles for mobile */
   .email-tabs :deep(.tabs-container) {
-    padding-top: var(--space-2);
+    padding-top: 0;
+    margin-right: 70px;
   }
 
   .email-tabs :deep(.tabs-sidebar) {
-    width: 100%;
+    width: auto;
     position: relative;
-    padding: var(--space-2) var(--space-4);
+    padding: var(--space-3);
     margin-bottom: var(--space-2);
+    min-height: 120px;
   }
 
   .email-tabs :deep(.tabs-list) {
     width: 100%;
-    justify-content: center;
+    justify-content: space-around;
+    height: 100%;
   }
 }
 </style>

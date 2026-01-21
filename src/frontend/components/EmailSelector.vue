@@ -297,4 +297,18 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(-10px);
 }
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .selector-button {
+    width: 50px;
+    height: 50px;
+  }
+
+  .email-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: var(--font-size-base);
+  }
+}
 </style>
