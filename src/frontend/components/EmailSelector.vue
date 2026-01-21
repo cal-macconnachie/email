@@ -159,6 +159,7 @@ onBeforeUnmount(() => {
 .email-selector {
   position: relative;
   color: inherit;
+  border-radius: 50%;
 }
 
 .selector-button {
