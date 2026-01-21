@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.46](https://github.com/cal-macconnachie/email/compare/v1.6.45...v1.6.46) (2026-01-21)
+
+
+### Bug Fixes
+
+* lets ee ([17792ea](https://github.com/cal-macconnachie/email/commit/17792eae1b0142b7ffab17b36648a17a011e2092))
+
 ### [1.6.45](https://github.com/cal-macconnachie/email/compare/v1.6.44...v1.6.45) (2026-01-21)
 
 
