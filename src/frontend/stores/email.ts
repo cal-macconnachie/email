@@ -35,6 +35,13 @@ export const useEmailStore = defineStore('email', () => {
     body: '',
   })
 
+  // Separate refs for better reactivity with web components
+  const formDataTo = ref<string[]>([])
+  const formDataCc = ref<string[]>([])
+  const formDataBcc = ref<string[]>([])
+  const formDataSubject = ref('')
+  const formDataBody = ref('')
+
   const replyData = ref<{
     inReplyTo?: string
     references?: string[]
@@ -395,6 +402,11 @@ export const useEmailStore = defineStore('email', () => {
       subject: '',
       body: '',
     }
+    formDataTo.value = []
+    formDataCc.value = []
+    formDataBcc.value = []
+    formDataSubject.value = ''
+    formDataBody.value = ''
     replyData.value = {}
     attachments.value = []
     composing.value = false
@@ -421,6 +433,8 @@ export const useEmailStore = defineStore('email', () => {
   function prepareReply(email: Email) {
     formData.value.to = [email.sender]
     formData.value.subject = `Re: ${email.subject || ''}`
+    formDataTo.value = [email.sender]
+    formDataSubject.value = `Re: ${email.subject || ''}`
     replyData.value.inReplyTo = email.message_id
     replyData.value.references = email.references || []
     composing.value = true
@@ -480,6 +494,11 @@ export const useEmailStore = defineStore('email', () => {
     unreadCount,
     threads,
     formData,
+    formDataTo,
+    formDataCc,
+    formDataBcc,
+    formDataSubject,
+    formDataBody,
     replyData,
     attachments,
     composing,

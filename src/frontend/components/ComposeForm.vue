@@ -5,7 +5,7 @@
         <base-select
           ref="toInput"
           id="to"
-          v-model="emailStore.formData.to"
+          v-model="emailStore.formDataTo"
           label="To"
           placeholder="recipient@example.com"
           searchable
@@ -19,7 +19,7 @@
       </div>
 
       <!-- CC/BCC Toggle Button -->
-      <div v-if="!showCcBcc && emailStore.formData.cc.length === 0 && emailStore.formData.bcc.length === 0" class="form-field">
+      <div v-if="!showCcBcc && emailStore.formDataCc.length === 0 && emailStore.formDataBcc.length === 0" class="form-field">
         <button
           type="button"
           @click="showCcBcc = true"
@@ -32,11 +32,11 @@
 
       <!-- CC/BCC Fields (collapsible) -->
       <transition name="slide-fade">
-        <div v-if="showCcBcc || emailStore.formData.cc.length > 0 || emailStore.formData.bcc.length > 0" class="cc-bcc-container">
+        <div v-if="showCcBcc || emailStore.formDataCc.length > 0 || emailStore.formDataBcc.length > 0" class="cc-bcc-container">
           <div class="form-field">
             <base-select
               id="cc"
-              v-model="emailStore.formData.cc"
+              v-model="emailStore.formDataCc"
               label="CC (optional)"
               placeholder="cc@example.com"
               searchable
@@ -51,7 +51,7 @@
           <div class="form-field">
             <base-select
               id="bcc"
-              v-model="emailStore.formData.bcc"
+              v-model="emailStore.formDataBcc"
               label="BCC (optional)"
               placeholder="bcc@example.com"
               searchable
@@ -68,7 +68,7 @@
       <div class="form-field">
         <base-input
           id="subject"
-          v-model="emailStore.formData.subject"
+          v-model="emailStore.formDataSubject"
           type="text"
           label="Subject"
           placeholder="Email subject"
@@ -80,7 +80,7 @@
       <div class="form-field form-field-textarea">
         <base-textarea
           id="body"
-          v-model="emailStore.formData.body"
+          v-model="emailStore.formDataBody"
           label="Message"
           :rows="8"
           placeholder="Write your message..."
@@ -215,9 +215,9 @@ const hasUploadingAttachments = computed(() =>
 )
 
 const isFormValid = computed(() => {
-  const hasTo = emailStore.formData.to.length > 0
-  const hasSubject = emailStore.formData.subject.trim().length > 0
-  const hasBody = emailStore.formData.body.trim().length > 0
+  const hasTo = emailStore.formDataTo.length > 0
+  const hasSubject = emailStore.formDataSubject.trim().length > 0
+  const hasBody = emailStore.formDataBody.trim().length > 0
   return hasTo && hasSubject && hasBody
 })
 
@@ -279,10 +279,10 @@ function handleTouchMove(event: TouchEvent) {
 onMounted(() => {
   // Pre-fill form if replying to an email
   if (route.query.replyTo) {
-    emailStore.formData.to = [route.query.replyTo as string]
+    emailStore.formDataTo = [route.query.replyTo as string]
   }
   if (route.query.subject) {
-    emailStore.formData.subject = route.query.subject as string
+    emailStore.formDataSubject = route.query.subject as string
   }
   if (route.query.inReplyTo) {
     emailStore.replyData.inReplyTo = route.query.inReplyTo as string
@@ -302,13 +302,13 @@ onMounted(() => {
   }
 
   // Show CC/BCC if they have values (e.g., from query params)
-  if (emailStore.formData.cc.length > 0 || emailStore.formData.bcc.length > 0) {
+  if (emailStore.formDataCc.length > 0 || emailStore.formDataBcc.length > 0) {
     showCcBcc.value = true
   }
 
   // Focus the To field for better UX
   nextTick(() => {
-    if (toInput.value && emailStore.formData.to.length === 0) {
+    if (toInput.value && emailStore.formDataTo.length === 0) {
       const inputElement = toInput.value as any
       if (inputElement.$el?.querySelector('input')) {
         inputElement.$el.querySelector('input').focus()
@@ -359,11 +359,11 @@ async function handleSend() {
 
   try {
     const emailData = {
-      to: emailStore.formData.to,
-      subject: emailStore.formData.subject,
-      body: emailStore.formData.body,
-      cc: emailStore.formData.cc.length > 0 ? emailStore.formData.cc : undefined,
-      bcc: emailStore.formData.bcc.length > 0 ? emailStore.formData.bcc : undefined,
+      to: emailStore.formDataTo,
+      subject: emailStore.formDataSubject,
+      body: emailStore.formDataBody,
+      cc: emailStore.formDataCc.length > 0 ? emailStore.formDataCc : undefined,
+      bcc: emailStore.formDataBcc.length > 0 ? emailStore.formDataBcc : undefined,
       inReplyTo: emailStore.replyData.inReplyTo,
       references: emailStore.replyData.references,
       attachmentKeys: emailStore.attachments.map(a => a.key),
