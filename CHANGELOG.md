@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.49](https://github.com/cal-macconnachie/email/compare/v1.6.48...v1.6.49) (2026-01-21)
+
+
+### Bug Fixes
+
+* tweak ([6201ff1](https://github.com/cal-macconnachie/email/commit/6201ff161a24ac1384e416f8885f991a23a8f555))
+
 ### [1.6.48](https://github.com/cal-macconnachie/email/compare/v1.6.47...v1.6.48) (2026-01-21)
 
 
