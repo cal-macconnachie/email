@@ -81,20 +81,9 @@
               <base-list-item
                 v-for="email in filteredInboxEmails"
                 :key="email.id"
+                :ref="(el: any) => setInboxSwipeActions(el, email)"
                 size="md"
                 interactive
-                :.leftSwipeAction="{
-                  icon: 'check',
-                  label: email.read ? 'Unread' : 'Read',
-                  color: 'var(--color-info)',
-                  callback: () => handleToggleRead(email)
-                }"
-                :.rightSwipeAction="{
-                  icon: 'file-cabinet',
-                  label: 'Archive',
-                  color: 'var(--color-warning)',
-                  callback: () => handleArchive(email)
-                }"
                 @item-click="handleEmailClick(email)"
               >
                 <div v-if="!isMobile" class="email-card-content">
@@ -288,20 +277,9 @@
             <base-list-item
               v-for="email in filteredArchivedEmails"
               :key="email.id"
+              :ref="(el: any) => setArchivedSwipeActions(el, email)"
               size="md"
               interactive
-              :.leftSwipeAction="{
-                icon: 'check',
-                label: email.read ? 'Unread' : 'Read',
-                color: 'var(--color-info)',
-                callback: () => handleToggleRead(email)
-              }"
-              :.rightSwipeAction="{
-                icon: 'open-email',
-                label: 'Unarchive',
-                color: 'var(--color-success)',
-                callback: () => handleUnarchive(email)
-              }"
               @item-click="handleEmailClick(email)"
             >
               <div v-if="!isMobile" class="email-card-content">
@@ -650,6 +628,42 @@ async function handleUnarchive(email: Email) {
     await emailStore.toggleArchived(email.timestamp)
   } catch (error) {
     console.error('Failed to unarchive email:', error)
+  }
+}
+
+function setInboxSwipeActions(el: any, email: Email) {
+  if (!el) return
+
+  el.leftSwipeAction = {
+    icon: 'check',
+    label: email.read ? 'Unread' : 'Read',
+    color: 'var(--color-info)',
+    callback: () => handleToggleRead(email)
+  }
+
+  el.rightSwipeAction = {
+    icon: 'file-cabinet',
+    label: 'Archive',
+    color: 'var(--color-warning)',
+    callback: () => handleArchive(email)
+  }
+}
+
+function setArchivedSwipeActions(el: any, email: Email) {
+  if (!el) return
+
+  el.leftSwipeAction = {
+    icon: 'check',
+    label: email.read ? 'Unread' : 'Read',
+    color: 'var(--color-info)',
+    callback: () => handleToggleRead(email)
+  }
+
+  el.rightSwipeAction = {
+    icon: 'open-email',
+    label: 'Unarchive',
+    color: 'var(--color-success)',
+    callback: () => handleUnarchive(email)
   }
 }
 </script>

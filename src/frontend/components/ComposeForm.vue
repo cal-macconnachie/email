@@ -229,8 +229,13 @@ const emailAddressOptions = computed(() => {
     }
   })
 
-  // Convert to array and sort alphabetically
-  return Array.from(uniqueEmails).sort()
+  // Convert to array, sort alphabetically, and format for base-select
+  return Array.from(uniqueEmails)
+    .sort()
+    .map(email => ({
+      value: email,
+      label: email
+    }))
 })
 
 // Handle touch events to prevent drawer close when scrolling
