@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.37](https://github.com/cal-macconnachie/email/compare/v1.6.36...v1.6.37) (2026-01-21)
+
+
+### Bug Fixes
+
+* better ico and refresh logic ([ea2f45a](https://github.com/cal-macconnachie/email/commit/ea2f45a613ead19136fff0758dd3768f500a64bf))
+
 ### [1.6.36](https://github.com/cal-macconnachie/email/compare/v1.6.35...v1.6.36) (2026-01-21)
 
 
