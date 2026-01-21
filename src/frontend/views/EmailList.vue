@@ -76,7 +76,9 @@
               ref="inboxListRef"
               class="email-list-scrollable"
               variant="divided"
+              pull-action-icon="↻"
               size="md"
+              @list-pulled="resetInbox"
             >
               <base-list-item
                 v-for="email in filteredInboxEmails"
@@ -179,6 +181,8 @@
             class="email-list-scrollable"
             variant="divided"
             size="md"
+            pull-action-icon="↻"
+            @list-pulled="resetSent"
           >
             <base-list-item
               v-for="email in filteredSentEmails"
@@ -275,6 +279,8 @@
             class="email-list-scrollable"
             variant="divided"
             size="md"
+            pull-action-icon="↻"
+            @list-pulled="resetArchived"
           >
             <base-list-item
               v-for="email in filteredArchivedEmails"
@@ -668,6 +674,39 @@ function setArchivedSwipeActions(el: any, email: Email) {
     iconColor: 'var(--color-success)',
     callback: () => handleUnarchive(email)
   }
+}
+
+async function resetInbox() {
+  const params: any = {
+    sortOrder: filters.value.sortOrder,
+  }
+  if (filters.value.sender) params.sender = filters.value.sender
+  if (filters.value.startDate) params.startDate = filters.value.startDate
+  if (filters.value.endDate) params.endDate = filters.value.endDate
+
+  await emailStore.fetchInboxEmails(params, true)
+}
+
+async function resetSent() {
+  const params: any = {
+    sortOrder: filters.value.sortOrder,
+  }
+  if (filters.value.sender) params.sender = filters.value.sender
+  if (filters.value.startDate) params.startDate = filters.value.startDate
+  if (filters.value.endDate) params.endDate = filters.value.endDate
+
+  await emailStore.fetchSentEmails(params, true)
+}
+
+async function resetArchived() {
+  const params: any = {
+    sortOrder: filters.value.sortOrder,
+  }
+  if (filters.value.sender) params.sender = filters.value.sender
+  if (filters.value.startDate) params.startDate = filters.value.startDate
+  if (filters.value.endDate) params.endDate = filters.value.endDate
+
+  await emailStore.fetchArchivedEmails(params, true)
 }
 </script>
 

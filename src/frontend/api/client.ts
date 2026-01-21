@@ -112,7 +112,20 @@ export const api = {
   },
 
   emails: {
-    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC'; mailbox?: 'inbox' | 'sent' | 'archived'; recipient?: string }): Promise<ListEmailsResponse> {
+    async list(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC'; mailbox?: 'inbox' | 'sent' | 'archived'; recipient?: string; lastEvaluatedKey?: Record<string, unknown> }): Promise<ListEmailsResponse> {
+      // If we have a lastEvaluatedKey, send all params in the body via POST
+      if (params?.lastEvaluatedKey) {
+        const response = await fetch(`${API_BASE}/emails/list`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(params),
+        })
+        if (!response.ok) throw new Error('Failed to fetch emails')
+        return response.json()
+      }
+
+      // Otherwise use GET with query params
       const queryParams = new URLSearchParams()
       if (params?.sender) queryParams.append('sender', params.sender)
       if (params?.startDate) queryParams.append('startDate', params.startDate)

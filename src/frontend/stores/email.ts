@@ -11,6 +11,11 @@ export const useEmailStore = defineStore('email', () => {
   const lastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
   const fetchedThreads = ref<Set<string>>(new Set())
 
+  // Pagination keys for each mailbox
+  const inboxLastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
+  const sentLastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
+  const archivedLastEvaluatedKey = ref<Record<string, unknown> | undefined>(undefined)
+
   // Separate email lists for each mailbox
   const inboxEmails = ref<Email[]>([])
   const sentEmails = ref<Email[]>([])
@@ -67,6 +72,11 @@ export const useEmailStore = defineStore('email', () => {
     return threadMap
   })
 
+  // Computed properties to check if there are more pages
+  const hasMoreInboxEmails = computed(() => inboxLastEvaluatedKey.value !== undefined)
+  const hasMoreSentEmails = computed(() => sentLastEvaluatedKey.value !== undefined)
+  const hasMoreArchivedEmails = computed(() => archivedLastEvaluatedKey.value !== undefined)
+
   async function fetchEmails(params?: { sender?: string; startDate?: string; endDate?: string; limit?: number; sortOrder?: 'ASC' | 'DESC' }) {
     // Determine if this is initial load or background refresh
     const hasExistingEmails = emails.value.length > 0
@@ -91,9 +101,13 @@ export const useEmailStore = defineStore('email', () => {
     }
   }
 
-  async function fetchInboxEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+  async function fetchInboxEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }, reset = false) {
     isLoadingInbox.value = true
     inboxError.value = null
+    if (reset) {
+      inboxLastEvaluatedKey.value = undefined
+      inboxEmails.value = []
+    }
     try {
       const authStore = useAuthStore()
       const recipient = authStore.selectedRecipient || authStore.defaultRecipient
@@ -102,6 +116,8 @@ export const useEmailStore = defineStore('email', () => {
         mailbox: 'inbox',
         recipient: recipient || undefined,
       })
+      // Reset pagination key on fresh fetch
+      inboxLastEvaluatedKey.value = response.lastEvaluatedKey
       // Replace inbox emails but preserve any that have bodies loaded
       const existingEmailsWithBodies = inboxEmails.value.filter(e => e.body)
       inboxEmails.value = response.emails
@@ -120,9 +136,39 @@ export const useEmailStore = defineStore('email', () => {
     }
   }
 
-  async function fetchSentEmails(params?: { sortOrder?: 'ASC' | 'DESC' }) {
+  async function loadMoreInboxEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+    if (!inboxLastEvaluatedKey.value || isLoadingInbox.value) {
+      return
+    }
+    isLoadingInbox.value = true
+    inboxError.value = null
+    try {
+      const authStore = useAuthStore()
+      const recipient = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.list({
+        ...params,
+        mailbox: 'inbox',
+        recipient: recipient || undefined,
+        lastEvaluatedKey: inboxLastEvaluatedKey.value,
+      })
+      inboxLastEvaluatedKey.value = response.lastEvaluatedKey
+      // Append new emails
+      inboxEmails.value.push(...response.emails)
+    } catch (err) {
+      inboxError.value = err instanceof Error ? err.message : 'Failed to load more inbox emails'
+      throw err
+    } finally {
+      isLoadingInbox.value = false
+    }
+  }
+
+  async function fetchSentEmails(params?: { sortOrder?: 'ASC' | 'DESC' }, reset = false) {
     isLoadingSent.value = true
     sentError.value = null
+    if (reset) {
+      sentLastEvaluatedKey.value = undefined
+      inboxEmails.value = []
+    }
     try {
       const authStore = useAuthStore()
       const recipient = authStore.selectedRecipient || authStore.defaultRecipient
@@ -131,6 +177,8 @@ export const useEmailStore = defineStore('email', () => {
         mailbox: 'sent',
         recipient: recipient || undefined,
       })
+      // Reset pagination key on fresh fetch
+      sentLastEvaluatedKey.value = response.lastEvaluatedKey
       // Replace sent emails but preserve any that have bodies loaded
       const existingEmailsWithBodies = sentEmails.value.filter(e => e.body)
       sentEmails.value = response.emails
@@ -149,9 +197,39 @@ export const useEmailStore = defineStore('email', () => {
     }
   }
 
-  async function fetchArchivedEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+  async function loadMoreSentEmails(params?: { sortOrder?: 'ASC' | 'DESC' }) {
+    if (!sentLastEvaluatedKey.value || isLoadingSent.value) {
+      return
+    }
+    isLoadingSent.value = true
+    sentError.value = null
+    try {
+      const authStore = useAuthStore()
+      const recipient = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.list({
+        ...params,
+        mailbox: 'sent',
+        recipient: recipient || undefined,
+        lastEvaluatedKey: sentLastEvaluatedKey.value,
+      })
+      sentLastEvaluatedKey.value = response.lastEvaluatedKey
+      // Append new emails
+      sentEmails.value.push(...response.emails)
+    } catch (err) {
+      sentError.value = err instanceof Error ? err.message : 'Failed to load more sent emails'
+      throw err
+    } finally {
+      isLoadingSent.value = false
+    }
+  }
+
+  async function fetchArchivedEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }, reset = false) {
     isLoadingArchived.value = true
     archivedError.value = null
+    if (reset) {
+      archivedLastEvaluatedKey.value = undefined
+      archivedEmails.value = []
+    }
     try {
       const authStore = useAuthStore()
       const recipient = authStore.selectedRecipient || authStore.defaultRecipient
@@ -160,6 +238,8 @@ export const useEmailStore = defineStore('email', () => {
         mailbox: 'archived',
         recipient: recipient || undefined,
       })
+      // Reset pagination key on fresh fetch
+      archivedLastEvaluatedKey.value = response.lastEvaluatedKey
       // Replace archived emails but preserve any that have bodies loaded
       const existingEmailsWithBodies = archivedEmails.value.filter(e => e.body)
       archivedEmails.value = response.emails
@@ -172,6 +252,32 @@ export const useEmailStore = defineStore('email', () => {
       })
     } catch (err) {
       archivedError.value = err instanceof Error ? err.message : 'Failed to fetch archived emails'
+      throw err
+    } finally {
+      isLoadingArchived.value = false
+    }
+  }
+
+  async function loadMoreArchivedEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }) {
+    if (!archivedLastEvaluatedKey.value || isLoadingArchived.value) {
+      return
+    }
+    isLoadingArchived.value = true
+    archivedError.value = null
+    try {
+      const authStore = useAuthStore()
+      const recipient = authStore.selectedRecipient || authStore.defaultRecipient
+      const response = await api.emails.list({
+        ...params,
+        mailbox: 'archived',
+        recipient: recipient || undefined,
+        lastEvaluatedKey: archivedLastEvaluatedKey.value,
+      })
+      archivedLastEvaluatedKey.value = response.lastEvaluatedKey
+      // Append new emails
+      archivedEmails.value.push(...response.emails)
+    } catch (err) {
+      archivedError.value = err instanceof Error ? err.message : 'Failed to load more archived emails'
       throw err
     } finally {
       isLoadingArchived.value = false
@@ -458,6 +564,9 @@ export const useEmailStore = defineStore('email', () => {
     sentEmails.value = []
     archivedEmails.value = []
     currentEmail.value = null
+    inboxLastEvaluatedKey.value = undefined
+    sentLastEvaluatedKey.value = undefined
+    archivedLastEvaluatedKey.value = undefined
   }
 
   function addEmailsToStore(newEmails: Email[]) {
@@ -514,12 +623,19 @@ export const useEmailStore = defineStore('email', () => {
     inboxError,
     sentError,
     archivedError,
+    // Pagination state
+    hasMoreInboxEmails,
+    hasMoreSentEmails,
+    hasMoreArchivedEmails,
     // Functions
     fetchEmails,
     fetchInboxEmails,
     fetchSentEmails,
     fetchArchivedEmails,
     fetchAllMailboxes,
+    loadMoreInboxEmails,
+    loadMoreSentEmails,
+    loadMoreArchivedEmails,
     fetchEmailDetail,
     sendEmail,
     markAsRead,
