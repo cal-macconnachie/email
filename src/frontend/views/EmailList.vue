@@ -996,12 +996,17 @@ base-list-item {
   gap: var(--space-2);
 }
 
+.tabs-content {
+  padding-bottom: 0!important;
+}
+
 /* mobile */
 @media (max-width: 768px) {
   .email-list-container {
     padding: var(--space-4);
     padding-top: var(--space-10);
     margin-top: var(--space-8);
+    padding-bottom: 0;
   }
 
   .email-list-card {
@@ -1016,6 +1021,9 @@ base-list-item {
   .mobile-email-list-item .email-sender {
     white-space: normal;
     -webkit-line-clamp: 2;
+  }
+  .email-main {
+    gap: 0;
   }
 }
 </style>
