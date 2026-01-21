@@ -301,14 +301,14 @@ onBeforeUnmount(() => {
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .selector-button {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
   }
 
   .email-avatar {
-    width: 50px;
-    height: 50px;
-    font-size: var(--font-size-base);
+    width: 40px;
+    height: 40px;
+    font-size: var(--font-size-sm);
   }
 }
 </style>

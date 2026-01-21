@@ -1029,15 +1029,15 @@ base-list-item {
   /* Override base-tabs styles for mobile */
   .email-tabs :deep(.tabs-container) {
     padding-top: 0;
-    margin-right: 70px;
   }
 
   .email-tabs :deep(.tabs-sidebar) {
-    width: auto;
+    width: calc(100% - 60px) !important;
+    max-width: calc(100% - 60px) !important;
     position: relative;
     padding: var(--space-3);
     margin-bottom: var(--space-2);
-    min-height: 120px;
+    min-height: 95px;
   }
 
   .email-tabs :deep(.tabs-list) {

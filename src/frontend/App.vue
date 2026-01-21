@@ -131,7 +131,7 @@ onMounted(async () => {
   /* mobile top right needs to take into account env(safe-area-inset-top) */
   @media (max-width: 768px) {
     .top-right-controls {
-      top: calc(var(--space-4) + var(--space-3) + env(safe-area-inset-top));
+      top: calc(var(--space-4) + env(safe-area-inset-top));
       right: calc(var(--space-4) + env(safe-area-inset-right));
       flex-direction: row;
       gap: 0;
@@ -139,11 +139,15 @@ onMounted(async () => {
 
     .compose-button {
       position: fixed;
-      top: calc(var(--space-4) + var(--space-3) + 70px + env(safe-area-inset-top));
+      top: calc(var(--space-4) + 45px + var(--space-2) + env(safe-area-inset-top));
       right: calc(var(--space-4) + env(safe-area-inset-right));
       bottom: auto;
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
+    }
+
+    .compose-plus {
+      font-size: 2rem;
     }
   }
 </style>
