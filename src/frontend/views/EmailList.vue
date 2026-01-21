@@ -767,7 +767,6 @@ async function resetArchived() {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: visible;
 }
 
 
@@ -816,22 +815,23 @@ base-list-item {
   min-height: 0;
 }
 
-/* Override base-tabs content to remove competing scroll container */
-.email-main::part(tabs-content) {
-  overflow: visible;
-}
-
+/* Remove scroll from tabs-content - base-list should be the only scrolling container */
 .email-main :deep(.tabs-content) {
-  overflow: visible;
+  overflow: hidden;
+  height: 100%;
 }
 
-/* Ensure base-tab allows flex sizing */
-.email-main :deep(base-tab) {
+/* Make active base-tab use flex layout to constrain base-list height */
+.email-main :deep(base-tab[active]) {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+}
+
+.email-main :deep(base-tab[active] .base-tab) {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: visible;
+  height: 100%;
 }
 
 .loading-state {
@@ -973,19 +973,11 @@ base-list-item {
 }
 
 .email-list-scrollable {
-  /* overflow-y: auto; */
-  overflow-x: hidden;
   flex: 1;
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   --list-item-bg: var(--color-bg-secondary);
-  /* hide scrollbar */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-
-}
-.email-list-scrollable::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  /* base-list handles its own overflow and scrollbar styling */
 }
 .row {
   display: flex;
