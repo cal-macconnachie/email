@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.35](https://github.com/cal-macconnachie/email/compare/v1.6.34...v1.6.35) (2026-01-21)
+
+
+### Bug Fixes
+
+* no hover ([e51c31c](https://github.com/cal-macconnachie/email/commit/e51c31c76ee974c2b2e316f14366e330b780579b))
+
 ### [1.6.34](https://github.com/cal-macconnachie/email/compare/v1.6.33...v1.6.34) (2026-01-21)
 
 ### [1.6.33](https://github.com/cal-macconnachie/email/compare/v1.6.32...v1.6.33) (2026-01-21)
