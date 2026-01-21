@@ -1026,20 +1026,14 @@ base-list-item {
     gap: 0;
   }
 
-  /* Override base-tabs styles for mobile */
-  .email-main .email-tabs :deep(.tabs-sidebar) {
-    width: calc(100% - 60px) !important;
-    max-width: calc(100% - 60px) !important;
-  }
+}
+</style>
 
-  .email-main .email-tabs :deep(base-tabs .tabs-sidebar) {
+<style>
+/* Unscoped styles to override web component shadow DOM */
+@media (max-width: 768px) {
+  .tabs-sidebar {
     width: calc(100% - 60px) !important;
-    max-width: calc(100% - 60px) !important;
-  }
-
-  .email-list-container :deep(.tabs-sidebar) {
-    width: calc(100% - 60px) !important;
-    max-width: calc(100% - 60px) !important;
   }
 }
 </style>
