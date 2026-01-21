@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.53](https://github.com/cal-macconnachie/email/compare/v1.6.52...v1.6.53) (2026-01-21)
+
+
+### Bug Fixes
+
+* try width scoping ([83f248a](https://github.com/cal-macconnachie/email/commit/83f248a39a68cea614db39eba1bb9eee6ba3968a))
+
 ### [1.6.52](https://github.com/cal-macconnachie/email/compare/v1.6.51...v1.6.52) (2026-01-21)
 
 
