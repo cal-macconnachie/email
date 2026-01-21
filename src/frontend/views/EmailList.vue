@@ -65,6 +65,9 @@
 
             <div v-else-if="emailStore.inboxEmails.length === 0" class="empty-state">
               <p class="empty-text">No inbox emails</p>
+              <base-button variant="link-primary" @click="resetInbox">
+                Refresh Inbox
+              </base-button>
             </div>
 
             <div v-else-if="filteredInboxEmails.length === 0" class="empty-state">
@@ -169,6 +172,9 @@
 
           <div v-else-if="emailStore.sentEmails.length === 0" class="empty-state">
             <p class="empty-text">No sent emails</p>
+            <base-button variant="link-primary" @click="resetSent">
+              Refresh Sent
+            </base-button>
           </div>
 
           <div v-else-if="filteredSentEmails.length === 0" class="empty-state">
@@ -949,7 +955,7 @@ base-list-item {
 }
 
 .email-list-scrollable {
-  overflow-y: auto;
+  /* overflow-y: auto; */
   overflow-x: hidden;
   flex: 1;
   min-height: 0;
@@ -979,7 +985,7 @@ base-list-item {
   }
 
   .email-list-scrollable {
-    overflow-y: visible;
+    /* overflow-y: visible; */
     height: auto;
   }
 
