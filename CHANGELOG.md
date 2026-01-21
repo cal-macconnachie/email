@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.47](https://github.com/cal-macconnachie/email/compare/v1.6.46...v1.6.47) (2026-01-21)
+
+
+### Bug Fixes
+
+* padding ([1615429](https://github.com/cal-macconnachie/email/commit/1615429e01d72f00982196abee5fc7977f2ad931))
+
 ### [1.6.46](https://github.com/cal-macconnachie/email/compare/v1.6.45...v1.6.46) (2026-01-21)
 
 
