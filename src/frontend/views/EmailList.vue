@@ -822,19 +822,12 @@ base-list-item {
   min-height: 0;
 }
 
-/* Make base-tab fill tabs-content exactly so tabs-content never scrolls */
-.email-main base-tab[active] {
-  display: block !important;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-/* Wrapper uses all of base-tab's height with flex */
+/* Tab content wrapper fills base-tab and uses flex layout */
 .tab-content-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
 }
 
 .tab-footer {

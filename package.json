@@ -44,7 +44,7 @@
     "@aws-sdk/client-ssm": "^3.958.0",
     "@aws-sdk/s3-request-presigner": "^3.958.0",
     "@aws-sdk/util-dynamodb": "^3.958.0",
-    "@cal.macconnachie/web-components": "^2.6.3",
+    "@cal.macconnachie/web-components": "^2.6.4",
     "add": "^2.0.6",
     "aws-jwt-verify": "^5.1.1",
     "mailparser": "^3.9.1",
