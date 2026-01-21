@@ -763,11 +763,11 @@ async function resetArchived() {
 
 .email-list-card {
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: visible;
 }
 
 
@@ -814,6 +814,24 @@ base-list-item {
   flex: 1;
   gap: var(--space-3);
   min-height: 0;
+}
+
+/* Override base-tabs content to remove competing scroll container */
+.email-main::part(tabs-content) {
+  overflow: visible;
+}
+
+.email-main :deep(.tabs-content) {
+  overflow: visible;
+}
+
+/* Ensure base-tab allows flex sizing */
+.email-main :deep(base-tab) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: visible;
 }
 
 .loading-state {
@@ -982,11 +1000,6 @@ base-list-item {
     padding: var(--space-4);
     padding-top: var(--space-10);
     margin-top: var(--space-8);
-  }
-
-  .email-list-scrollable {
-    /* overflow-y: visible; */
-    height: auto;
   }
 
   .email-list-card {
