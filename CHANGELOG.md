@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.33](https://github.com/cal-macconnachie/email/compare/v1.6.32...v1.6.33) (2026-01-21)
+
 ### [1.6.32](https://github.com/cal-macconnachie/email/compare/v1.6.31...v1.6.32) (2026-01-21)
 
 
