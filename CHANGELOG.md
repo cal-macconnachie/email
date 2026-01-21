@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.55](https://github.com/cal-macconnachie/email/compare/v1.6.54...v1.6.55) (2026-01-21)
+
+
+### Bug Fixes
+
+* mobile width ([f0ccb8f](https://github.com/cal-macconnachie/email/commit/f0ccb8fa9faa90f1663c3d9d6b03c928c3d70bbd))
+
 ### [1.6.54](https://github.com/cal-macconnachie/email/compare/v1.6.53...v1.6.54) (2026-01-21)
 
 
