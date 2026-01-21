@@ -2,6 +2,7 @@
   <div class="email-list-container">
     <main class="email-main">
       <base-tabs
+        class="email-tabs"
         active-tab="inbox"
         sync-with-hash
       >
@@ -27,7 +28,7 @@
           label="Inbox"
           icon="<base-icon name='open-email' size='24px'></base-icon>"
         >
-
+          <div class="tab-content-wrapper">
           <div class="email-list-card">
             <div v-if="emailStore.inboxError" class="error-card">
               <base-card variant="elevated" padding="md">
@@ -127,6 +128,7 @@
               {{ filteredInboxUnreadCount }} unread email{{ filteredInboxUnreadCount !== 1 ? 's' : '' }}
             </div>
           </div>
+          </div>
         </base-tab>
 
         <!-- Sent Tab -->
@@ -135,7 +137,7 @@
           label="Sent"
           icon="<base-icon name='send' size='24px'></base-icon"
         >
-
+          <div class="tab-content-wrapper">
           <div class="email-list-card">
             <div class="email-list-header">
               <div class="search-bar-wrapper">
@@ -231,6 +233,7 @@
               &nbsp;
             </div>
           </div>
+          </div>
         </base-tab>
 
         <!-- Archived Tab -->
@@ -239,6 +242,7 @@
           label="Archived"
           icon="<base-icon name='file-cabinet' size='24px'></base-icon"
         >
+          <div class="tab-content-wrapper">
           <div class="email-list-card">
             <div class="email-list-header">
               <div class="search-bar-wrapper">
@@ -331,6 +335,7 @@
             <div class="unread-count" style="visibility: hidden;">
               &nbsp;
             </div>
+          </div>
           </div>
         </base-tab>
       </base-tabs>
@@ -767,6 +772,7 @@ async function resetArchived() {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  box-sizing: border-box;
 }
 
 
@@ -792,6 +798,7 @@ async function resetArchived() {
   padding: var(--space-2);
   border-bottom: 1px solid var(--color-border);
   overflow: visible;
+  flex-shrink: 0;
 }
 
 .sort-button svg {
@@ -815,28 +822,23 @@ base-list-item {
   min-height: 0;
 }
 
-/* Remove scroll from tabs-content - base-list should be the only scrolling container */
-.email-main :deep(.tabs-content) {
-  overflow: hidden;
-  height: 100%;
-}
-
-/* Make active base-tab use flex layout to constrain base-list height */
-.email-main :deep(base-tab[active]) {
-  display: flex !important;
-  flex-direction: column;
-  height: 100%;
-}
-
-.email-main :deep(base-tab[active] .base-tab) {
+/* Wrapper inside base-tab that takes full height and uses flex layout */
+.tab-content-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.tab-footer {
+  flex-shrink: 0;
 }
 
 .loading-state {
   text-align: center;
   padding: var(--space-8);
+  flex-shrink: 0;
 }
 
 .loading-text {
@@ -846,11 +848,13 @@ base-list-item {
 
 .error-card {
   color: var(--color-error);
+  flex-shrink: 0;
 }
 
 .empty-state {
   text-align: center;
   padding: var(--space-8);
+  flex-shrink: 0;
 }
 
 .empty-text {
@@ -975,9 +979,10 @@ base-list-item {
 .email-list-scrollable {
   flex: 1;
   min-height: 0;
+  max-height: 100%;
   -webkit-overflow-scrolling: touch;
   --list-item-bg: var(--color-bg-secondary);
-  /* base-list handles its own overflow and scrollbar styling */
+  /* This is the ONLY scrolling element - base-list handles overflow */
 }
 .row {
   display: flex;
