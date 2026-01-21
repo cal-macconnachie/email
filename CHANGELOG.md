@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.41](https://github.com/cal-macconnachie/email/compare/v1.6.40...v1.6.41) (2026-01-21)
+
+
+### Bug Fixes
+
+* ai bull that will probably break everything ([d3a709b](https://github.com/cal-macconnachie/email/commit/d3a709b02cb52dd2b7e13a2588b1709945e8d05a))
+
 ### [1.6.40](https://github.com/cal-macconnachie/email/compare/v1.6.39...v1.6.40) (2026-01-21)
 
 
