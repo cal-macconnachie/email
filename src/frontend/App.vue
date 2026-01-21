@@ -129,10 +129,18 @@ onMounted(async () => {
     flex-direction: column;
   }
   /* mobile top right needs to take into account env(safe-area-inset-top) */
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     .top-right-controls {
       top: calc(0.5rem + env(safe-area-inset-top));
       right: calc(0.5rem + env(safe-area-inset-right));
+      flex-direction: column;
+    }
+
+    .compose-button {
+      position: fixed;
+      top: calc(4rem + env(safe-area-inset-top));
+      right: calc(0.5rem + env(safe-area-inset-right));
+      bottom: auto;
     }
   }
 </style>

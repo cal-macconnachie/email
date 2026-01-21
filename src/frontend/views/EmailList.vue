@@ -1005,8 +1005,7 @@ base-list-item {
 @media (max-width: 768px) {
   .email-list-container {
     padding: var(--space-4);
-    padding-top: var(--space-10);
-    margin-top: var(--space-8);
+    padding-top: var(--space-4);
     padding-bottom: 0;
   }
 
@@ -1025,6 +1024,23 @@ base-list-item {
   }
   .email-main {
     gap: 0;
+  }
+
+  /* Override base-tabs styles for mobile */
+  .email-tabs :deep(.tabs-container) {
+    padding-top: var(--space-2);
+  }
+
+  .email-tabs :deep(.tabs-sidebar) {
+    width: 100%;
+    position: relative;
+    padding: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-2);
+  }
+
+  .email-tabs :deep(.tabs-list) {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
