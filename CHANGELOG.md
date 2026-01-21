@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.56](https://github.com/cal-macconnachie/email/compare/v1.6.55...v1.6.56) (2026-01-21)
+
+
+### Bug Fixes
+
+* loading spinner and shadow in mobile avatar ([8134d9a](https://github.com/cal-macconnachie/email/commit/8134d9abf8b4ff6aaa9c5c11cf251062c18e137e))
+
 ### [1.6.55](https://github.com/cal-macconnachie/email/compare/v1.6.54...v1.6.55) (2026-01-21)
 
 
