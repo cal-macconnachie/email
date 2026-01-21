@@ -310,5 +310,8 @@ onBeforeUnmount(() => {
     height: 40px;
     font-size: var(--font-size-sm);
   }
+  .email-selector {
+    box-shadow: var(--shadow-md);
+  }
 }
 </style>

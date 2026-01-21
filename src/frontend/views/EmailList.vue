@@ -61,7 +61,7 @@
             </div>
 
             <div v-if="emailStore.isLoadingInbox && emailStore.inboxEmails.length === 0" class="loading-state">
-              <p class="loading-text">Loading emails...</p>
+              <span class="loading-spinner">↻</span>
             </div>
 
             <div v-else-if="emailStore.inboxEmails.length === 0" class="empty-state">
@@ -169,7 +169,7 @@
             {{ emailStore.sentError }}
           </base-card>
           <div v-if="emailStore.isLoadingSent && emailStore.sentEmails.length === 0" class="loading-state">
-            <p class="loading-text">Loading sent emails...</p>
+            <span class="loading-spinner">↻</span>
           </div>
 
           <div v-else-if="emailStore.sentEmails.length === 0" class="empty-state">
@@ -273,7 +273,7 @@
             {{ emailStore.archivedError }}
           </base-card>
 <div v-if="emailStore.isLoadingArchived && emailStore.archivedEmails.length === 0" class="loading-state">
-            <p class="loading-text">Loading archived emails...</p>
+            <span class="loading-spinner">↻</span>
           </div>
 
           <div v-else-if="emailStore.archivedEmails.length === 0" class="empty-state">
@@ -848,9 +848,20 @@ base-list-item {
   flex-shrink: 0;
 }
 
-.loading-text {
-  margin: 0;
+.loading-spinner {
+  display: inline-block;
+  font-size: var(--font-size-2xl);
+  animation: spin 1s linear infinite;
   opacity: 0.7;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-card {
