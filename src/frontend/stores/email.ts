@@ -5,7 +5,6 @@ import { useAuthStore } from './auth'
 
 export const useEmailStore = defineStore('email', () => {
   const currentEmail = ref<Email | null>(null)
-  const currentUserEmail = ref<string | null>(null)
   const isLoading = ref(false)
   const isRefreshing = ref(false)
   const error = ref<string | null>(null)
@@ -83,11 +82,6 @@ export const useEmailStore = defineStore('email', () => {
     try {
       const response = await api.emails.list(params)
       lastEvaluatedKey.value = response.lastEvaluatedKey
-
-      // Set current user email from first email's recipient (if not already set)
-      if (!currentUserEmail.value && response.emails.length > 0) {
-        currentUserEmail.value = response.emails[0].recipient
-      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch emails'
       throw err
@@ -246,7 +240,10 @@ export const useEmailStore = defineStore('email', () => {
   async function markAsRead(timestamp: string) {
     // Don't try to mark sent emails as read
     const email = emails.value.find(e => e.timestamp === timestamp) || currentEmail.value
-    if (email && currentUserEmail.value && email.sender === currentUserEmail.value) {
+    const authStore = useAuthStore()
+    const currentRecipient = authStore.selectedRecipient || authStore.defaultRecipient
+
+    if (email && currentRecipient && email.sender === currentRecipient) {
       // This is a sent email, don't try to update it
       return
     }
@@ -340,10 +337,17 @@ export const useEmailStore = defineStore('email', () => {
   async function toggleRead(timestamp: string) {
     try {
       const email = emails.value.find(e => e.timestamp === timestamp)
-      if (!email) return
+      if (!email) {
+        console.warn(`Email with timestamp ${timestamp} not found`)
+        return
+      }
 
       // Don't try to mark sent emails as read
-      if (currentUserEmail.value && email.sender === currentUserEmail.value) {
+      const authStore = useAuthStore()
+      const currentRecipient = authStore.selectedRecipient || authStore.defaultRecipient
+
+      if (currentRecipient && email.sender === currentRecipient) {
+        console.warn(`Attempted to mark sent email with timestamp ${timestamp} as read`)
         return
       }
 
@@ -457,16 +461,14 @@ export const useEmailStore = defineStore('email', () => {
   }
 
   function addEmailsToStore(newEmails: Email[]) {
-    newEmails.forEach(email => {
-      // Set currentUserEmail if not already set - use the recipient as the current user
-      if (!currentUserEmail.value) {
-        currentUserEmail.value = email.recipient
-      }
+    const authStore = useAuthStore()
+    const currentRecipient = authStore.selectedRecipient || authStore.defaultRecipient
 
+    newEmails.forEach(email => {
       const emailInStore = emails.value.find(e => e.s3_key === email.s3_key)
       const emailArchived = email.archived
-      const emailSentByUser = currentUserEmail.value ? email.sender === currentUserEmail.value : false
-      const emailReceivedByUser = currentUserEmail.value ? email.recipient === currentUserEmail.value : false
+      const emailSentByUser = currentRecipient ? email.sender === currentRecipient : false
+      const emailReceivedByUser = currentRecipient ? email.recipient === currentRecipient : false
 
       if (emailInStore) {
         // Update existing email

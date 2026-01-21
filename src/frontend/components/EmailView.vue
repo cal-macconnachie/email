@@ -78,7 +78,7 @@
 </template>
 <script setup lang="ts">
 import PostalMime from 'postal-mime'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
@@ -93,9 +93,11 @@ const isArchiving = ref(false)
 const isLoadingBody = ref(false)
 const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
-const email = ref<Email | null>(null)
 const decodedS3Key = decodeURIComponent(props.s3Key)
 const parsedContent = ref<{ html?: string; text?: string }>({ html: undefined, text: undefined })
+
+// Use computed to always get latest email from store (so read status updates work)
+const email = computed(() => emailStore.emails.find(e => e.s3_key === decodedS3Key) || null)
 
 function isUserReceivedEmail(): boolean {
   if (!email.value) return false
@@ -106,13 +108,11 @@ function isUserReceivedEmail(): boolean {
 onMounted(async () => {
   // Only fetch if we don't have a body
   await nextTick()
-  email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
   if (!email.value?.body) {
     isLoadingBody.value = true
     try {
       console.log('Fetching email body for', decodedS3Key)
       await emailStore.fetchEmailDetail(decodedS3Key)
-      email.value = emailStore.emails.find(e => e.s3_key === decodedS3Key) || null
     } catch (error) {
       console.error('Failed to fetch email body:', error)
     } finally {

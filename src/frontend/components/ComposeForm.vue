@@ -195,7 +195,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
 import { api } from '../api/client'
@@ -214,6 +214,31 @@ const formDataCc = ref<string[]>([])
 const formDataBcc = ref<string[]>([])
 const formDataSubject = ref('')
 const formDataBody = ref('')
+
+// Watch store values and sync to local state (for when prepareReply is called)
+watch(() => emailStore.formDataTo, (newVal) => {
+  if (newVal.length > 0) {
+    formDataTo.value = [...newVal]
+  }
+}, { immediate: true })
+
+watch(() => emailStore.formDataSubject, (newVal) => {
+  if (newVal) {
+    formDataSubject.value = newVal
+  }
+}, { immediate: true })
+
+watch(() => emailStore.formDataCc, (newVal) => {
+  if (newVal.length > 0) {
+    formDataCc.value = [...newVal]
+  }
+}, { immediate: true })
+
+watch(() => emailStore.formDataBcc, (newVal) => {
+  if (newVal.length > 0) {
+    formDataBcc.value = [...newVal]
+  }
+}, { immediate: true })
 
 // Track touch start position for scroll handling
 let touchStartY = 0
