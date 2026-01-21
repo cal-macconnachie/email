@@ -83,13 +83,13 @@
                 :key="email.id"
                 size="md"
                 interactive
-                :left-swipe-action="{
+                :.leftSwipeAction="{
                   icon: 'check',
                   label: email.read ? 'Unread' : 'Read',
                   color: 'var(--color-info)',
                   callback: () => handleToggleRead(email)
                 }"
-                :right-swipe-action="{
+                :.rightSwipeAction="{
                   icon: 'file-cabinet',
                   label: 'Archive',
                   color: 'var(--color-warning)',
@@ -290,13 +290,13 @@
               :key="email.id"
               size="md"
               interactive
-              :left-swipe-action="{
+              :.leftSwipeAction="{
                 icon: 'check',
                 label: email.read ? 'Unread' : 'Read',
                 color: 'var(--color-info)',
                 callback: () => handleToggleRead(email)
               }"
-              :right-swipe-action="{
+              :.rightSwipeAction="{
                 icon: 'open-email',
                 label: 'Unarchive',
                 color: 'var(--color-success)',

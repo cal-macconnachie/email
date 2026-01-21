@@ -2,16 +2,17 @@
   <div class="compose-container" ref="composeContainer">
     <form class="compose-form" @keydown="handleKeydown">
       <div class="form-field">
-        <base-input
+        <base-select
           ref="toInput"
           id="to"
           v-model="emailStore.formData.to"
-          type="email"
           label="To"
           placeholder="recipient@example.com"
+          searchable
+          size="md"
           required
           :disabled="emailStore.isLoading"
-          hint="For multiple recipients, separate with commas"
+          :options="emailAddressOptions"
         />
       </div>
 
@@ -31,24 +32,28 @@
       <transition name="slide-fade">
         <div v-if="showCcBcc || emailStore.formData.cc || emailStore.formData.bcc" class="cc-bcc-container">
           <div class="form-field">
-            <base-input
+            <base-select
               id="cc"
               v-model="emailStore.formData.cc"
-              type="text"
               label="CC (optional)"
               placeholder="cc@example.com"
+              searchable
+              size="md"
               :disabled="emailStore.isLoading"
+              :options="emailAddressOptions"
             />
           </div>
 
           <div class="form-field">
-            <base-input
+            <base-select
               id="bcc"
               v-model="emailStore.formData.bcc"
-              type="text"
               label="BCC (optional)"
               placeholder="bcc@example.com"
+              searchable
+              size="md"
               :disabled="emailStore.isLoading"
+              :options="emailAddressOptions"
             />
           </div>
         </div>
@@ -208,6 +213,24 @@ const isFormValid = computed(() => {
   const hasSubject = emailStore.formData.subject.trim().length > 0
   const hasBody = emailStore.formData.body.trim().length > 0
   return hasTo && hasSubject && hasBody
+})
+
+// Extract unique email addresses from all emails for autocomplete
+const emailAddressOptions = computed(() => {
+  const uniqueEmails = new Set<string>()
+
+  // Add all senders and recipients from emails
+  emailStore.emails.forEach(email => {
+    if (email.sender) {
+      uniqueEmails.add(email.sender)
+    }
+    if (email.recipient) {
+      uniqueEmails.add(email.recipient)
+    }
+  })
+
+  // Convert to array and sort alphabetically
+  return Array.from(uniqueEmails).sort()
 })
 
 // Handle touch events to prevent drawer close when scrolling
