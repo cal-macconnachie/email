@@ -827,6 +827,7 @@ base-list-item {
 .email-tabs {
   padding-bottom: 0 !important;
   flex: 1;
+  --tabs-sidebar-mobile-width: calc(100% - 60px);
 }
 
 /* Tab content wrapper fills base-tab and uses flex layout */
