@@ -822,19 +822,22 @@ base-list-item {
   min-height: 0;
 }
 
-.email-main base-tab {
-  position: relative;
+/* Constrain base-tab to prevent tabs-content from scrolling */
+.email-tabs::part(content) {
+  overflow: hidden !important;
 }
 
-/* Wrapper inside base-tab that fills tabs-content exactly without overflowing */
+.email-main base-tab[active] {
+  display: block !important;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* Wrapper constrains content */
 .tab-content-wrapper {
   display: flex;
   flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  max-height: 100%;
   overflow: hidden;
 }
 
