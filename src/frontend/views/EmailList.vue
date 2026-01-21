@@ -822,19 +822,19 @@ base-list-item {
   min-height: 0;
 }
 
-/* Force base-tab to take full height when active */
+/* Make base-tab fill tabs-content exactly so tabs-content never scrolls */
 .email-main base-tab[active] {
-  display: flex !important;
-  flex-direction: column;
+  display: block !important;
   height: 100%;
+  box-sizing: border-box;
 }
 
-/* Wrapper takes full height */
+/* Wrapper uses all of base-tab's height with flex */
 .tab-content-wrapper {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .tab-footer {
