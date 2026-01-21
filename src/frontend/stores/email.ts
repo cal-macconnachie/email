@@ -245,8 +245,7 @@ export const useEmailStore = defineStore('email', () => {
     }
 
     try {
-      await api.emails.update(timestamp, { read: true })
-      // Update local state
+      // optimistically Update local state
       const email = emails.value.find(e => e.timestamp === timestamp)
       if (email) {
         email.read = true
@@ -254,8 +253,17 @@ export const useEmailStore = defineStore('email', () => {
       if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
         currentEmail.value.read = true
       }
+      await api.emails.update(timestamp, { read: true })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to mark as read'
+      // revert on failure
+      const email = emails.value.find(e => e.timestamp === timestamp)
+      if (email) {
+        email.read = false
+      }
+      if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
+        currentEmail.value.read = false
+      }
       throw err
     }
   }
@@ -266,7 +274,6 @@ export const useEmailStore = defineStore('email', () => {
       if (!email) return
 
       const newArchivedStatus = !email.archived
-      await api.emails.update(timestamp, { archived: newArchivedStatus })
       email.archived = newArchivedStatus
 
       // Move email between mailboxes
@@ -289,8 +296,36 @@ export const useEmailStore = defineStore('email', () => {
       if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
         currentEmail.value.archived = newArchivedStatus
       }
+
+      await api.emails.update(timestamp, { archived: newArchivedStatus })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to toggle archive'
+      // revert on failure
+      const email = emails.value.find(e => e.timestamp === timestamp)
+      if (email) {
+        email.archived = !email.archived
+      }
+      // move email back between mailboxes
+      if (email) {
+        if (email.archived) {
+          // move to archived
+          const inboxIndex = inboxEmails.value.findIndex(e => e.timestamp === timestamp)
+          if (inboxIndex !== -1) {
+            inboxEmails.value.splice(inboxIndex, 1)
+            archivedEmails.value.unshift(email)
+          }
+        } else {
+          // move to inbox
+          const archivedIndex = archivedEmails.value.findIndex(e => e.timestamp === timestamp)
+          if (archivedIndex !== -1) {
+            archivedEmails.value.splice(archivedIndex, 1)
+            inboxEmails.value.unshift(email)
+          }
+        }
+      }
+      if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
+        currentEmail.value.archived = !currentEmail.value.archived
+      }
       throw err
     }
   }
@@ -306,14 +341,24 @@ export const useEmailStore = defineStore('email', () => {
       }
 
       const newReadStatus = !email.read
-      await api.emails.update(timestamp, { read: newReadStatus })
+      // optimistic update
+
       email.read = newReadStatus
 
       if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
         currentEmail.value.read = newReadStatus
       }
+      await api.emails.update(timestamp, { read: newReadStatus })
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to toggle read status'
+      // revert on faile
+      const email = emails.value.find(e => e.timestamp === timestamp)
+      if (email) {
+        email.read = !email.read
+      }
+      if (currentEmail.value && currentEmail.value.timestamp === timestamp) {
+        currentEmail.value.read = !currentEmail.value.read
+      }
       throw err
     }
   }

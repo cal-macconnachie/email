@@ -912,6 +912,14 @@ base-list-item {
   flex: 1;
   min-height: 0;
   -webkit-overflow-scrolling: touch;
+  --list-item-bg: var(--color-bg-secondary);
+  /* hide scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+
+}
+.email-list-scrollable::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 .row {
   display: flex;
