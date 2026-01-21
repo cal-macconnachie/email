@@ -822,13 +822,20 @@ base-list-item {
   min-height: 0;
 }
 
-/* Wrapper inside base-tab that takes full height and uses flex layout */
+.email-main base-tab {
+  position: relative;
+}
+
+/* Wrapper inside base-tab that fills tabs-content exactly without overflowing */
 .tab-content-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
 }
 
 .tab-footer {
