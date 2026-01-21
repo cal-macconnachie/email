@@ -84,6 +84,7 @@
                 :ref="(el: any) => setInboxSwipeActions(el, email)"
                 size="md"
                 interactive
+                no-hover
                 @item-click="handleEmailClick(email)"
               >
                 <div v-if="!isMobile" class="email-card-content">
@@ -184,6 +185,7 @@
               :key="email.id"
               size="md"
               interactive
+              no-hover
               @item-click="handleEmailClick(email)"
             >
               <div v-if="!isMobile" class="email-card-content">
@@ -280,6 +282,7 @@
               :ref="(el: any) => setArchivedSwipeActions(el, email)"
               size="md"
               interactive
+              no-hover
               @item-click="handleEmailClick(email)"
             >
               <div v-if="!isMobile" class="email-card-content">
