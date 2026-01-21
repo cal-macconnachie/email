@@ -727,6 +727,7 @@ async function resetArchived() {
   flex-direction: column;
   padding: var(--space-6);
   padding-top: var(--space-12);
+  padding-bottom: 0;
   gap: var(--space-4);
   height: 100dvh;
   overflow: hidden;
@@ -820,6 +821,11 @@ base-list-item {
   flex: 1;
   gap: var(--space-3);
   min-height: 0;
+}
+
+/* Remove bottom padding from base-tabs to reach viewport bottom */
+.email-tabs {
+  padding-bottom: 0 !important;
 }
 
 /* Tab content wrapper fills base-tab and uses flex layout */
