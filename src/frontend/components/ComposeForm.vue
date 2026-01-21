@@ -9,6 +9,8 @@
           label="To"
           placeholder="recipient@example.com"
           searchable
+          multiple
+          creatable
           size="md"
           required
           :disabled="emailStore.isLoading"
@@ -17,7 +19,7 @@
       </div>
 
       <!-- CC/BCC Toggle Button -->
-      <div v-if="!showCcBcc && !emailStore.formData.cc && !emailStore.formData.bcc" class="form-field">
+      <div v-if="!showCcBcc && emailStore.formData.cc.length === 0 && emailStore.formData.bcc.length === 0" class="form-field">
         <button
           type="button"
           @click="showCcBcc = true"
@@ -30,7 +32,7 @@
 
       <!-- CC/BCC Fields (collapsible) -->
       <transition name="slide-fade">
-        <div v-if="showCcBcc || emailStore.formData.cc || emailStore.formData.bcc" class="cc-bcc-container">
+        <div v-if="showCcBcc || emailStore.formData.cc.length > 0 || emailStore.formData.bcc.length > 0" class="cc-bcc-container">
           <div class="form-field">
             <base-select
               id="cc"
@@ -38,6 +40,8 @@
               label="CC (optional)"
               placeholder="cc@example.com"
               searchable
+              multiple
+              creatable
               size="md"
               :disabled="emailStore.isLoading"
               :options="emailAddressOptions"
@@ -51,6 +55,8 @@
               label="BCC (optional)"
               placeholder="bcc@example.com"
               searchable
+              multiple
+              creatable
               size="md"
               :disabled="emailStore.isLoading"
               :options="emailAddressOptions"
@@ -209,7 +215,7 @@ const hasUploadingAttachments = computed(() =>
 )
 
 const isFormValid = computed(() => {
-  const hasTo = emailStore.formData.to.trim().length > 0
+  const hasTo = emailStore.formData.to.length > 0
   const hasSubject = emailStore.formData.subject.trim().length > 0
   const hasBody = emailStore.formData.body.trim().length > 0
   return hasTo && hasSubject && hasBody
@@ -273,7 +279,7 @@ function handleTouchMove(event: TouchEvent) {
 onMounted(() => {
   // Pre-fill form if replying to an email
   if (route.query.replyTo) {
-    emailStore.formData.to = route.query.replyTo as string
+    emailStore.formData.to = [route.query.replyTo as string]
   }
   if (route.query.subject) {
     emailStore.formData.subject = route.query.subject as string
@@ -296,13 +302,13 @@ onMounted(() => {
   }
 
   // Show CC/BCC if they have values (e.g., from query params)
-  if (emailStore.formData.cc || emailStore.formData.bcc) {
+  if (emailStore.formData.cc.length > 0 || emailStore.formData.bcc.length > 0) {
     showCcBcc.value = true
   }
 
   // Focus the To field for better UX
   nextTick(() => {
-    if (toInput.value && !emailStore.formData.to) {
+    if (toInput.value && emailStore.formData.to.length === 0) {
       const inputElement = toInput.value as any
       if (inputElement.$el?.querySelector('input')) {
         inputElement.$el.querySelector('input').focus()
@@ -353,11 +359,11 @@ async function handleSend() {
 
   try {
     const emailData = {
-      to: emailStore.formData.to.split(',').map(e => e.trim()).filter(e => e),
+      to: emailStore.formData.to,
       subject: emailStore.formData.subject,
       body: emailStore.formData.body,
-      cc: emailStore.formData.cc ? emailStore.formData.cc.split(',').map(e => e.trim()).filter(e => e) : undefined,
-      bcc: emailStore.formData.bcc ? emailStore.formData.bcc.split(',').map(e => e.trim()).filter(e => e) : undefined,
+      cc: emailStore.formData.cc.length > 0 ? emailStore.formData.cc : undefined,
+      bcc: emailStore.formData.bcc.length > 0 ? emailStore.formData.bcc : undefined,
       inReplyTo: emailStore.replyData.inReplyTo,
       references: emailStore.replyData.references,
       attachmentKeys: emailStore.attachments.map(a => a.key),

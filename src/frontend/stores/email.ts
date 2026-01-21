@@ -28,9 +28,9 @@ export const useEmailStore = defineStore('email', () => {
   const archivedError = ref<string | null>(null)
 
   const formData = ref({
-    to: '',
-    cc: '',
-    bcc: '',
+    to: [] as string[],
+    cc: [] as string[],
+    bcc: [] as string[],
     subject: '',
     body: '',
   })
@@ -344,9 +344,9 @@ export const useEmailStore = defineStore('email', () => {
 
   function resetCompose() {
     formData.value = {
-      to: '',
-      cc: '',
-      bcc: '',
+      to: [],
+      cc: [],
+      bcc: [],
       subject: '',
       body: '',
     }
@@ -374,7 +374,7 @@ export const useEmailStore = defineStore('email', () => {
   }
 
   function prepareReply(email: Email) {
-    formData.value.to = email.sender
+    formData.value.to = [email.sender]
     formData.value.subject = `Re: ${email.subject || ''}`
     replyData.value.inReplyTo = email.message_id
     replyData.value.references = email.references || []
