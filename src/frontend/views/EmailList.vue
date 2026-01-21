@@ -822,23 +822,19 @@ base-list-item {
   min-height: 0;
 }
 
-/* Constrain base-tab to prevent tabs-content from scrolling */
-.email-tabs::part(content) {
-  overflow: hidden !important;
-}
-
+/* Force base-tab to take full height when active */
 .email-main base-tab[active] {
-  display: block !important;
-  max-height: 100%;
-  overflow: hidden;
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
 }
 
-/* Wrapper constrains content */
+/* Wrapper takes full height */
 .tab-content-wrapper {
   display: flex;
   flex-direction: column;
-  max-height: 100%;
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .tab-footer {
