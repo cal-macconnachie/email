@@ -826,6 +826,7 @@ base-list-item {
 /* Remove bottom padding from base-tabs to reach viewport bottom */
 .email-tabs {
   padding-bottom: 0 !important;
+  flex: 1;
 }
 
 /* Tab content wrapper fills base-tab and uses flex layout */
