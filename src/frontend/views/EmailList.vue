@@ -1027,23 +1027,19 @@ base-list-item {
   }
 
   /* Override base-tabs styles for mobile */
-  .email-tabs :deep(.tabs-container) {
-    padding-top: 0;
-  }
-
-  .email-tabs :deep(.tabs-sidebar) {
+  .email-main .email-tabs :deep(.tabs-sidebar) {
     width: calc(100% - 60px) !important;
     max-width: calc(100% - 60px) !important;
-    position: relative;
-    padding: var(--space-3);
-    margin-bottom: var(--space-2);
-    min-height: 95px;
   }
 
-  .email-tabs :deep(.tabs-list) {
-    width: 100%;
-    justify-content: space-around;
-    height: 100%;
+  .email-main .email-tabs :deep(base-tabs .tabs-sidebar) {
+    width: calc(100% - 60px) !important;
+    max-width: calc(100% - 60px) !important;
+  }
+
+  .email-list-container :deep(.tabs-sidebar) {
+    width: calc(100% - 60px) !important;
+    max-width: calc(100% - 60px) !important;
   }
 }
 </style>
