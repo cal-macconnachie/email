@@ -635,7 +635,7 @@ function setInboxSwipeActions(el: any, email: Email) {
   if (!el) return
 
   el.leftSwipeAction = {
-    icon: 'check',
+    icon: 'open-email',
     color: 'transparent',
     iconColor: 'var(--color-info)',
     callback: () => handleToggleRead(email)
@@ -653,14 +653,14 @@ function setArchivedSwipeActions(el: any, email: Email) {
   if (!el) return
 
   el.leftSwipeAction = {
-    icon: 'check',
+    icon: 'open-email',
     color: 'transparent',
     iconColor: 'var(--color-info)',
     callback: () => handleToggleRead(email)
   }
 
   el.rightSwipeAction = {
-    icon: 'open-email',
+    icon: 'file-cabinet',
     color: 'transparent',
     iconColor: 'var(--color-success)',
     callback: () => handleUnarchive(email)
