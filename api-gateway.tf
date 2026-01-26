@@ -23,9 +23,9 @@ resource "aws_apigatewayv2_api" "main" {
       "x-amz-security-token",
       "cookie"
     ]
-    expose_headers = ["set-cookie"]
+    expose_headers    = ["set-cookie"]
     allow_credentials = true
-    max_age = 3600
+    max_age           = 3600
   }
 
   tags = {
