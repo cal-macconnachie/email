@@ -3,6 +3,7 @@ import {
   CognitoIdentityProviderClient,
 } from '@aws-sdk/client-cognito-identity-provider'
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
+import { query } from '../helpers/dynamo-helpers/query'
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REGION })
 
@@ -53,8 +54,9 @@ export const handler = async (
 
     const userPoolId = process.env.COGNITO_USER_POOL_ID
     const clientId = process.env.COGNITO_CLIENT_ID
+    const phoneEmailRelationsTable = process.env.PHONE_EMAIL_RELATIONS_TABLE
 
-    if (!userPoolId || !clientId) {
+    if (!userPoolId || !clientId || !phoneEmailRelationsTable) {
       throw new Error('Cognito configuration missing')
     }
 
@@ -92,6 +94,19 @@ export const handler = async (
 
     console.log(`OTP verified successfully for ${phone_number}`)
 
+    // Fetch all email prefixes from DynamoDB
+    const mapping = await query<{ phone_number: string; email_prefix: string; is_default?: boolean }>({
+      tableName: phoneEmailRelationsTable,
+      keyConditionExpression: 'phone_number = :phone',
+      expressionAttributeValues: {
+        ':phone': phone_number,
+      },
+    })
+
+    const allPrefixes = mapping.items || []
+    const defaultPrefix = allPrefixes.find(item => item.is_default)?.email_prefix || allPrefixes[0]?.email_prefix
+    const aliases = allPrefixes.map(item => item.email_prefix).filter(prefix => prefix !== defaultPrefix)
+
     // Set HTTP-only cookies
     // Domain is required for cookies to work across subdomains (www.macconnachie.com and macconnachie.com)
     const isProduction = process.env.STAGE === 'prod'
@@ -115,6 +130,8 @@ export const handler = async (
         message: 'Authentication successful',
         user: {
           phone_number,
+          email_prefix: defaultPrefix,
+          email_aliases: aliases,
         },
       }),
     }
