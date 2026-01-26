@@ -154,6 +154,7 @@ locals {
       source_dir  = "${path.module}/dist/lambdas/auth/verify-otp"
       environment_vars = {
         # Cognito IDs will be added via aws_lambda_function resource to avoid circular dependency
+        PHONE_EMAIL_RELATIONS_TABLE = "${var.domain_name}-phone-email-relations-v2"
       }
     }
     logout = {
