@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.58](https://github.com/cal-macconnachie/email/compare/v1.6.57...v1.6.58) (2026-01-26)
+
+
+### Bug Fixes
+
+* cors ([6a2f743](https://github.com/cal-macconnachie/email/commit/6a2f743b557f0aa6b53fd64c0d7f46c54ab27c7d))
+* lint ([b6551dc](https://github.com/cal-macconnachie/email/commit/b6551dc36d3a947272b6bd3a5e63b4fce3720378))
+
 ### [1.6.57](https://github.com/cal-macconnachie/email/compare/v1.6.56...v1.6.57) (2026-01-21)
 
 
