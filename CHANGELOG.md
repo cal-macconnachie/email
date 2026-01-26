@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.59](https://github.com/cal-macconnachie/email/compare/v1.6.58...v1.6.59) (2026-01-26)
+
+
+### Bug Fixes
+
+* include email aliases in verify response ([975324e](https://github.com/cal-macconnachie/email/commit/975324eec2faaa873911d3879e6c4d9b76fe265e))
+
 ### [1.6.58](https://github.com/cal-macconnachie/email/compare/v1.6.57...v1.6.58) (2026-01-26)
 
 
