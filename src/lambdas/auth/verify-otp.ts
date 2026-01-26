@@ -29,7 +29,10 @@ export const handler = async (
     if (!event.body) {
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({ error: 'Request body is required' }),
       }
     }
@@ -40,7 +43,10 @@ export const handler = async (
     if (!phone_number || !otp_code || !session) {
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({ error: 'phone_number, otp_code, and session are required' }),
       }
     }
@@ -70,7 +76,10 @@ export const handler = async (
     if (!authResponse.AuthenticationResult) {
       return {
         statusCode: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({ error: 'Invalid OTP code' }),
       }
     }
@@ -99,6 +108,7 @@ export const handler = async (
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': 'true'
       },
       cookies: [accessTokenCookie, idTokenCookie, refreshTokenCookie],
       body: JSON.stringify({
@@ -115,14 +125,20 @@ export const handler = async (
     if ((error as Error).name === 'NotAuthorizedException') {
       return {
         statusCode: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({ error: 'Invalid OTP code or session expired' }),
       }
     }
 
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': 'true'
+      },
       body: JSON.stringify({
         error: 'Failed to verify OTP',
         message: error instanceof Error ? error.message : 'Unknown error',

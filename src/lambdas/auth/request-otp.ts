@@ -30,7 +30,10 @@ export const handler = async (
     if (!event.body) {
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({ error: 'Request body is required' }),
       }
     }
@@ -41,7 +44,10 @@ export const handler = async (
     if (!phone_number) {
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({ error: 'phone_number is required' }),
       }
     }
@@ -50,7 +56,10 @@ export const handler = async (
     if (!isValidE164PhoneNumber(phone_number)) {
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({
           error: 'Invalid phone number format. Use E.164 format (e.g., +15551234567)'
         }),
@@ -72,7 +81,10 @@ export const handler = async (
       console.log(`Unauthorized phone number attempted OTP request: ${phone_number}`)
       return {
         statusCode: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Credentials': 'true'
+        },
         body: JSON.stringify({
           error: 'Access denied. This phone number is not authorized to access the system.',
         }),
@@ -104,7 +116,10 @@ export const handler = async (
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': 'true'
+      },
       body: JSON.stringify({
         session,
         message: `OTP sent to ${maskPhoneNumber(phone_number)}`,
@@ -114,7 +129,10 @@ export const handler = async (
     console.error('Error requesting OTP:', error)
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': 'true'
+      },
       body: JSON.stringify({
         error: 'Failed to send OTP',
         message: error instanceof Error ? error.message : 'Unknown error',

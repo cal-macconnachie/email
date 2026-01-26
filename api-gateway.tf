@@ -4,6 +4,30 @@ resource "aws_apigatewayv2_api" "main" {
   protocol_type = "HTTP"
   description   = "Email system API"
 
+  cors_configuration {
+    # Allow cross-origin requests from Jellyfin server (external and local)
+    # Note: macconnachie.com doesn't need CORS since API is hosted on same domain
+    allow_origins = [
+      "https://jellyfin.macconnachie.tv",
+      "http://localhost:8096",
+      "http://localhost:8920",
+      "http://127.0.0.1:8096",
+      "http://127.0.0.1:8920"
+    ]
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers = [
+      "content-type",
+      "authorization",
+      "x-amz-date",
+      "x-api-key",
+      "x-amz-security-token",
+      "cookie"
+    ]
+    expose_headers = ["set-cookie"]
+    allow_credentials = true
+    max_age = 3600
+  }
+
   tags = {
     Name        = "${var.domain_name}-api"
     Environment = var.environment
