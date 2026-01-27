@@ -1,5 +1,5 @@
 <template>
-  <div class="email-selector" v-if="authStore.recipients.length > 0">
+  <div class="email-selector" v-if="authStore.recipients.length > 0 && currentEmail">
     <button
       class="selector-button"
       @click="toggleDropdown"

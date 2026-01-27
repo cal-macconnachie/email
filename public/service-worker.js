@@ -98,17 +98,8 @@ self.addEventListener('push', (event) => {
     tag: tag || 'email-notification',
     data: data || {},
     requireInteraction: requireInteraction || false,
-    vibrate: [200, 100, 200],
-    actions: [
-      {
-        action: 'open',
-        title: 'Open Email'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
-    ]
+    // No vibration or action buttons for native feel
+    silent: false
   }
 
   event.waitUntil(
@@ -132,11 +123,6 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  // Handle action buttons
-  if (event.action === 'dismiss') {
-    return
-  }
-
   // Open or focus app window
   const urlToOpen = event.notification.data?.url
     ? new URL(event.notification.data.url, self.location.origin).href
@@ -145,10 +131,21 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Check if app is already open
+        // Try to find an existing window to focus
         for (const client of clientList) {
-          if (client.url === urlToOpen && 'focus' in client) {
-            return client.focus()
+          if ('focus' in client) {
+            // Focus the client and navigate to the email
+            return client.focus().then(() => {
+              // Send message to navigate to the specific email
+              if (event.notification.data?.url) {
+                client.postMessage({
+                  type: 'NAVIGATE_TO_EMAIL',
+                  url: event.notification.data.url,
+                  s3_key: event.notification.data.s3_key
+                })
+              }
+              return client
+            })
           }
         }
 

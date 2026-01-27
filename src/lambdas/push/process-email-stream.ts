@@ -134,10 +134,14 @@ async function processNewEmail(
 
     console.log(`Found ${subscriptionResults.items.length} active subscription(s) for ${phoneNumber}`)
 
-    // Prepare notification payload
+    // Prepare notification payload - native email format
+    // Extract sender name from email address (before @)
+    const senderName = email.sender.split('@')[0]
+    const subject = email.subject || '(No subject)'
+
     const notificationPayload = {
-      title: `${email.sender}`,
-      body: email.subject || '(No subject)',
+      title: senderName,
+      body: subject,
       icon: './direct-market.svg',
       badge: './direct-market.svg',
       tag: email.s3_key, // Prevents duplicate notifications

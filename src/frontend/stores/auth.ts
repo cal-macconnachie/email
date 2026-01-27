@@ -7,7 +7,8 @@ export const useAuthStore = defineStore('auth', () => {
   const phoneNumber = ref<string | null>(null)
   const recipients = ref<string[]>([])
   const defaultRecipient = ref<string | null>(null)
-  const selectedRecipient = ref<string | null>(null)
+  // Initialize selectedRecipient from localStorage if available
+  const selectedRecipient = ref<string | null>(localStorage.getItem('selectedRecipient'))
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const isInitialized = ref(false)
@@ -50,6 +51,10 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = true
       otpRequested.value = false
       otpSession.value = null
+
+      // Fetch session data immediately after successful login
+      await checkSession()
+
       return true
     } catch (err) {
       const errMessage = err instanceof Error ? err.message : (err as { error?: string }).error
@@ -68,8 +73,18 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = false
       phoneNumber.value = null
       selectedRecipient.value = null
+      recipients.value = []
+      defaultRecipient.value = null
       otpSession.value = null
       otpRequested.value = false
+
+      // Clear all auth-related persisted data
+      localStorage.removeItem('selectedRecipient')
+      localStorage.removeItem('push_subscription_id')
+
+      // Note: We intentionally keep UI preferences like:
+      // - pwa_install_prompt_dismissed
+      // - notification_prompt_dismissed
     } catch (err) {
       const errMessage = err instanceof Error ? err.message : (err as { error?: string }).error
       error.value = errMessage ?? 'Logout failed'
@@ -101,6 +116,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await api.auth.refresh()
       isAuthenticated.value = true
+
+      // Fetch session data to ensure recipients are populated
+      await checkSession()
+
       return true
     } catch (err) {
       // Refresh token is invalid, expired, or doesn't exist
@@ -115,10 +134,20 @@ export const useAuthStore = defineStore('auth', () => {
       const { recipients: apiRecipients, default_recipient } = await api.auth.getSession()
       recipients.value = apiRecipients
       defaultRecipient.value = default_recipient
-      // Initialize selectedRecipient to defaultRecipient if not already set
+
+      // Validate persisted selectedRecipient against loaded recipients
+      if (selectedRecipient.value && !apiRecipients.includes(selectedRecipient.value)) {
+        // Persisted recipient is no longer valid, clear it
+        selectedRecipient.value = null
+        localStorage.removeItem('selectedRecipient')
+      }
+
+      // Initialize selectedRecipient to defaultRecipient if not set or invalid
       if (!selectedRecipient.value && default_recipient) {
         selectedRecipient.value = default_recipient
+        localStorage.setItem('selectedRecipient', default_recipient)
       }
+
       isAuthenticated.value = true
       return true
     } catch {
@@ -140,6 +169,12 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('Recipient not in list')
     }
     selectedRecipient.value = recipient
+    // Persist to localStorage
+    if (recipient) {
+      localStorage.setItem('selectedRecipient', recipient)
+    } else {
+      localStorage.removeItem('selectedRecipient')
+    }
   }
 
   return {

@@ -54,41 +54,81 @@ const emailStore = useEmailStore()
 const threadEmails = ref<Email[]>([])
 const targetEmailCard = ref<HTMLElement[]>([])
 
-onMounted(async () => {
-  try {
-    const decodedKey = decodeURIComponent(props.s3Key)
-
-    // Find the target email in the store (from inbox)
-    // It has metadata (including thread_id) but NO body
-    let targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
-
-    if (!targetEmail) {
-      console.log('Target email not found in store, fetching detail...', decodedKey)
-      await emailStore.fetchEmailDetail(decodedKey)
-      await nextTick()
-      targetEmail = emailStore.emails.find(e => e.s3_key === decodedKey)
-      if (!targetEmail) {
-        emailStore.error = 'Email not found'
-        return
+// Retry helper with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 500
+): Promise<T> {
+  let lastError: Error
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn()
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      if (i < maxRetries - 1) {
+        const delay = initialDelay * Math.pow(2, i)
+        console.log(`Retry ${i + 1}/${maxRetries} after ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
+  }
+  throw lastError!
+}
+
+onMounted(async () => {
+  const decodedKey = decodeURIComponent(props.s3Key)
+
+  try {
+    // Step 1: Fetch the email detail with retry logic
+    // This is especially important when opening from notification with empty store
+    const targetEmail = await retryWithBackoff(async () => {
+      // First try to find in store
+      let email = emailStore.emails.find(e => e.s3_key === decodedKey)
+
+      if (!email) {
+        console.log('Target email not found in store, fetching detail...', decodedKey)
+        // Fetch with retry
+        email = await emailStore.fetchEmailDetail(decodedKey)
+
+        // Double-check it's in the store after fetching
+        if (!email) {
+          await nextTick()
+          email = emailStore.emails.find(e => e.s3_key === decodedKey)
+        }
+
+        if (!email) {
+          throw new Error('Email not found after fetch')
+        }
+      }
+
+      return email
+    })
 
     emailStore.currentEmail = targetEmail
 
-    // Fetch ONLY the thread list (metadata only, no bodies) and WAIT
-    if (targetEmail.thread_id) {
-      threadEmails.value = await emailStore.fetchThread(targetEmail.thread_id, true)
-      threadEmails.value.sort((a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      )
-    } else {
+    // Step 2: Fetch thread with retry logic
+    try {
+      if (targetEmail.thread_id) {
+        const threadList = await retryWithBackoff(async () => {
+          return await emailStore.fetchThread(targetEmail.thread_id, true)
+        })
+
+        threadEmails.value = threadList.sort((a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+      } else {
+        threadEmails.value = [targetEmail]
+      }
+    } catch (threadError) {
+      console.error('Failed to fetch thread, showing single email:', threadError)
+      // Fallback: show just the target email if thread fetch fails
       threadEmails.value = [targetEmail]
     }
 
-    // Thread loaded. Now EmailView components will mount and each fetch their own body
-
-    // Scroll to target
+    // Step 3: Scroll to target after render
     await nextTick()
+    // Give EmailView components time to render
     setTimeout(() => {
       if (targetEmailCard.value && targetEmailCard.value.length > 0) {
         const isMobile = window.innerWidth <= 768
@@ -99,8 +139,8 @@ onMounted(async () => {
       }
     }, 300)
   } catch (error) {
-    console.error('Failed to fetch thread:', error)
-    emailStore.error = 'Failed to load thread'
+    console.error('Failed to load email:', error)
+    emailStore.error = error instanceof Error ? error.message : 'Failed to load email. Please try again.'
   }
 })
 </script>

@@ -50,3 +50,16 @@ app.mount('#app')
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
 }
+
+// Listen for messages from service worker (e.g., notification clicks)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'NAVIGATE_TO_EMAIL') {
+      const url = event.data.url
+      if (url && router) {
+        // Navigate to the email using Vue Router
+        router.push(url)
+      }
+    }
+  })
+}
