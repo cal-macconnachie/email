@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.62](https://github.com/cal-macconnachie/email/compare/v1.6.61...v1.6.62) (2026-02-03)
+
+
+### Bug Fixes
+
+* update components for better desktop actions and drawer ([b0cc4fe](https://github.com/cal-macconnachie/email/commit/b0cc4fea49b27c27b51cd9f4b9278a31931d0d82))
+
 ### [1.6.61](https://github.com/cal-macconnachie/email/compare/v1.6.60...v1.6.61) (2026-01-27)
 
 
