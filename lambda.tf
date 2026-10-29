@@ -443,11 +443,11 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/.terraform/lambda_builds/${each.key}.zip"
 }
 
-# Lambda Functions (excluding auth API functions that need Cognito IDs)
+# Lambda Functions (excluding auth API functions and the authorizer, which need Cognito IDs)
 resource "aws_lambda_function" "functions" {
   for_each = {
     for k, v in local.lambda_functions : k => v
-    if !contains(["request_otp", "verify_otp", "logout", "refresh_token"], k)
+    if !contains(["request_otp", "verify_otp", "logout", "refresh_token", "lambda_authorizer"], k)
   }
 
   function_name = "${local.lambda_prefix}-${each.key}"
