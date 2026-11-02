@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
 import { v4 } from 'uuid'
 import { getAuthenticatedRecipient } from './middleware/auth-middleware'
+import { safeS3Metadata } from './helpers/s3-metadata'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -72,11 +73,11 @@ export const handler = async (
       Bucket: bucketName,
       Key: attachmentKey,
       ContentType: contentType,
-      Metadata: {
+      Metadata: safeS3Metadata({
         'recipient': recipient,
         'attachment-id': attachmentId,
         'original-filename': filename,
-      },
+      }),
     })
 
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 })

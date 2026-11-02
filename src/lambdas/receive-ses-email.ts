@@ -3,6 +3,7 @@ import { Context, SESEvent } from 'aws-lambda'
 import { create } from './helpers/dynamo-helpers/create'
 import { parseEmail } from './helpers/parse-email'
 import { determineThreadId } from './helpers/thread-helpers/determine-thread-id'
+import { safeS3Metadata } from './helpers/s3-metadata'
 
 const s3Client = new S3Client({ region: process.env.REGION })
 
@@ -89,7 +90,7 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
               Key: attachmentKey,
               Body: attachment.rawContent,
               ContentType: attachment.contentType,
-              Metadata: metadata,
+              Metadata: safeS3Metadata(metadata),
             }))
 
             attachmentKeys.push(attachmentKey)
@@ -108,12 +109,12 @@ export const handler = async (event: SESEvent, _context: Context): Promise<void>
           Key: emailKey,
           Body: JSON.stringify(email),
           ContentType: 'application/json',
-          Metadata: {
+          Metadata: safeS3Metadata({
             'message-id': messageId,
             'recipient': recipient,
             'sender': email.sender,
             'subject': email.subject,
-          },
+          }),
         }))
 
         console.log(`Successfully stored email for ${recipient}`)
