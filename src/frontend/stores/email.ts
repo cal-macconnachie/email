@@ -104,9 +104,9 @@ export const useEmailStore = defineStore('email', () => {
   async function fetchInboxEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }, reset = false) {
     isLoadingInbox.value = true
     inboxError.value = null
+    // Keep the current list on screen while refreshing; the response replaces it below
     if (reset) {
       inboxLastEvaluatedKey.value = undefined
-      inboxEmails.value = []
     }
     try {
       const authStore = useAuthStore()
@@ -165,9 +165,9 @@ export const useEmailStore = defineStore('email', () => {
   async function fetchSentEmails(params?: { sortOrder?: 'ASC' | 'DESC' }, reset = false) {
     isLoadingSent.value = true
     sentError.value = null
+    // Keep the current list on screen while refreshing; the response replaces it below
     if (reset) {
       sentLastEvaluatedKey.value = undefined
-      inboxEmails.value = []
     }
     try {
       const authStore = useAuthStore()
@@ -226,9 +226,9 @@ export const useEmailStore = defineStore('email', () => {
   async function fetchArchivedEmails(params?: { sender?: string; startDate?: string; endDate?: string; sortOrder?: 'ASC' | 'DESC' }, reset = false) {
     isLoadingArchived.value = true
     archivedError.value = null
+    // Keep the current list on screen while refreshing; the response replaces it below
     if (reset) {
       archivedLastEvaluatedKey.value = undefined
-      archivedEmails.value = []
     }
     try {
       const authStore = useAuthStore()

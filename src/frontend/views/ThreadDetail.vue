@@ -159,15 +159,17 @@ onMounted(async () => {
 }
 
 .email-detail-header {
-  width: 100vw;
+  width: 100%;
   flex-shrink: 0;
 }
 
+/* Same width and side padding as .email-detail-main so the header lines up with the messages */
 .header-content {
-  max-width: 1200px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: var(--space-4) var(--space-6);
-  padding-right: var(--space-12);
+  padding: var(--space-4) var(--space-6) 0;
 }
 
 .back-button {
@@ -212,9 +214,10 @@ onMounted(async () => {
 }
 
 .email-detail-main {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 1600px;
   padding: var(--space-6);
-  width: 100vw;
   flex: 1;
 }
 
@@ -253,22 +256,50 @@ onMounted(async () => {
   background-color: var(--color-bg-muted);
 }
 
+/* Mobile: full-screen reader with a compact sticky header and edge-to-edge messages */
 @media (max-width: 768px) {
-  .email-detail-container {
-    margin-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
-  }
-  .email-detail-main {
-    padding: var(--space-4);
-    padding-bottom: var(--space-8);
+  .email-detail-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding-top: env(safe-area-inset-top);
+    background-color: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .header-content {
-    padding: var(--space-3) var(--space-4);
-    padding-right: var(--space-12);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .back-button {
+    margin-bottom: 0;
+    flex-shrink: 0;
   }
 
   .email-header-info {
-    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .email-title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .email-detail-main {
+    padding: 0;
+    padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+  }
+
+  .thread-container {
+    gap: 0;
   }
 
   .email-meta {
@@ -282,7 +313,10 @@ onMounted(async () => {
   }
 
   .thread-email-card {
-    scroll-margin-top: var(--space-8);
+    scroll-margin-top: calc(72px + env(safe-area-inset-top));
+    border-radius: 0;
+    padding: var(--space-4) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
   }
 }
 </style>

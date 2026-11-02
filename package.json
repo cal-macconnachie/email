@@ -47,6 +47,7 @@
     "@cal.macconnachie/web-components": "^2.7.0",
     "add": "^2.0.6",
     "aws-jwt-verify": "^5.1.1",
+    "dompurify": "^3.4.17",
     "mailparser": "^3.9.1",
     "pinia": "^2.3.0",
     "postal-mime": "^2.7.1",
