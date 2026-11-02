@@ -6,6 +6,7 @@ import { create } from './helpers/dynamo-helpers/create'
 import { Email } from './helpers/parse-email'
 import { determineThreadId } from './helpers/thread-helpers/determine-thread-id'
 import { getAuthenticatedRecipient } from './middleware/auth-middleware'
+import { safeS3Metadata } from './helpers/s3-metadata'
 
 const sesClient = new SESv2Client({ region: process.env.REGION })
 const s3Client = new S3Client({ region: process.env.REGION })
@@ -236,11 +237,11 @@ export const handler = async (
               CopySource: `${bucketName}/${pendingKey}`,
               Key: finalKey,
               ContentType: attachments[i].ContentType,
-              Metadata: {
+              Metadata: safeS3Metadata({
                 'message-id': messageId,
                 'recipient': recipient,
                 'original-filename': filename,
-              },
+              }),
             })
           )
 
@@ -279,12 +280,12 @@ export const handler = async (
           Key: emailKey,
           Body: JSON.stringify(email),
           ContentType: 'application/json',
-          Metadata: {
+          Metadata: safeS3Metadata({
             'message-id': messageId,
             'recipient': recipient,
             'sender': from,
             'subject': subject,
-          },
+          }),
         })
       )
 
