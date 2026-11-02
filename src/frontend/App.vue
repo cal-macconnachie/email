@@ -1,9 +1,9 @@
 <template>
   <div id="app" class="min-h-screen">
-    <div v-if="authStore.isAuthenticated && authStore.isInitialized" class="compose-button">
+    <div v-if="authStore.isAuthenticated && authStore.isInitialized" class="compose-button" :class="{ 'hidden-on-mobile': isReading }">
       <base-button @click="emailStore.composing = true" variant="link-primary" size="sm" class="compose-plus">+</base-button>
     </div>
-    <div class="top-right-controls">
+    <div class="top-right-controls" :class="{ 'hidden-on-mobile': isReading }">
       <email-selector v-if="authStore.isAuthenticated && authStore.isInitialized" />
     </div>
     <router-view />
@@ -18,8 +18,8 @@
 <script setup lang="ts">
 import { BaseDrawer } from '@cal.macconnachie/web-components'
 import { storeToRefs } from 'pinia'
-import { onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ComposeDrawer from './components/ComposeForm.vue'
 import EmailSelector from './components/EmailSelector.vue'
 import NotificationPrompt from './components/NotificationPrompt.vue'
@@ -29,6 +29,9 @@ import { useAuthStore } from './stores/auth'
 import { useEmailStore } from './stores/email'
 
 const router = useRouter()
+const route = useRoute()
+// The thread view is full screen on mobile, so the floating controls are hidden there
+const isReading = computed(() => route.name === 'email-detail')
 const authStore = useAuthStore()
 const emailStore = useEmailStore()
 const { composing } = storeToRefs(emailStore)
@@ -148,6 +151,10 @@ onMounted(async () => {
 
     .compose-plus {
       font-size: 2rem;
+    }
+
+    .hidden-on-mobile {
+      display: none;
     }
   }
 </style>

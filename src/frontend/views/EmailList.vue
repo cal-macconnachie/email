@@ -60,6 +60,9 @@
               </base-button>
             </div>
 
+            <div v-if="emailStore.isLoadingInbox && emailStore.inboxEmails.length > 0" class="refresh-indicator">
+              <span class="loading-spinner">↻</span>
+            </div>
             <div v-if="emailStore.isLoadingInbox && emailStore.inboxEmails.length === 0" class="loading-state">
               <span class="loading-spinner">↻</span>
             </div>
@@ -168,6 +171,9 @@
           <base-card v-if="emailStore.sentError" variant="elevated" padding="md" class="error-card">
             {{ emailStore.sentError }}
           </base-card>
+          <div v-if="emailStore.isLoadingSent && emailStore.sentEmails.length > 0" class="refresh-indicator">
+            <span class="loading-spinner">↻</span>
+          </div>
           <div v-if="emailStore.isLoadingSent && emailStore.sentEmails.length === 0" class="loading-state">
             <span class="loading-spinner">↻</span>
           </div>
@@ -272,6 +278,9 @@
           <base-card v-if="emailStore.archivedError" variant="elevated" padding="md" class="error-card">
             {{ emailStore.archivedError }}
           </base-card>
+          <div v-if="emailStore.isLoadingArchived && emailStore.archivedEmails.length > 0" class="refresh-indicator">
+            <span class="loading-spinner">↻</span>
+          </div>
 <div v-if="emailStore.isLoadingArchived && emailStore.archivedEmails.length === 0" class="loading-state">
             <span class="loading-spinner">↻</span>
           </div>
@@ -845,6 +854,13 @@ base-list-item {
 .loading-state {
   text-align: center;
   padding: var(--space-8);
+  flex-shrink: 0;
+}
+
+.refresh-indicator {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2);
   flex-shrink: 0;
 }
 

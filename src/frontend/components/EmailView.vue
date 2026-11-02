@@ -50,10 +50,7 @@
       <p class="cc-text"><strong>CC:</strong> {{ email.cc.join(', ') }}</p>
     </div>
 
-    <div v-if="parsedContent.html || parsedContent.text" class="email-body">
-      <div v-if="parsedContent.html" v-html="parsedContent.html"></div>
-      <div v-else-if="parsedContent.text" v-html="parsedContent.text.replace(/\n/g, '<br>')"></div>
-    </div>
+    <div v-if="renderedBody" class="email-body" v-html="renderedBody"></div>
     <div v-else class="email-body-loading">
       <p>{{ isLoadingBody ? 'Loading email content...' : 'No content available' }}</p>
     </div>
@@ -82,6 +79,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { Email } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 import { useEmailStore } from '../stores/email'
+import { renderHtmlEmail, renderTextEmail } from '../utils/emailContent'
 
 const props = defineProps<{
   s3Key: string
@@ -95,6 +93,13 @@ const emailContainer = ref<HTMLElement | null>(null)
 let intersectionObserver: IntersectionObserver | null = null
 const decodedS3Key = decodeURIComponent(props.s3Key)
 const parsedContent = ref<{ html?: string; text?: string }>({ html: undefined, text: undefined })
+
+// Sanitized body with clickable links; HTML wins over plain text
+const renderedBody = computed(() => {
+  if (parsedContent.value.html) return renderHtmlEmail(parsedContent.value.html)
+  if (parsedContent.value.text) return renderTextEmail(parsedContent.value.text)
+  return ''
+})
 
 // Use computed to always get latest email from store (so read status updates work)
 const email = computed(() => emailStore.emails.find(e => e.s3_key === decodedS3Key) || null)
@@ -322,6 +327,12 @@ async function handleToggleArchive(email: Email) {
   overflow-y: hidden;
 }
 
+.email-body :deep(a) {
+  color: var(--color-primary);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
 .email-body :deep(table) {
   max-width: 100%;
   overflow-x: auto;
@@ -409,6 +420,21 @@ async function handleToggleArchive(email: Email) {
 }
 
 @media (max-width: 768px) {
+  .thread-email-header {
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    flex-wrap: nowrap;
+  }
+
+  .thread-email-meta {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .thread-email-date {
+    font-size: var(--font-size-xs);
+  }
+
   .thread-email-actions {
     gap: var(--space-3);
   }
