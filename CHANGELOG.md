@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.64](https://github.com/cal-macconnachie/email/compare/v1.6.63...v1.6.64) (2026-11-02)
+
+
+### Bug Fixes
+
+* encode non-ASCII S3 metadata so emails with special subjects arrive ([89df43b](https://github.com/cal-macconnachie/email/commit/89df43b7a940772485f38e4edf551b868ca7190d))
+
 ### [1.6.63](https://github.com/cal-macconnachie/email/compare/v1.6.62...v1.6.63) (2026-10-29)
 
 ### [1.6.62](https://github.com/cal-macconnachie/email/compare/v1.6.61...v1.6.62) (2026-02-03)
